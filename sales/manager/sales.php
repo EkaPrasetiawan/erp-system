@@ -15,11 +15,14 @@ require '../../assets/fungsi.php';
         <title>Home</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
-        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+        integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        <!-- <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script> -->
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-            <?php require '../../assets/head-nav.php' ?>
+            <?php require '../../assets/head-nav.php'; ?>
         </nav>
         <div id="layoutSidenav">
             <div id="layoutSidenav_nav">
@@ -43,6 +46,7 @@ require '../../assets/fungsi.php';
                                 <table id="datatablesSimple">
                                     <thead>
                                         <tr>
+                                            <th>NO</th>
                                             <th>Nama</th>
                                             <th>Bagian</th>
                                             <th>Status</th>
@@ -50,18 +54,68 @@ require '../../assets/fungsi.php';
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Tiger Nixon</td>
-                                            <td>corporate</td>
-                                            <td>aktif</td>
-                                            <td>2011/04/25</td>
-                                            <td>edit</td>
-                                        </tr>
+                                    <tbody id="dtSales">
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
+                        <!-- modal -->
+                        <div class="modal fade" id="editSales" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form id="formValidasi" method="POST">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">Data Sales <span id="modalMarketingName"></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <input type="hidden" id="sales_id" name="sales_id">
+                                                    <div class="mb-3 row">
+                                                        <label for="name" class="col-sm-4 col-form-label">Nama</label>
+                                                        <div class="col-sm-8">
+                                                        <input type="text" class="form-control" id="name" name="name">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3 row">
+                                                        <label for="departemen" class="col-sm-4 col-form-label">Bagian</label>
+                                                        <div class="col-sm-8">
+                                                            <select class="form-select" id="departemen" name="departemen">
+                                                                <option selected>---pilih bagian---</option>
+                                                                <option value="Sekolah">Sekolah</option>
+                                                                <option value="Perusahaan">Perusahaan</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3 row">
+                                                        <label for="status" class="col-sm-4 col-form-label">status</label>
+                                                        <div class="col-sm-8">
+                                                            <select class="form-select" id="status" name="status">
+                                                                <option value="1">Aktiv</option>
+                                                                <option value="0">Tidak Aktif</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3 row">
+                                                        <label for="tgl_masuk" class="col-sm-4 col-form-label">Tanggal Masuk</label>
+                                                        <div class="col-sm-8">
+                                                        <input type="date" class="form-control" id="tgl_masuk" name="tgl_masuk">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                        <button type="submit" name="validasi" class="btn btn-success">Simpan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </main>
                 <footer class="py-4 bg-light mt-auto">
@@ -69,11 +123,55 @@ require '../../assets/fungsi.php';
                 </footer>
             </div>
         </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const tbody = document.getElementById("dtSales");
+                const viewSales = <?= json_encode($sales); ?>;
+                viewSales.forEach((item, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${index+1}</td>
+                        <td>${item.name}</td>
+                        <td>${item.departemen}</td>
+                        <td>${item.checked}</td>
+                        <td>${item.tgl_mulai}</td>
+                        <td>
+                            <button class="btn btn-warning btn-edit" 
+                                    data-id="${item.Employee_ID}" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editSales">
+                                <i class="fa-solid fa-file-pen"></i> Edit
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Tambahkan event listener ke tombol edit
+                tbody.addEventListener("click", (e) => {
+                    if (e.target.closest(".btn-edit")) {
+                        const button = e.target.closest(".btn-edit");
+                        const salesId = button.dataset.id;
+
+                        // Cari data berdasarkan ID
+                        const data = viewSales.find(item => item.Employee_ID === salesId);
+
+                        if (data) {
+                            document.getElementById("sales_id").value = data.Employee_ID;
+                            document.getElementById("name").value = data.name;
+                            document.getElementById("departemen").value = data.departemen;
+                            document.getElementById("status").value = data.checked;
+                            document.getElementById("tgl_masuk").value = data.tgl_mulai;
+                        }
+                    }
+                });
+            });
+        </script>
+
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="../../js/scripts.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-        <script src="../../assets/demo/chart-area-demo.js"></script>
-        <script src="../../assets/demo/chart-bar-demo.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
     </body>

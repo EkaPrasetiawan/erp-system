@@ -2,9 +2,9 @@
 require 'koneksi.php';
 
 $cekSales = $konek->query("
-    SELECT name, departemen, divisi, tgl_mulai
+    SELECT Employee_ID, name, departemen, divisi, tgl_mulai, checked
     FROM employee_card
-    WHERE departemen = 'sales', AND inactive = 0
+    WHERE divisi = 'sales' AND inactive = 0
 ");
 
 if(!$cekSales){
@@ -12,6 +12,7 @@ if(!$cekSales){
 }
 $sales = [];
 while($row = $cekSales->fetch_assoc()){
+    $row['checked'] = ($row['checked'] == 1) ? 'Aktif' : 'Tidak Aktif';
     $sales[] = $row;
 }
 
