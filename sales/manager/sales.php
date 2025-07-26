@@ -1,7 +1,5 @@
 <?php
-
 require '../../assets/fungsi.php';
-
 ?>
 
 <!DOCTYPE html>
@@ -12,14 +10,14 @@ require '../../assets/fungsi.php';
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Home</title>
+        <title>Data Sales</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"/>"
-        <!-- <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script> -->
-    </head>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <?php require '../../assets/head-nav.php'; ?>
@@ -60,33 +58,31 @@ require '../../assets/fungsi.php';
                             </div>
                         </div>
 
-                        <!-- modal -->
                         <div class="modal fade" id="editSales" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form id="formValidasi" method="POST">
+                                    <form id="formUdateSales" method="POST">
                                         <div class="modal-header">
                                         <h5 class="modal-title" id="editModalLabel">Data Sales <span id="modalMarketingName"></h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                                         </button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <input type="hidden" id="sales_id" name="sales_id">
+                                                    <input type="hidden" id="id_sales" name="Employee_ID">
                                                     <div class="mb-3 row">
                                                         <label for="name" class="col-sm-4 col-form-label">Nama</label>
                                                         <div class="col-sm-8">
-                                                        <input type="text" class="form-control" id="name" name="name">
+                                                        <input type="text" class="form-control" id="name" name="name"/>
                                                         </div>
                                                     </div>
                                                     <div class="mb-3 row">
                                                         <label for="departemen" class="col-sm-4 col-form-label">Bagian</label>
                                                         <div class="col-sm-8">
                                                             <select class="form-select" id="departemen" name="departemen">
-                                                                <option selected>---pilih bagian---</option>
-                                                                <option value="Sekolah">Sekolah</option>
-                                                                <option value="Perusahaan">Perusahaan</option>
+                                                                <option value="SEKOLAH">Sekolah</option>
+                                                                <option value="PERUSAHAAN">Perusahaan</option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -94,7 +90,7 @@ require '../../assets/fungsi.php';
                                                         <label for="status" class="col-sm-4 col-form-label">status</label>
                                                         <div class="col-sm-8">
                                                             <select class="form-select" id="status" name="status">
-                                                                <option value="1">Aktiv</option>
+                                                                <option value="1">Aktif</option>
                                                                 <option value="0">Tidak Aktif</option>
                                                             </select>
                                                         </div>
@@ -102,7 +98,7 @@ require '../../assets/fungsi.php';
                                                     <div class="mb-3 row">
                                                         <label for="tgl_masuk" class="col-sm-4 col-form-label">Tanggal Masuk</label>
                                                         <div class="col-sm-8">
-                                                        <input type="date" class="form-control" id="tgl_masuk" name="tgl_masuk">
+                                                        <input type="date" class="form-control" id="tgl_masuk" name="tgl_masuk"/>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -115,7 +111,6 @@ require '../../assets/fungsi.php';
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </main>
                 <footer class="py-4 bg-light mt-auto">
@@ -124,55 +119,133 @@ require '../../assets/fungsi.php';
             </div>
         </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const tbody = document.getElementById("dtSales");
-                const viewSales = <?= json_encode($sales); ?>;
-                viewSales.forEach((item, index) => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${index+1}</td>
-                        <td>${item.name}</td>
-                        <td>${item.departemen}</td>
-                        <td>${item.checked}</td>
-                        <td>${item.tgl_mulai}</td>
-                        <td>
-                            <button class="btn btn-warning btn-edit" 
-                                    data-id="${item.Employee_ID}" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editSales">
-                                <i class="fa-solid fa-file-pen"></i> Edit
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-                // Tambahkan event listener ke tombol edit
-                tbody.addEventListener("click", (e) => {
-                    if (e.target.closest(".btn-edit")) {
-                        const button = e.target.closest(".btn-edit");
-                        const salesId = button.dataset.id;
-
-                        // Cari data berdasarkan ID
-                        const data = viewSales.find(item => item.Employee_ID === salesId);
-
-                        if (data) {
-                            document.getElementById("sales_id").value = data.Employee_ID;
-                            document.getElementById("name").value = data.name;
-                            document.getElementById("departemen").value = data.departemen;
-                            document.getElementById("status").value = data.checked;
-                            document.getElementById("tgl_masuk").value = data.tgl_mulai;
-                        }
-                    }
-                });
-            });
-        </script>
-
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="../../js/scripts.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
+
+        <script>
+            function formatTanggal(tanggalString) {
+                const tgl = new Date(tanggalString);
+                const hari = String(tgl.getDate()).padStart(2, '0');
+                const bulan = String(tgl.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+                const tahun = tgl.getFullYear();
+                return `${hari}-${bulan}-${tahun}`;
+            }
+        </script>
+        <script>
+            const viewSales = <?= json_encode($sales); ?>;
+            const tbody = document.getElementById("dtSales");
+            console.log(viewSales);
+            viewSales.forEach((item, index) =>{
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${index+1}</td>
+                <td>${item.name}</td>
+                <td>${item.departemen}</td>
+                <td>${item.checked != '1' ? 'Tidak Aktif' : 'Aktif'}</td>
+                <td>${formatTanggal(item.tgl_mulai)}</td>
+                <td>
+                    <button class="btn btn-warning btnEdit" data-bs-toggle="modal" data-bs-target="#editSales"
+                        data-id="${item.Employee_ID}" data-name="${item.name}" data-departemen="${item.departemen}"
+                        data-status="${item.checked}" data-tgl="${item.tgl_mulai}"><i class="fa-solid fa-file-pen"></i>Edit
+                    </button>
+                </td>
+                `;
+                tbody.appendChild(row);
+            });
+        </script>
+        
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const tbody = document.getElementById("dtSales");
+
+                tbody.addEventListener("click", function (e) {
+                    const target = e.target.closest(".btnEdit");
+                    if (!target) return;
+                    
+                    const sales_id = target.getAttribute("data-id");
+                    const name = target.getAttribute("data-name");
+                    const departemen = target.getAttribute("data-departemen");
+                    const status = target.getAttribute("data-status");
+                    const tgl = target.getAttribute("data-tgl");
+
+                    document.getElementById("id_sales").value = sales_id;
+                    document.getElementById("name").value = name;
+                    document.getElementById("departemen").value = departemen; 
+                    document.getElementById("status").value = status;
+                    document.getElementById("tgl_masuk").value = tgl;
+                    document.getElementById("modalMarketingName").textContent = name;
+                });
+            });
+        </script>
+        <script>
+            document.getElementById("formUdateSales").addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                formData.append('aksi', 'update_sales');
+
+                fetch('../../assets/fungsi.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        // Tutup modal terlebih dahulu
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("editSales"));
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Data Berhasil Di Perbaharui',
+                            showConfirmButton: true, // Tampilkan tombol konfirmasi
+                            confirmButtonText: 'Oke', // Teks tombol konfirmasi
+                            allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
+                            allowEscapeKey: false // Tidak bisa menutup dengan tombol Escape
+                        }).then((result) => {
+                            // Jika tombol "Oke" diklik
+                            if (result.isConfirmed) {
+                                location.reload(); // Refresh halaman
+                            }
+                        });
+
+                        // Hapus kode pembaruan DOM manual di sini
+                        // const id = document.getElementById("id_sales").value;
+                        // ... dan seterusnya
+                    } else if (res.status === 'nochange') {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Tidak Ada Perubahan!',
+                            text: 'Tidak Ada Data Yang Berubah',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("editSales"));
+                        modal.hide();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: res.msg || 'Terjadi kesalahan yang tidak diketahui.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error Jaringan',
+                        text: 'Gagal terhubung ke server. Periksa koneksi internet Anda.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                });
+            });
+        </script>
     </body>
 </html>
