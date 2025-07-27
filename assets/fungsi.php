@@ -104,29 +104,81 @@ function generateKodeClient($konek) {
 
 $code = generateKodeClient($konek);
 
-if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'tambah_dataRombongan'){
-    $kode = sanitize_text($_POST['kode']);
-    $instansi = sanitize_text($_POST['instansi']);
-    $pic = sanitize_text($_POST['pic']);
-    $noTlp = sanitize_text($_POST['noTlp']);
-    $tgl_kunjungan = sanitize_text($_POST['tgl_kunjungan']);
-    $gate = sanitize_text($_POST['gate']);
-    $alamat = sanitize_text($_POST['alamat']);
-    $marketing_id = '02-001';
-    $marketing_name = 'eka';
-    $remark = 'perusahaan';
+// if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'tambah_dataRombongan'){
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
-    $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tgl_kunjungan, gate, marketing_id, marketing_name, remarks)
-                            VALUES(?,?,?,?,?,?,?,?,?,?)");
-    $stmt->bind_param("ssssssssss", $kode, $instansi, $alamat, $pic, $noTlp, $tgl_kunjungan, $gate, $marketing_id, $marketing_name, $remark);
-    if ($stmt->execute()) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        error_log("Tambah Rombongan Error: " . $stmt->error); // Log error untuk debugging
-        echo json_encode(['status' => 'error']);
+    if($_POST['aksi'] === 'tambah_dataRombongan'){
+        $kode = sanitize_text($_POST['kode']);
+        $instansi = sanitize_text($_POST['instansi']);
+        $pic = sanitize_text($_POST['pic']);
+        $noTlp = sanitize_text($_POST['noTlp']);
+        $tgl_kunjungan = sanitize_text($_POST['tgl_kunjungan']);
+        $gate = sanitize_text($_POST['gate']);
+        $alamat = sanitize_text($_POST['alamat']);
+        $marketing_id = '02-001';
+        $marketing_name = 'eka';
+        $remark = 'perusahaan';
+
+        $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tgl_kunjungan, gate, marketing_id, marketing_name, remarks)
+                                VALUES(?,?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("ssssssssss", $kode, $instansi, $alamat, $pic, $noTlp, $tgl_kunjungan, $gate, $marketing_id, $marketing_name, $remark);
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            error_log("Tambah Rombongan Error: " . $stmt->error); // Log error untuk debugging
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt->close();
+        exit;
     }
-    $stmt->close();
-    exit;
+    if($_POST['aksi'] === 'update_dataRombongan'){
+        $kode = sanitize_text($_POST['kode']);
+        $instansi = sanitize_text($_POST['instansi']);
+        $pic = sanitize_text($_POST['pic']);
+        $noTlp = sanitize_text($_POST['noTlp']);
+        $tglKunjungan = sanitize_text($_POST['tgl_kunjungan']);
+        $gate = sanitize_text($_POST['gate']);
+        $alamat = sanitize_text($_POST['alamat']);
+
+        //ambil data
+        $stmt_cek = $konek->prepare("SELECT client_name, address, pic, phone, tgl_kunjungan, gate FROM client WHERE client_id = ?");
+        $stmt_cek->bind_param("s",$kode);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+
+        //cek perubahan
+        if(
+            $cek['client_name'] === $instansi &&
+            $cek['address'] === $alamat &&
+            $cek['pic'] === $pic &&
+            $cek['phone'] === $noTlp &&
+            $cek['tgl_kunjungan'] === $tglKunjungan &&
+            $cek['gate'] === $gate
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        //update dta
+        $stmt_update = $konek->prepare("UPDATE client SET client_name = ?,
+                        address = ?, pic = ?, phone = ?, tgl_kunjungan = ?, gate = ? WHERE client_id = ?");
+        $stmt_update->bind_param("sssssss", $instansi, $alamat, $pic, $noTlp, $tglKunjungan, $gate, $kode);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        }else{
+            error_log("update rombongan error :" . $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt_update->close();
+        exit;
+    }
 
 }
 

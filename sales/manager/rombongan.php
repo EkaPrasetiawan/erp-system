@@ -337,7 +337,7 @@ require '../../assets/fungsi.php';
                 e.preventDefault();
 
                 const formData = $(this).serialize() + '&aksi=update_dataRombongan';
-                console.log("data dikirim :".formData);
+                console.log("data dikirim :",formData);
                 
                 $.ajax({
                     url : '../../assets/fungsi.php',
