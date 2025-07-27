@@ -10,26 +10,46 @@ function sanitize_text($input, $strict = false) {
     }
 }
 
-
-$cekSales = $konek->query("
-    SELECT Employee_ID, name, departemen, divisi, tgl_mulai, checked
+function getAllSales($konek){
+    $sales = [];
+    $cekSales = $konek->query(" SELECT Employee_ID, name, departemen, divisi, tgl_mulai, checked
     FROM employee_card
-    WHERE divisi = 'sales' AND inactive = 0
-");
-
-$sales = [];
-while ($row = $cekSales->fetch_assoc()) {
-    $row['checked'] = ($row['checked'] == 1) ? '1' : '0'; 
-    $sales[] = $row;
+    WHERE divisi = 'sales' AND inactive = 0");
+    if($cekSales){
+        while ($row = $cekSales->fetch_assoc()) {
+        $row['checked'] = ($row['checked'] == 1) ? '1' : '0'; 
+        $sales[] = $row;
+        }
+    } else {
+        error_log("Error Data Sales: " . $konek->error);
+    }
+    return $sales;
 }
 
-//ambil data rombongan dari database
-$cekAllRom = $konek->query("
-    SELECT * FROM client
-");
-$allRom = [];
-while ($row = $cekAllRom->fetch_assoc()){
-    $allRom[] = $row;
+function getAllRombongan($konek) {
+    $allRom = [];
+    $cekAllRom = $konek->query("SELECT * FROM client");
+    if ($cekAllRom) { // untuk memeriksa queri berhasil atau tidak
+        while ($row = $cekAllRom->fetch_assoc()){
+            $allRom[] = $row;
+        }
+    } else {
+        error_log("Error fetching all rombongan: " . $konek->error);
+    }
+    return $allRom;
+}
+
+function getAllFasilitas($konek){
+    $fasilitas = [];
+    $cekFs = $konek->query("SELECT * FROM markom_service");
+    if($cekFs){
+        while ($row = $cekFs->fetch_assoc()){
+            $fasilitas[] = $row;
+        }
+    } else {
+        error_log("error data fasilitas: " . $konek->error);
+    }
+    return $fasilitas;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'update_sales') {
@@ -88,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['ak
     exit;
 }
 
+//bagian Rombongan
 //create coe
 function generateKodeClient($konek) {
     $result = $konek->query("SELECT MAX(urut_client) AS max_id FROM client");
@@ -104,7 +125,6 @@ function generateKodeClient($konek) {
 
 $code = generateKodeClient($konek);
 
-// if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'tambah_dataRombongan'){
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
     if($_POST['aksi'] === 'tambah_dataRombongan'){
@@ -113,15 +133,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pic = sanitize_text($_POST['pic']);
         $noTlp = sanitize_text($_POST['noTlp']);
         $tgl_kunjungan = sanitize_text($_POST['tgl_kunjungan']);
+        $jumlah = sanitize_text($_POST['jumlah']);
         $gate = sanitize_text($_POST['gate']);
         $alamat = sanitize_text($_POST['alamat']);
         $marketing_id = '02-001';
         $marketing_name = 'eka';
         $remark = 'perusahaan';
 
-        $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tgl_kunjungan, gate, marketing_id, marketing_name, remarks)
-                                VALUES(?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssssssssss", $kode, $instansi, $alamat, $pic, $noTlp, $tgl_kunjungan, $gate, $marketing_id, $marketing_name, $remark);
+        $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tgl_kunjungan, jumlah, gate, marketing_id, marketing_name, remarks)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("ssssssissss", $kode, $instansi, $alamat, $pic, $noTlp, $tgl_kunjungan, $jumlah, $gate, $marketing_id, $marketing_name, $remark);
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success']);
         } else {
@@ -137,11 +158,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pic = sanitize_text($_POST['pic']);
         $noTlp = sanitize_text($_POST['noTlp']);
         $tglKunjungan = sanitize_text($_POST['tgl_kunjungan']);
+        $jumlah = sanitize_text($_POST['jumlah']);
         $gate = sanitize_text($_POST['gate']);
         $alamat = sanitize_text($_POST['alamat']);
 
         //ambil data
-        $stmt_cek = $konek->prepare("SELECT client_name, address, pic, phone, tgl_kunjungan, gate FROM client WHERE client_id = ?");
+        $stmt_cek = $konek->prepare("SELECT client_name, address, pic, phone, tgl_kunjungan, jumlah, gate FROM client WHERE client_id = ?");
         $stmt_cek->bind_param("s",$kode);
         $stmt_cek->execute();
         $result_cek = $stmt_cek->get_result();
@@ -160,6 +182,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             $cek['pic'] === $pic &&
             $cek['phone'] === $noTlp &&
             $cek['tgl_kunjungan'] === $tglKunjungan &&
+            $cek['jumlah'] === $jumlah &&
             $cek['gate'] === $gate
         ){
             echo json_encode(['status' => 'nochange']);
@@ -167,8 +190,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         //update dta
         $stmt_update = $konek->prepare("UPDATE client SET client_name = ?,
-                        address = ?, pic = ?, phone = ?, tgl_kunjungan = ?, gate = ? WHERE client_id = ?");
-        $stmt_update->bind_param("sssssss", $instansi, $alamat, $pic, $noTlp, $tglKunjungan, $gate, $kode);
+                        address = ?, pic = ?, phone = ?, tgl_kunjungan = ?, jumlah = ?, gate = ? WHERE client_id = ?");
+        $stmt_update->bind_param("sssssiss", $instansi, $alamat, $pic, $noTlp, $tglKunjungan, $jumlah, $gate, $kode);
         if($stmt_update->execute()){
             echo json_encode(['status' => 'success']);
             exit;
@@ -181,5 +204,31 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
     }
 
 }
+//akhir bagian rombongan
+
+//bagian fasilitas
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
+
+    if($_POST['aksi'] === 'tambah_fasilitas'){
+        $nama = sanitize_text($_POST['fasilitas']);
+        $jumlah = sanitize_text($_POST['jumlah']);
+
+        $stmt = $konek->prepare("INSERT INTO markom_service(group_detail, stok)
+                VALUES(?,?)");
+        $stmt->bind_param("si",$nama, $jumlah);
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            error_log("Tambah Rombongan Error: " . $stmt->error); // Log error untuk debugging
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt->close();
+        exit;
+    }
+    if($_POST['aksi'] === 'update_fasilitas'){
+        $nama = sanitize_text($_POST['kode']);
+    }
+}
+
 
 ?>

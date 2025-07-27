@@ -1,5 +1,8 @@
 <?php
+
 require '../../assets/fungsi.php';
+$sales = getAllSales($konek);
+
 ?>
 
 <!DOCTYPE html>

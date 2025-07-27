@@ -1,6 +1,7 @@
 <?php
 
 require '../../assets/fungsi.php';
+$allRom = getAllRombongan($konek);
 
 ?>
 
@@ -56,7 +57,7 @@ require '../../assets/fungsi.php';
                                             <th>KODE</th>
                                             <th>SALES</th>
                                             <th>TANGGAL KUNJUNGAN</th>
-                                            <th>GATE IN</th>
+                                            <th>JUMLAH_PAX</th>
                                             <th>AKSI</th>
                                         </tr>
                                     </thead>
@@ -113,6 +114,13 @@ require '../../assets/fungsi.php';
                                     <label for="kunjungan" class="col-sm-4 col-form-label">Rencana Kunjugan</label>
                                     <div class="col-sm-8">
                                         <input type="date" class="form-control" id="tgl_kunjungan" name="tgl_kunjungan">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -183,6 +191,12 @@ require '../../assets/fungsi.php';
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
+                                    <label for="up_jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_jumlah" name="jumlah">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
                                     <label for="up_gate" class="col-sm-4 col-form-label">Gate IN</label>
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" id="up_gate" name="gate">
@@ -205,7 +219,7 @@ require '../../assets/fungsi.php';
                 </div>
             </div>
         </div>
-        //akhir modal tambah data rombongan
+        //akhir modal Update data rombongan
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -223,7 +237,7 @@ require '../../assets/fungsi.php';
                 <td>${item.client_id}</td>
                 <td>${item.marketing_name}</td>
                 <td>${item.tgl_kunjungan}</td>
-                <td>${item.gate}</td>
+                <td>${item.jumlah}</td>
                 <td>
                     <button class="btn btn-warning btnUpdateRombongan" data-bs-toggle="modal" data-bs-target="#updateDataRombogan"
                         data-id="${item.client_id}"
@@ -231,6 +245,7 @@ require '../../assets/fungsi.php';
                         data-pic="${item.pic}"
                         data-noTlp="${item.phone}"
                         data-tglKunjungan="${item.tgl_kunjungan}"
+                        data-jumlah="${item.jumlah}"
                         data-gate="${item.gate}"
                         data-alamat="${item.address}"
                         ><i class="fa-solid fa-file-pen"></i> Edit
@@ -246,46 +261,31 @@ require '../../assets/fungsi.php';
         <script>
             $('#tambahClient').on('submit', function(e) {
                 e.preventDefault();
-            const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
+                const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
 
-            $.ajax({
-                url : '../../assets/fungsi.php',
-                method : 'POST',
-                data : formData,
-                success: function(res){
-                    let response = {};
-                    try {
-                        response = JSON.parse(res);
-                    } catch (e) {
-                        console.error("Respon bukan JSON:", res);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Format Respon Salah',
-                            text: 'Server tidak mengembalikan data JSON.'
-                        });
-                        return;
-                    }
-                    if (response.status === "success") {
-                    Swal.fire({
-                    icon: 'success',
-                    title: 'Validasi Berhasil',
-                    text: 'Data rombongan berhasil ditambahkan.',
-                    // timer: 2000,
-                    showConfirmButton: true, // Tampilkan tombol konfirmasi
-                    confirmButtonText: 'Oke', // Teks tombol konfirmasi
-                    allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
-                    allowEscapeKey: false // Tidak bisa menutup dengan tombol Escape
-                    }).then((result) => {
-                        // Jika tombol "Oke" diklik
-                        if (result.isConfirmed) {
-                            location.reload(); // Refresh halaman
+                $.ajax({
+                    url : '../../assets/fungsi.php',
+                    method : 'POST',
+                    data : formData,
+                    success: function(res){
+                        let response = {};
+                        try {
+                            response = JSON.parse(res);
+                        } catch (e) {
+                            console.error("Respon bukan JSON:", res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format Respon Salah',
+                                text: 'Server tidak mengembalikan data JSON.'
+                            });
+                            return;
                         }
-                    });
-                    }else {
+                        if (response.status === "success") {
                         Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Gagal menambahkan data rombongan!!!',
+                        icon: 'success',
+                        title: 'Validasi Berhasil',
+                        text: 'Data rombongan berhasil ditambahkan.',
+                        // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
                         confirmButtonText: 'Oke', // Teks tombol konfirmasi
                         allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
@@ -295,18 +295,33 @@ require '../../assets/fungsi.php';
                             if (result.isConfirmed) {
                                 location.reload(); // Refresh halaman
                             }
-                            });
-                    }    
-                },
-                error: function(xhr, status, error) {
-                    console.log("AJAX Error:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error AJAX',
-                        text: error
-                    });
-                }
-            });
+                        });
+                        }else {
+                            Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Gagal menambahkan data rombongan!!!',
+                            showConfirmButton: true, // Tampilkan tombol konfirmasi
+                            confirmButtonText: 'Oke', // Teks tombol konfirmasi
+                            allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
+                            allowEscapeKey: false // Tidak bisa menutup dengan tombol Escape
+                            }).then((result) => {
+                                // Jika tombol "Oke" diklik
+                                if (result.isConfirmed) {
+                                    location.reload(); // Refresh halaman
+                                }
+                                });
+                        }    
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error AJAX',
+                            text: error
+                        });
+                    }
+                });
 
             });
         </script>
