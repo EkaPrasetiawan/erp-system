@@ -49,6 +49,7 @@ $fasilitas = getAllFasilitas($konek);
                                     <thead>
                                         <tr>
                                             <th>NO</th>
+                                            <th>Kategori</th>
                                             <th>Fasilitas</th>
                                             <th>Jumlah</th>
                                             <th>Aksi</th>
@@ -78,6 +79,17 @@ $fasilitas = getAllFasilitas($konek);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
+                                <div class="mb-3 row">
+                                    <label for="kategori" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="kategori" name="kategori" required>
+                                            <option value="">---pilih kategori---</option>
+                                            <option value="Event">Event</option>
+                                            <option value="Operasional">Operasional</option>
+                                            <option value="Food and Beverages">Food and Beverages</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="fasilitas" class="col-sm-4 col-form-label">Nama Fasilitas</label>
                                     <div class="col-sm-8">
@@ -111,14 +123,26 @@ $fasilitas = getAllFasilitas($konek);
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="udateFs" method="POST" autocomplete="off">
+                <form id="updateFs" method="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
                                 <div class="mb-3 row">
+                                    <input type="hidden" id="up_id" name="up_id" class="col-form-label">
+                                    <label for="up_kategori" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_kategori" name="kategori" required>
+                                            <option value="">---pilih kategori---</option>
+                                            <option value="Event">Event</option>
+                                            <option value="Operasional">Operasional</option>
+                                            <option value="Food and Beverages">Food and Beverages</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
                                     <label for="up_fasilitas" class="col-sm-4 col-form-label">Nama Fasilitas</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_fasilitas" name="up_fasilitas" required>
+                                        <input type="text" class="form-control" id="up_fasilitas" name="fasilitas" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -154,10 +178,13 @@ $fasilitas = getAllFasilitas($konek);
                 const row = document.createElement("tr");
                 row.innerHTML =`
                 <td>${index + 1}</td>
+                <td>${item.group_head}</td>
                 <td>${item.group_detail}</td>
                 <td>${item.stok}</td>
                 <td>
                     <button class="btn btn-warning btnUpdateFs" data-bs-toggle="modal" data-bs-target="#updateFasilitas"
+                    data-id="${item.id_markom}"
+                    data-kategori="${item.group_head}"
                     data-nama="${item.group_detail}"
                     data-qty="${item.stok}"
                     >
@@ -238,9 +265,13 @@ $fasilitas = getAllFasilitas($konek);
             document.addEventListener('click', function(e){
                 if(e.target.classList.contains('btnUpdateFs') || e.target.closest('.btnUpdateFs')){
                     const button = e.target.closest('.btnUpdateFs');
+                    const id_markom = button.getAttribute('data-id');
+                    const kategori = button.getAttribute('data-kategori');
                     const nama = button.getAttribute('data-nama');
                     const qty = button.getAttribute('data-qty');
 
+                    document.getElementById('up_id').value = id_markom;
+                    document.getElementById('up_kategori').value = kategori;
                     document.getElementById('up_fasilitas').value = nama;
                     document.getElementById('qty').value = qty;
                 }
@@ -257,6 +288,7 @@ $fasilitas = getAllFasilitas($konek);
                     method: 'POST',
                     data: formData,
                     success: function(res){
+                        console.log("data diterima;", res);
                         let response =[];
                         try {
                         response = JSON.parse(res);

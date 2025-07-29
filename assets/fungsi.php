@@ -210,12 +210,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
     if($_POST['aksi'] === 'tambah_fasilitas'){
+        $kategori = sanitize_text($_POST['kategori']);
         $nama = sanitize_text($_POST['fasilitas']);
         $jumlah = sanitize_text($_POST['jumlah']);
 
-        $stmt = $konek->prepare("INSERT INTO markom_service(group_detail, stok)
-                VALUES(?,?)");
-        $stmt->bind_param("si",$nama, $jumlah);
+        $stmt = $konek->prepare("INSERT INTO markom_service(group_head, group_detail, stok)
+                VALUES(?,?,?)");
+        $stmt->bind_param("ssi", $kategori, $nama, $jumlah);
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success']);
         } else {
@@ -226,8 +227,46 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         exit;
     }
     if($_POST['aksi'] === 'update_fasilitas'){
-        $nama = sanitize_text($_POST['kode']);
+        $id_markom = sanitize_text($_POST['up_id']);
+        $kategori = sanitize_text($_POST['kategori']);
+        $nama = sanitize_text($_POST['fasilitas']);
+        $jumlah = sanitize_text(($_POST['qty']));
+
+        $stmt_cek = $konek->prepare("SELECT group_head, group_detail, stok FROM markom_service WHERE id_markom = ?");
+        $stmt_cek->bind_param("i", $id_markom);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        //cek perubahan
+        if(
+            $cek['group_head'] === $kategori &&
+            $cek['group_detail'] === $nama &&
+            $cek['stok'] === $jumlah
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+
+        $stmt_update = $konek->prepare("UPDATE markom_service SET group_head = ?, group_detail = ?, stok = ? WHERE id_markom = ?");
+        $stmt_update->bind_param("sssi", $kategori, $nama, $jumlah, $id_markom);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("update dta error: " . $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt_update->close();
+        exit;
     }
+
 }
 
 
