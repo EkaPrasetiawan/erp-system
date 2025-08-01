@@ -52,6 +52,44 @@ function getAllFasilitas($konek){
     return $fasilitas;
 }
 
+function getvendor($konek){
+    $vendor = [];
+    $cekFs = $konek->query("SELECT * FROM vendor_service");
+    if($cekFs){
+        while ($row = $cekFs->fetch_assoc()){
+            $vendor[] = $row;
+        }
+    } else {
+        error_log("error data fasilitas: " . $konek->error);
+    }
+    return $vendor;
+}
+
+function getKodeVen(mysqli $konek): string {
+    $prefix = "VEN";
+    $lastId = 0;
+    $bulan  = date("m");
+
+    $stmt = $konek->prepare("SELECT MAX(id_ven) AS max_id FROM vendor_service");
+    if ($stmt) {
+        if ($stmt->execute()) {
+            $stmt->bind_result($maxid);
+            if ($stmt->fetch()) {
+                $lastId = (int)$maxid;
+            }
+        } else {
+            error_log("Eksekusi query gagal: " . $stmt->error);
+        }
+        $stmt->close();
+    } else {
+        error_log("Prepare query gagal: " . $konek->error);
+    }
+
+    $nextId = str_pad($lastId + 1, 3, "0", STR_PAD_LEFT);
+    return $prefix . $bulan . $nextId;
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'update_sales') {
     // Gunakan prepared statements untuk mencegah SQL Injection
     $id         = trim($_POST['Employee_ID']);
@@ -267,6 +305,33 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         exit;
     }
 
+}
+
+//fasilitas vendor
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
+
+    //tambah data
+    if($_POST['aksi'] === 'tambah_fasilitasVendor'){
+        $kdVendor = sanitize_text($_POST['kdVendor']);
+        $fasilitas = sanitize_text($_POST['fasilitas']);
+        $nama = sanitize_text($_POST['namaVen']);
+        $pic = sanitize_text($_POST['pic']);
+        $telephone = sanitize_text($_POST['noTlp']);
+
+        $stmt = $konek->prepare("INSERT INTO vendor_service(kode_vendor, nama_vendor, pic, noTlp, service)
+                                VALUES(?,?,?,?,?)");
+        $stmt->bind_param("sssss", $kdVendor, $nama, $pic, $telephone, $fasilitas);
+        if($stmt->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("Tambah Data error :" . $stmt->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt->close();
+        exit;
+    }
 }
 
 
