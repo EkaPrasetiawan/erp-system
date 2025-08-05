@@ -134,14 +134,14 @@ $kodeVen = getKodeVen($konek);
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas Vendor</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="updateFs" method="POST" autocomplete="off">
+                <form id="updateFsv" method="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
                                 <div class="mb-3 row">
-                                    <label for="kdVendor" class="col-sm-4 col-form-label">Kode Vendor</label>
+                                    <label for="up_kdVendor" class="col-sm-4 col-form-label">Kode Vendor</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="kdVendor" name="kdVendor" value="<?= $kodeVen; ?>" readonly>
+                                        <input type="text" class="form-control" id="up_kdVendor" name="up_kdVendor" value="<?= $kodeVen; ?>" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -201,11 +201,12 @@ $kodeVen = getKodeVen($konek);
                 <td>${item.noTlp}</td>
                 <td>${item.service}</td>                
                 <td>
-                    <button class="btn btn-warning btnUpdateFs" data-bs-toggle="modal" data-bs-target="#updateFasilitasVen"
-                        data-id="${item.id_markom}"
-                        data-kategori="${item.group_head}"
-                        data-nama="${item.group_detail}"
-                        data-qty="${item.stok}"
+                    <button class="btn btn-warning btnUpdateFsv" data-bs-toggle="modal" data-bs-target="#updateFasilitasVen"
+                        data-kd="${item.kode_vendor}"
+                        data-nama="${item.nama_vendor}"
+                        data-pic="${item.pic}"
+                        data-noTlp="${item.noTlp}"
+                        data-fasilits="${item.service}"
                         >
                         <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -242,7 +243,7 @@ $kodeVen = getKodeVen($konek);
                         if (response.status === "success") {
                         Swal.fire({
                         icon: 'success',
-                        title: 'Validasi Berhasil',
+                        title: 'Berhasil',
                         text: 'Data Fasilitas berhasil ditambahkan.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
@@ -273,6 +274,89 @@ $kodeVen = getKodeVen($konek);
                         }
                     },
 
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateFsv') || e.target.closest('.btnUpdateFsv')){
+                    const button = e.target.closest('.btnUpdateFsv');
+                    const kode = button.getAttribute('data-kd');
+                    const namaVen = button.getAttribute('data-nama');
+                    const pic = button.getAttribute('data-pic');
+                    const noTlp = button.getAttribute('data-noTlp');
+                    const fasilitas = button.getAttribute('data-fasilits');
+
+                    document.getElementById('up_kdVendor') . value = kode;
+                    document.getElementById('up_fasilitas') . value = fasilitas;
+                    document.getElementById('up_namaVen') . value = namaVen;
+                    document.getElementById('up_pic') . value = pic;
+                    document.getElementById('up_noTlp') . value = noTlp;
+                };
+            });
+        </script>
+        <script>
+            $('#updateFsv').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=update_fasilitasVen';
+                console.log("data dkirim", formData);
+
+                $.ajax({
+                    url : '../../assets/fungsi.php',
+                    method : 'POST',
+                    data : formData,
+                    success: function(res){
+                        console.log("repon balik : ", res);
+                        let response = [];
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e) {
+                            console.error("Respon Bukan Json: ", res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format Respon Salah',
+                                text: ' Server tidak mendukung'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Update Berhasil',
+                                text: 'Data Berhasil Diperbaharui',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Oke',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if(result.isConfirmed){
+                                    location.reload();
+                                }
+                            });
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Data Gagal Di Perbaharui',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Oke',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if(result.isConfirmed){
+                                    location.reload();
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        console.log("Ajax Error: ", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Ajax',
+                            text: error
+                        });
+                    }
                 });
             });
         </script>

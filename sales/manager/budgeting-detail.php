@@ -35,17 +35,38 @@ $allRom = getAllRombongan($konek);
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Budgeting</h1>
-                        <!-- <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">Home</li>
-                        </ol> -->
-                        <div class="card mb-4 mt-4">
-                            <!-- <div class="card-header">
-                                <i class="fas fa-table me-1"></i>
-                                DataTable Example
-                            </div> -->
+                        <!-- <h1 class="mt-4">Budgeting</h1> -->
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">
+                                <i class="fa-solid fa-arrow-left"></i> Budgeting</li>
+                        </ol>
+                        <div class="card mb-4">
                             <div class="card-body">
-                                <table id="datatablesSimple">
+                                <div class="mb-3 row">
+                                    <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="" class="col-sm-1 col-form-label">HTM</label>
+                                    <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                Fasilitas Water kingdom
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary mb-2" type="submit">Button</button>
+                                <table class="table" >
                                     <thead>
                                         <tr>
                                             <th>No</th>
@@ -57,7 +78,7 @@ $allRom = getAllRombongan($konek);
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="dtBudget">
+                                    <tbody>
                                     </tbody>
                                 </table>
                             </div>
@@ -89,8 +110,7 @@ $allRom = getAllRombongan($konek);
                 <td>${item.tgl_kunjungan}</td>
                 <td>${item.marketing_name}</td>
                 <td>
-                    <a class="btn btn-primary" href="budgeting-detail.php" role="button">
-                    <i class="fa-solid fa-newspaper"></i> Detail</a>
+                    <button class="btn btn-info">Edit</button>
                 </td>
                 `;
                 tbody.appendChild(row);

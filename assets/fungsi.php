@@ -332,6 +332,47 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt->close();
         exit;
     }
+    if($_POST['aksi'] === 'update_fasilitasVen'){
+        $kode = sanitize_text($_POST['up_kdVendor']);
+        $fasilitas = sanitize_text(($_POST['up_fasilitas']));
+        $namaVen = sanitize_text($_POST['up_namaVen']);
+        $pic = sanitize_text($_POST['up_pic']);
+        $noTlp = sanitize_text($_POST['up_noTlp']);
+
+        $stmt_cek = $konek->prepare("SELECT nama_vendor, pic, noTlp, service FROM vendor_service WHERE kode_vendor = ?");
+        $stmt_cek->bind_param("s", $kode);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        if(
+            $cek['nama_vendor'] === $namaVen &&
+            $cek['pic'] === $pic &&
+            $cek['noTlp'] === $noTlp &&
+            $cek['service'] === $fasilitas
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+
+        $stmt_update = $konek->prepare("UPDATE vendor_service SET nama_vendor = ?, pic =?, noTlp = ?, service = ? WHERE kode_vendor = ?");
+        $stmt_update->bind_param("sssss", $namaVen, $pic, $noTlp, $fasilitas, $kode);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("Update Data Error: " . $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt_update->close();
+        exit;
+    }
 }
 
 

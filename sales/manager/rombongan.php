@@ -53,8 +53,8 @@ $allRom = getAllRombongan($konek);
                                     <thead>
                                         <tr>
                                             <th>NO</th>
-                                            <th>INSTANSI</th>
                                             <th>KODE</th>
+                                            <th>INSTANSI</th>
                                             <th>SALES</th>
                                             <th>TANGGAL KUNJUNGAN</th>
                                             <th>JUMLAH_PAX</th>
@@ -233,8 +233,8 @@ $allRom = getAllRombongan($konek);
                 const row = document.createElement("tr");
                 row.innerHTML =`
                 <td>${index+1}</td>
-                <td>${item.client_name}</td>
                 <td>${item.client_id}</td>
+                <td>${item.client_name}</td>
                 <td>${item.marketing_name}</td>
                 <td>${item.tgl_kunjungan}</td>
                 <td>${item.jumlah}</td>
