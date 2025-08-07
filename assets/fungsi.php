@@ -65,6 +65,19 @@ function getvendor($konek){
     return $vendor;
 }
 
+function getFasilitasWK($konek){
+    $dataFs = [];
+    $result =$konek->query("SELECT group_detail FROM markom_service WHERE group_head != 'Food and Beverages'");
+    if($result){
+        while($row = $result->fetch_assoc()){
+            $dataFs[] = $row;
+        }
+    } else {
+        error_log("error data tidak ditemukan: " . $konek->error);
+    }
+    return $dataFs;
+}
+
 function getKodeVen(mysqli $konek): string {
     $prefix = "VEN";
     $lastId = 0;

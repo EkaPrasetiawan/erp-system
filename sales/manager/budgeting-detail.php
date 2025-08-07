@@ -2,6 +2,12 @@
 
 require '../../assets/fungsi.php';
 $allRom = getAllRombongan($konek);
+$dataFs = getFasilitasWK($konek);
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $client_id = $_POST['client_id'] ??'';
+    $client_name = $_POST['client_name'] ??'';
+}
 
 
 ?>
@@ -14,7 +20,7 @@ $allRom = getAllRombongan($konek);
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Home</title>
+        <title>Budgeting-detail</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
@@ -44,12 +50,12 @@ $allRom = getAllRombongan($konek);
                             <div class="card-body">
                                 <div class="mb-3 row">
                                     <div class="col-sm-4">
-                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    <input type="text" class="form-control" value="<?= $client_id ?>" id="" name="" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
                                     <div class="col-sm-4">
-                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    <input type="text" class="form-control" value="<?= $client_name ?>" id="" name="" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -65,16 +71,59 @@ $allRom = getAllRombongan($konek);
                                 Fasilitas Water kingdom
                             </div>
                             <div class="card-body">
-                                <button class="btn btn-primary mb-2" type="submit">Button</button>
-                                <table class="table" >
+                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFasilitas">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                                <table class="table">
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Rombongan</th>
-                                            <th>Kode Registrasi</th>
-                                            <th>Sales</th>
-                                            <th>Tnggal Kunjungan</th>
-                                            <th>Satatus</th>
+                                            <th>Nama Fasilitas</th>
+                                            <th>Harga</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                Fasilitas Vendor
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary mb-2" type="submit">Button</button>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Fasilitas</th>
+                                            <th>Harga Jual</th>
+                                            <th>Harga Vendor</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                Food and beverages
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFasilitas">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Fasilitas</th>
+                                            <th>Harga Jual</th>
+                                            <th>Harga Vendor</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -90,32 +139,169 @@ $allRom = getAllRombongan($konek);
                 </footer>
             </div>
         </div>
+        //modal Tambah fasilitas wk
+        <div class="modal fade" id="tambahFasilitas" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="fasilitasWK" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3 row">
+                                    <label for="fasilitas" class="col-sm-4 col-form-label">Fasilits</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="fasilitas" name="fasilitas" required>
+                                            <option value="">---pilih kategori---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="hargaWk" class="col-sm-4 col-form-label">Harga</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="hargaWk" name="hargaWk" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        //akhir modal tambah fasilitas wk
+        //modal Update fasilitas wk
+        <div class="modal fade" id="tambahDataRombogan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="tambahClient" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3 row">
+                                    <label for="Kode" class="col-sm-4 col-form-label">Kode</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="kode" name="kode" value="<?= $code; ?>" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="instansi" class="col-sm-4 col-form-label">Nama Instansi</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="instansi" name="instansi" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="pic" class="col-sm-4 col-form-label">Nama PIC</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="pic" name="pic" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="noTlp" class="col-sm-4 col-form-label">Nomor Telephone</label>
+                                    <div class="col-sm-8">
+                                        <input type="tel" class="form-control" id="noTlp" name="noTlp"
+                                        pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="kunjungan" class="col-sm-4 col-form-label">Rencana Kunjugan</label>
+                                    <div class="col-sm-8">
+                                        <input type="date" class="form-control" id="tgl_kunjungan" name="tgl_kunjungan">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="gate" class="col-sm-4 col-form-label">Gate IN</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="gate" name="gate">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="alamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" name="alamat" id="alamat" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        //akhir modal Update fasilitas wk
+
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="../../js/scripts.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
-        <script src="../../js/datatables-simple-demo.js"></script>
 
         <script>
-            const viewBudget = <?= json_encode($allRom); ?>;
-            const tbody = document.getElementById('dtBudget');
+            const viewFs = <?= json_encode($dataFs); ?>;
+            const modalEl = document.getElementById('tambahFasilitas');
+            modalEl.addEventListener('show.bs.modal', function(){
+                const selectFs = document.getElementById("fasilitas");
 
-            viewBudget.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML =`
-                <td>${index + 1 }</td>
-                <td>${item.client_name}</td>
-                <td>${item.client_id}</td>
-                <td>${item.marketing_name}</td>
-                <td>${item.tgl_kunjungan}</td>
-                <td>${item.marketing_name}</td>
-                <td>
-                    <button class="btn btn-info">Edit</button>
-                </td>
-                `;
-                tbody.appendChild(row);
-            });
+                selectFs.innerHTML = '<option value="">---pilih fasilitas---</option>';
 
+                viewFs.forEach((item) => {
+                    if(item.group_detail){
+                        const option = document.createElement("option");
+                        option.value = item.group_detail;
+                        option.textContent = item.group_detail;
+                        selectFs.appendChild(option);
+                    }
+                });
+            });   
+        </script>
+        <script>
+            $('#fasilitasWK').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'aksi=tambah_fasilitasWK';
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e){
+                            console.error("Error bukan JSON: ",res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Forma Respon Salah',
+                                text: 'terjai kesalahan'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }
+                    },
+                })
+            })
         </script>
     </body>
 </html>

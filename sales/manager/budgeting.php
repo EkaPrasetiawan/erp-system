@@ -1,7 +1,7 @@
 <?php
 
 require '../../assets/fungsi.php';
-$allRom = getAllRombongan($konek);
+$allRom = getAllRombongan($konek) ?? [];
 
 
 ?>
@@ -19,7 +19,7 @@ $allRom = getAllRombongan($konek);
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="sb-nav-fixed">
@@ -89,13 +89,49 @@ $allRom = getAllRombongan($konek);
                 <td>${item.tgl_kunjungan}</td>
                 <td>${item.marketing_name}</td>
                 <td>
-                    <a class="btn btn-primary" href="budgeting-detail.php" role="button">
+                    <a class="btn btn-primary btnDetail"
+                    data-client-id=${item.client_id}"
+                    data-client-name="${item.client_name}">
                     <i class="fa-solid fa-newspaper"></i> Detail</a>
                 </td>
                 `;
                 tbody.appendChild(row);
             });
 
+        </script>
+        <script>
+            //even delegation
+            document.body.addEventListener('click', function(e) {
+                // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
+                const clickedElement = e.target.closest('.btnDetail');
+
+                if (clickedElement) {
+                    e.preventDefault();
+
+                    const clientId = clickedElement.dataset.clientId;
+                    const clientName = clickedElement.dataset.clientName;
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = 'budgeting-detail.php';
+
+                    const inputId = document.createElement('input');
+                    inputId.type = 'hidden';
+                    inputId.name = 'client_id';
+                    inputId.value = clientId;
+
+                    const inputName = document.createElement('input');
+                    inputName.type = 'hidden';
+                    inputName.name = 'client_name';
+                    inputName.value = clientName;
+
+                    form.appendChild(inputId);
+                    form.appendChild(inputName);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         </script>
     </body>
 </html>
