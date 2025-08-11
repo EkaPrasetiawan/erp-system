@@ -1,5 +1,6 @@
 <?php
 require 'koneksi.php';
+date_default_timezone_set("Asia/Jakarta");
 
 function sanitize_text($input, $strict = false) {
     $input = trim($input);
@@ -67,7 +68,7 @@ function getvendor($konek){
 
 function getFasilitasWK($konek){
     $dataFs = [];
-    $result =$konek->query("SELECT group_detail FROM markom_service WHERE group_head != 'Food and Beverages'");
+    $result =$konek->query("SELECT group_head, group_detail FROM markom_service WHERE group_head != 'Food and Beverages'");
     if($result){
         while($row = $result->fetch_assoc()){
             $dataFs[] = $row;
@@ -76,6 +77,20 @@ function getFasilitasWK($konek){
         error_log("error data tidak ditemukan: " . $konek->error);
     }
     return $dataFs;
+}
+
+function getKategoriFst($konek) {
+    $kategori = [];
+    // Menggunakan DISTINCT untuk memastikan hanya mengambil nilai unik
+    $result = $konek->query("SELECT DISTINCT group_head FROM markom_service WHERE group_head != 'Food and Beverages'");
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $kategori[] = $row['group_head'];
+        }
+    } else {
+        error_log("Error fetching facility categories: " . $konek->error);
+    }
+    return $kategori;
 }
 
 function getKodeVen(mysqli $konek): string {
@@ -384,6 +399,65 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             exit;
         }
         $stmt_update->close();
+        exit;
+    }
+}
+
+//input data fasilitas ke rombongan
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
+
+    //query khusus
+    if($_POST['aksi'] === 'getView_fasilitas'){
+
+        // $fasil = sanitize_text($_POST['fasilitas_id']);
+        $fasil = $_POST['fasilitas_id'] ??'';
+
+        if(!empty($fasil)){
+            $stmt = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
+            FROM rombongan_detail WHERE fasilitas_id = ?");
+
+            // $stmt = $konek->prepare("SELECT * FROM rombongan_detail WHERE fasilitas_id = ?");
+
+            $stmt->bind_param("s", $fasil);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $viewData_detail = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $viewData_detail[] = $row;
+                }
+            }
+            $stmt->close();
+            header('Content-Type: application/json');
+            echo json_encode($viewData_detail);
+            exit;
+        }
+    }
+
+    //tambah data fsilitas ke rombongan
+    if($_POST['aksi'] === 'tambah_fasilitasWK'){
+        $idClient = sanitize_text($_POST['cId']);
+        $nameClient = sanitize_text($_POST['cName']);
+        $headFs = sanitize_text($_POST['kategori']);
+        $fasilitas = sanitize_text($_POST['fasilitas']);
+        $qty = sanitize_text($_POST['qty']);
+        $harga = sanitize_text($_POST['hargaWk']);
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name)
+                                VALUES(?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("sssiisss", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient);
+        if($stmt->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("gagal: " . $stmt->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt->close();
         exit;
     }
 }

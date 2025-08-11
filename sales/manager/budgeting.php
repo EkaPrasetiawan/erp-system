@@ -90,7 +90,7 @@ $allRom = getAllRombongan($konek) ?? [];
                 <td>${item.marketing_name}</td>
                 <td>
                     <a class="btn btn-primary btnDetail"
-                    data-client-id=${item.client_id}"
+                    data-client-id="${item.client_id}"
                     data-client-name="${item.client_name}">
                     <i class="fa-solid fa-newspaper"></i> Detail</a>
                 </td>

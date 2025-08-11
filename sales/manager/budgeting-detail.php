@@ -1,8 +1,8 @@
 <?php
 
 require '../../assets/fungsi.php';
-$allRom = getAllRombongan($konek);
 $dataFs = getFasilitasWK($konek);
+$headFs = getKategoriFst($konek);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_id = $_POST['client_id'] ??'';
@@ -25,7 +25,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="sb-nav-fixed">
@@ -83,7 +83,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="fasilitas-wk">
                                     </tbody>
                                 </table>
                             </div>
@@ -104,7 +104,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="fasilitas-vendor">
                                     </tbody>
                                 </table>
                             </div>
@@ -127,7 +127,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="fasilitas-fnb">
                                     </tbody>
                                 </table>
                             </div>
@@ -151,18 +151,36 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
+                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
-                                    <label for="fasilitas" class="col-sm-4 col-form-label">Fasilits</label>
+                                    <label for="kategori" class="col-sm-4 col-form-label">Kategori</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="fasilitas" name="fasilitas" required>
+                                        <select class="form-select" id="kategori" name="kategori" required>
                                             <option value="">---pilih kategori---</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
+                                    <label for="fasilitas" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="fasilitas" name="fasilitas" required>
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="qty" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="qty" name="qty"
+                                        inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
                                     <label for="hargaWk" class="col-sm-4 col-form-label">Harga</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="hargaWk" name="hargaWk" required>
+                                        <input type="text" class="form-control" id="hargaWk" name="hargaWk"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
                             </div>
@@ -178,65 +196,46 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         </div>
         //akhir modal tambah fasilitas wk
         //modal Update fasilitas wk
-        <div class="modal fade" id="tambahDataRombogan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="upateFasilitasWk" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="tambahClient" method="POST" autocomplete="off">
+                <form id="up_fasilitasWK" method="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
+                                <input type="hidden" class="form-control" value="" id="up_kode" name="up_kode">
                                 <div class="mb-3 row">
-                                    <label for="Kode" class="col-sm-4 col-form-label">Kode</label>
+                                    <label for="up_kategori" class="col-sm-4 col-form-label">Kategori</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="kode" name="kode" value="<?= $code; ?>" readonly>
+                                        <select class="form-select" id="up_kategori" name="up_kategori" required>
+                                            <option value="">---pilih kategori---</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="instansi" class="col-sm-4 col-form-label">Nama Instansi</label>
+                                    <label for="up_fsl" class="col-sm-4 col-form-label">Fasilitas</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="instansi" name="instansi" required>
+                                        <select class="form-select" id="up_fsl" name="up_fsl" required>
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="pic" class="col-sm-4 col-form-label">Nama PIC</label>
+                                    <label for="up_qty" class="col-sm-4 col-form-label">Jumlah</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="pic" name="pic" required>
+                                        <input type="text" class="form-control" id="up_qty" name="up_qty"
+                                        inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="noTlp" class="col-sm-4 col-form-label">Nomor Telephone</label>
+                                    <label for="up_hargaWk" class="col-sm-4 col-form-label">Harga</label>
                                     <div class="col-sm-8">
-                                        <input type="tel" class="form-control" id="noTlp" name="noTlp"
-                                        pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="kunjungan" class="col-sm-4 col-form-label">Rencana Kunjugan</label>
-                                    <div class="col-sm-8">
-                                        <input type="date" class="form-control" id="tgl_kunjungan" name="tgl_kunjungan">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="gate" class="col-sm-4 col-form-label">Gate IN</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="gate" name="gate">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="alamat" class="col-sm-4 col-form-label">Alamat</label>
-                                    <div class="col-sm-8">
-                                        <textarea class="form-control" name="alamat" id="alamat" required></textarea>
+                                        <input type="text" class="form-control" id="up_hargaWk" name="up_hargaWk"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
                             </div>
@@ -258,32 +257,52 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         <script>
             const viewFs = <?= json_encode($dataFs); ?>;
-            const modalEl = document.getElementById('tambahFasilitas');
-            modalEl.addEventListener('show.bs.modal', function(){
-                const selectFs = document.getElementById("fasilitas");
+            const viewHeadFs = <?= json_encode($headFs); ?>;
 
+            const modelEl = document.getElementById('tambahFasilitas');
+            const selectHead = document.getElementById("kategori");
+            const selectFs = document.getElementById("fasilitas");
+
+            modelEl.addEventListener('show.bs.modal', function(){
+                //kosongkan form
+                selectHead.innerHTML = '<option value="">---pilih kategori---</option>';
                 selectFs.innerHTML = '<option value="">---pilih fasilitas---</option>';
 
-                viewFs.forEach((item) => {
-                    if(item.group_detail){
+                viewHeadFs.forEach((item) =>{
+                    const option = document.createElement("option");
+                    option.value = item;
+                    option.textContent = item;
+                    selectHead.appendChild(option);
+                });
+            });
+            //even listtener untuk dropdown ke-2
+            selectHead.addEventListener('change', function(){
+                const selectedHead = this.value;
+                selectFs.innerHTML = '<option value="">---pilih fasilitas---</option>';
+
+                if(selectedHead){
+                    const filteredFs = viewFs.filter(item => item.group_head === selectedHead);
+                    filteredFs.forEach((item) =>{
                         const option = document.createElement("option");
                         option.value = item.group_detail;
                         option.textContent = item.group_detail;
                         selectFs.appendChild(option);
-                    }
-                });
-            });   
+                    });
+                }
+            });
         </script>
         <script>
             $('#fasilitasWK').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'aksi=tambah_fasilitasWK';
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasWK';
+                console.log("data dikirim: ", formData)
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
+                        console.log("reson dari server: ", res);
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -300,8 +319,164 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                             location.reload();
                         }
                     },
-                })
-            })
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Jaringan',
+                            text: 'Terjadi kesalahan saat berkomunikasi dengan server.'
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            $(document).ready(function(){
+                const fasilitasId = '<?= $client_id ?>';
+                 console.log("Fasilitas ID yang akan dikirim: ", fasilitasId);
+
+                if(fasilitasId){
+                    $.ajax({
+                        url: '../../assets/fungsi.php',
+                        method: 'POST',
+                        dataType: 'json',
+                        data:{
+                            aksi: 'getView_fasilitas',
+                            fasilitas_id: fasilitasId
+                        },
+                        success: function(res){
+                            console.log("data dari server: ", res);
+
+                            //kosongkan data
+                            $('#fasilitas-wk').empty();
+                            $('#fasilitas-vendor').empty();
+                            $('#fasilitas-fnb').empty();
+
+                            //pisah data
+                            let noWk = 1;
+                            let noVend = 1;
+                            let noFnB = 1;
+
+                            if (Array.isArray(res)) {
+                                res.forEach(item => {
+                                    if(item.group_fasilitas && item.group_fasilitas.toLowerCase() === 'vendor'){
+                                        $('#fasilitas-vendor').append(`
+                                            <tr>
+                                                <td>${noVend++}</td>
+                                                <td>${item.fasilitas_name}</td>
+                                                <td>${item.price.toLocaleString('id-ID')}</td>
+                                                <td>${item.price_vend.toLocaleString('id-ID')}</td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                </td>
+                                            </tr>
+                                        `);
+                                    } else if (item.group_fasilitas && item.group_fasilitas.toLowerCase() === 'food and beverages'){
+                                        $('#fasilitas-fnb').append(`
+                                            <tr>
+                                                <td>${noFnB++}</td>
+                                                <td>${item.fasilitas_name}</td>
+                                                <td>${item.price.toLocaleString('id-ID')}</td>
+                                                <td>${item.price_vend.toLocaleString('id-ID')}</td>
+                                                <td>
+                                                    <button class="btn btn-warning " data-bs-toggle="modal" data-bs-target="#upateFasilitasWk"
+                                                        data-id="${item.id_markom}"
+                                                        data-kategori="${item.group_head}"
+                                                        data-nama="${item.group_detail}"
+                                                        data-qty="${item.stok}"
+                                                        >
+                                                        <i class="fa-solid fa-file-pen"></i> edit
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                </td>
+                                            </tr>
+                                        `);
+                                    } else {
+                                        $('#fasilitas-wk').append(`
+                                            <tr>
+                                                <td>${noWk++}</td>
+                                                <td>${item.fasilitas_name}</td>
+                                                <td>${item.price.toLocaleString('id-ID')}</td>
+                                                <td>
+                                                    <button class="btn btn-warning btnUpdateFsWk" data-bs-toggle="modal" data-bs-target="#upateFasilitasWk"
+                                                        data-kode="${item.fasilitas_id}"
+                                                        data-head="${item.group_fasilitas}"
+                                                        data-fsl="${item.fasilitas_name}"
+                                                        data-qty="${item.qty}"
+                                                        data-price="${item.price}"
+                                                        >
+                                                        <i class="fa-solid fa-file-pen"></i> edit
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                </td>
+                                            </tr>
+                                        `);
+                                    }
+                                });
+                            } else {
+                                console.error("Data dari server bukan array:", res);
+                            }
+                        },
+                        error: function(xhr, status, error){
+                            console.error("Ajax Error: ", status, error);
+                        }
+                    });
+                }
+            });
+        </script>
+        <script>
+            const upKategori = document.getElementById("up_kategori");
+            const upFasilitas = document.getElementById("up_fsl");
+
+            function populatedUpFasilitas(selectedHead, selectedFs = null) {
+                upFasilitas.innerHTML = '<option value="">---pilih fasilitas---</option>';
+                // Perbaikan: gunakan parameter 'selectedHead'
+                if (selectedHead) { 
+                    const filteredFs = viewFs.filter(item => item.group_head === selectedHead);
+                    filteredFs.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.group_detail;
+                        option.textContent = item.group_detail;
+                        upFasilitas.appendChild(option);
+                    });
+                    // Perbaikan: gunakan parameter 'selectedFs'
+                    if (selectedFs) {
+                        upFasilitas.value = selectedFs;
+                    }
+                }
+            }
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btnUpdateFsWk') || e.target.closest('.btnUpdateFsWk')) {
+                    const button = e.target.closest('.btnUpdateFsWk');
+                    const kode = button.getAttribute('data-kode');
+                    const head = button.getAttribute('data-head');
+                    const namaFs = button.getAttribute('data-fsl');
+                    const qty = button.getAttribute('data-qty');
+                    const harga = button.getAttribute('data-price');
+
+                    document.getElementById('up_kode').value = kode;
+                    document.getElementById('up_qty').value = qty;
+                    document.getElementById('up_hargaWk').value = harga;
+
+                    upKategori.innerHTML = '<option value="">---pilih kategori---</option>';
+                    viewHeadFs.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        option.textContent = item;
+                        upKategori.appendChild(option);
+                    });
+                    upKategori.value = head;
+
+                    // Memanggil fungsi dengan variabel 'head' dan 'namaFs'
+                    populatedUpFasilitas(head, namaFs);
+                }
+            });
+
+            upKategori.addEventListener('change', function() {
+                // Memanggil fungsi dengan nilai 'this.value'
+                populatedUpFasilitas(this.value);
+            });
         </script>
     </body>
 </html>
