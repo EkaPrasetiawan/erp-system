@@ -413,7 +413,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $fasil = $_POST['fasilitas_id'] ??'';
 
         if(!empty($fasil)){
-            $stmt = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
+            $stmt = $konek->prepare("SELECT data_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
             FROM rombongan_detail WHERE fasilitas_id = ?");
 
             // $stmt = $konek->prepare("SELECT * FROM rombongan_detail WHERE fasilitas_id = ?");
@@ -458,6 +458,51 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             exit;
         }
         $stmt->close();
+        exit;
+    }
+
+    //update data fasilitas ke rombongan
+    if($_POST['aksi'] === 'update_fasilitasWK'){
+        $kode = sanitize_text($_POST['idf']);
+        $headFs = sanitize_text($_POST['up_kategori']);
+        $fasilitas = sanitize_text($_POST['up_fsl']);
+        $qty = sanitize_text($_POST['up_qty']);
+        $harga = sanitize_text($_POST['up_hargaWk']);
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+
+        $stmt_cek = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
+            FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $kode);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        if(
+            $cek['group_fasilitas'] === $headFs &&
+            $cek['fasilitas_name'] === $fasilitas &&
+            $cek['qty'] === $qty &&
+            $cek['price'] === $harga
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET group_fasilitas = ?, fasilitas_name = ?, qty = ?, price = ?, using_date = ?, employee_name = ? WHERE data_id = ?");
+        $stmt_update->bind_param("ssiissi", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $kode);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("Update data Error: ". $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt_update->close();
         exit;
     }
 }
