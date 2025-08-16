@@ -3,6 +3,7 @@
 require '../../assets/fungsi.php';
 $dataFs = getFasilitasWK($konek);
 $headFs = getKategoriFst($konek);
+$vendorFs = getViewVendor($konek);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_id = $_POST['client_id'] ??'';
@@ -102,6 +103,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                             <th>No</th>
                                             <th>Nama Vendor</th>
                                             <th>Nama Fasilitas</th>
+                                            <th>Jumlah</th>
                                             <th>Harga Jual</th>
                                             <th>Harga Vendor</th>
                                             <th>Aksi</th>
@@ -147,7 +149,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Fasilitas Rombongan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="fasilitasWK" method="POST" autocomplete="off">
@@ -203,7 +205,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas Rombongan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="up_fasilitasWK" method="POST" autocomplete="off">
@@ -259,7 +261,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Fasilitas Rombongan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="fasilitasVendor" method="POST" autocomplete="off">
@@ -292,7 +294,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="harga" class="col-sm-4 col-form-label">Harga</label>
+                                    <label for="harga" class="col-sm-4 col-form-label">Harga Jual</label>
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" id="harga" name="harga"
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
@@ -322,42 +324,48 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas Rombongan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="up_fasilitasVendor" method="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="text" class="form-control" value="" id="idf" name="idf">
-                                <input type="text" class="form-control" value="" id="up_kode" name="up_kode">
+                                <input type="hidden" class="form-control" value="" id="idFv" name="idFv">
                                 <div class="mb-3 row">
-                                    <label for="up_kategori" class="col-sm-4 col-form-label">Kategori</label>
+                                    <label for="up_vendorHead" class="col-sm-4 col-form-label">Kategori</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="up_kategori" name="up_kategori" required>
-                                            <option value="">---pilih kategori---</option>
+                                        <select class="form-select" id="up_vendorHead" name="up_vendorHead" required>
+                                            <option value="">---pilih vendor---</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_fsl" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <label for="up_namaFasilitas" class="col-sm-4 col-form-label">Fasilitas</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="up_fsl" name="up_fsl" required>
+                                        <select class="form-select" id="up_namaFasilitas" name="up_namaFasilitas" required>
                                             <option value="">---pilih fasilitas---</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_qty" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <label for="up_qtyV" class="col-sm-4 col-form-label">Jumlah</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_qty" name="up_qty"
+                                        <input type="text" class="form-control" id="up_qtyV" name="up_qtyV"
                                         inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_hargaWk" class="col-sm-4 col-form-label">Harga</label>
+                                    <label for="up_harga" class="col-sm-4 col-form-label">Harga Jual</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_hargaWk" name="up_hargaWk"
+                                        <input type="text" class="form-control" id="up_harga" name="up_harga"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_hargaVend" class="col-sm-4 col-form-label">Harga Vendor</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_hargaVend" name="up_hargaVend"
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
@@ -418,14 +426,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $('#fasilitasWK').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=tambah_fasilitasWK';
-                console.log("data dikirim: ", formData)
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
-                        console.log("reson dari server: ", res);
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -468,7 +474,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                             fasilitas_id: fasilitasId
                         },
                         success: function(res){
-                            console.log("data dari server: ", res);
 
                             //kosongkan data
                             $('#fasilitas-wk').empty();
@@ -486,11 +491,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                         $('#fasilitas-vendor').append(`
                                             <tr>
                                                 <td>${noVend++}</td>
+                                                <td>${item.client_id}</td>
                                                 <td>${item.fasilitas_name}</td>
+                                                <td>${item.qty}</td>
                                                 <td>${item.price.toLocaleString('id-ID')}</td>
                                                 <td>${item.price_vend.toLocaleString('id-ID')}</td>
                                                 <td>
-                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                    <button class="btn btn-warning btnUpdateFsVend" data-bs-toggle="modal" data-bs-target="#upateFasilitasVendor"
+                                                        data-idf="${item.data_id}"
+                                                        data-head="${item.client_id}"
+                                                        data-fsl="${item.fasilitas_name}"
+                                                        data-qty="${item.qty}"
+                                                        data-price="${item.price}"
+                                                        data-priceVend="${item.price_vend}"
+                                                        >
+                                                        <i class="fa-solid fa-file-pen"></i> edit
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm">
+                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                 </td>
                                             </tr>
                                         `);
@@ -510,7 +528,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                                         >
                                                         <i class="fa-solid fa-file-pen"></i> edit
                                                     </button>
-                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                    <button class="btn btn-danger btn-sm">
+                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                 </td>
                                             </tr>
                                         `);
@@ -531,7 +550,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                                         >
                                                         <i class="fa-solid fa-file-pen"></i> edit
                                                     </button>
-                                                    <button class="btn btn-danger btn-sm">Hapus</button>
+                                                    <button class="btn btn-danger btn-sm">
+                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                 </td>
                                             </tr>
                                         `);
@@ -644,6 +664,171 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                         swal.fire({
                             icon: 'error',
                             title: 'error ajax',
+                            text: error
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            //view dropdown vendor fasilitas
+            const viewFsvend = <?= json_encode($vendorFs); ?>;
+            const headVendor = [...new Set(viewFsvend.map(item => item.vendor_head))];
+            const modalEl = document.getElementById('tambahFasilitasVendor');
+            const vendHead = document.getElementById("vendorHead");
+            const nameFast = document.getElementById("namaFasilitas");
+
+            modalEl.addEventListener('show.bs.modal', function(){
+                vendHead.innerHTML = '<option value="">---pilih kategori---</option>';
+                nameFast.innerHTML = '<option value="">---pilih kategori---</option>';
+                headVendor.forEach((item) =>{
+                    const option = document.createElement("option");
+                    option.value = item;
+                    option.textContent = item;
+                    vendHead.appendChild(option);
+                });
+            });
+            vendHead.addEventListener('change', function(){
+                const vendHead = this.value;
+                nameFast.innerHTML = '<option value="">---pilih kategori---</option>';
+
+                if(vendHead){
+                    const filterHead = viewFsvend.filter(item => item.vendor_head === vendHead);
+                    filterHead.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.vendor_detail;
+                        option.textContent = item.vendor_detail;
+                        nameFast.appendChild(option);
+                    });
+                }
+            });
+        </script>
+        <script>
+            $('#fasilitasVendor').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasVend';
+                console.log("data Dikirim: ", formData);
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e){
+                            console.log("Eror Bukan Json: ", res);
+                            swal.fire({
+                                icon: 'error',
+                                title: 'form respon salah',
+                                text: 'Terjadi masalah'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        console.log("AJAX Error:", error);
+                        swal.fire({
+                            icon: 'error',
+                            title: 'Error Jaringan'
+                        });
+                    }
+                });
+            });
+
+            //update
+            const upVendorHed = document.getElementById("up_vendorHead");
+            const upNamaFasilits = document.getElementById("up_namaFasilitas");
+
+            function updateFasilitasVend(headVendor, nameFast = null){
+                upNamaFasilits.innerHTML = '<option value="">---pilih fasilits---</option>'
+
+                if(headVendor){
+                    const filterFsV = viewFsvend.filter(item => item.vendor_head === headVendor);
+                    filterFsV.forEach((item) => {
+                         const option = document.createElement("option");
+                        option.value = item.vendor_detail;
+                        option.textContent = item.vendor_detail;
+                        upNamaFasilits.appendChild(option);
+                    })
+                    if(nameFast){
+                        upNamaFasilits.value = nameFast;
+                    }
+                }
+            }
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateFsVend') || e.target.closest('.btnUpdateFsVend')){
+                    const button = e.target.closest('.btnUpdateFsVend');
+                    const idFv = button.getAttribute('data-idf');
+                    const vendor = button.getAttribute('data-head');
+                    const fasilitas = button.getAttribute('data-fsl');
+                    const qty = button.getAttribute('data-qty');
+                    const harga = button.getAttribute('data-price');
+                    const hargaJual = button.getAttribute('data-priceVend');
+
+                    document.getElementById('idFv').value = idFv;
+                    document.getElementById('up_qtyV').value = qty;
+                    document.getElementById('up_harga').value = harga;
+                    document.getElementById('up_hargaVend').value = hargaJual;
+
+                    upVendorHed.innerHTML = '<option value="">---pilih kategori---</option>';
+                    headVendor.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        option.textContent = item;
+                        upVendorHed.appendChild(option);
+                    });
+                    upVendorHed.value = vendor;
+                    updateFasilitasVend(vendor, fasilitas);
+                }
+            });
+            upVendorHed.addEventListener('change', function(){
+                updateFasilitasVend(this.value);
+            });
+
+            $('#up_fasilitasVendor').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=update_fasilitasVend';
+                console.log("data di kirim: ", formData);
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(res){
+                        let response = [];
+                        try{
+                            response = JSON.parse(res);
+                        } catch (e) {
+                            console.log("Respon Error: ", res);
+                            swal.fire({
+                                icon: 'error',
+                                title: 'format respon salah'
+                            });
+                            return;
+                        }
+                        if(response.status = "success"){
+                            location.reload();
+                        } else {
+                            swal.fire({
+                                icon: 'error',
+                                title: 'gagal',
+                                text: 'Gagal Memperbharui Data',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Oke',
+                                allowEscapeKey: false,
+                                allowOutsideClick: false
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Ajax',
                             text: error
                         });
                     }
