@@ -4,6 +4,7 @@ require '../../assets/fungsi.php';
 $dataFs = getFasilitasWK($konek);
 $headFs = getKategoriFst($konek);
 $vendorFs = getViewVendor($konek);
+$viewFnB = getFnB($konek);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_id = $_POST['client_id'] ??'';
@@ -62,7 +63,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                 <div class="mb-3 row">
                                     <label for="" class="col-sm-1 col-form-label">HTM</label>
                                     <div class="col-sm-4">
-                                    <input type="text" class="form-control" id="up_gate" name="gate">
+                                    <input type="text" class="form-control" id="htm" name="htm">
                                     </div>
                                 </div>
                             </div>
@@ -119,7 +120,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                 Food and beverages
                             </div>
                             <div class="card-body">
-                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFasilitas">
+                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFnB">
                                     <i class="fa-solid fa-plus"></i> Add
                                 </button>
                                 <table class="table">
@@ -127,8 +128,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Fasilitas</th>
-                                            <th>Harga Jual</th>
-                                            <th>Harga Vendor</th>
+                                            <th>Qty</th>
+                                            <th>Harga</th>
+                                            <th>Catatan</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -144,7 +146,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </footer>
             </div>
         </div>
-        //modal Tambah fasilitas wk
+        <!-- modal Tambah fasilitas wk -->
         <div class="modal fade" id="tambahFasilitas" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -199,8 +201,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal tambah fasilitas wk
-        //modal Update fasilitas wk
+        <!-- akhir modal tambah fasilitas wk -->
+        <!-- modal Update fasilitas wk -->
         <div class="modal fade" id="upateFasilitasWk" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -255,8 +257,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal Update fasilitas wk
-        //modal Tambah fasilitas Vendor
+        <!-- akhir modal Update fasilitas wk -->
+        <!-- modal Tambah fasilitas Vendor -->
         <div class="modal fade" id="tambahFasilitasVendor" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -318,8 +320,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal tambah fasilitas Vendor
-        //modal Update fasilitas Vendor
+        <!-- khir modal tambah fasilitas Vendor -->
+        <!-- modal Update fasilitas Vendor -->
         <div class="modal fade" id="upateFasilitasVendor" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -380,7 +382,117 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal Update fasilitas Vendor
+        <!-- akhir modal Update fasilitas Vendor -->
+        <!-- modal Tambah fnb -->
+        <div class="modal fade" id="tambahFnB" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Food And Beverages</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="fnbAdd" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
+                                <input type="hidden" class="form-control" value="" id="fnb" name="fnb">
+                                <div class="mb-3 row">
+                                    <label for="fnbHead" class="col-sm-4 col-form-label">Menu</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="fnbHead" name="fnbHead" required>
+                                            <option value="">---pilih menu---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
+                                        inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="hargaFnB" class="col-sm-4 col-form-label">Harga Perpaket</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="hargaFnB" name="hargaFnB"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="ket" class="col-sm-4 col-form-label">Catatan</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" id="ket" name="ket"
+                                        inputmode="text" oninput="this.value=this.value.replace(/[^a-zA-Z0-9.,\s/-]/g,'');" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        //akhir modal tambah fnn
+        //modal Update fnb
+        <div class="modal fade" id="upateFnB" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Food And Beverages</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="up_fnbAdd" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="" id="idFnB" name="idFnB">
+                                <div class="mb-3 row">
+                                    <label for="up_fnbHead" class="col-sm-4 col-form-label">Menu</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_fnbHead" name="up_fnbHead" required>
+                                            <option value="">---pilih menu---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_jumlah" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_jumlah" name="up_jumlah"
+                                        inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_hargaFnB" class="col-sm-4 col-form-label">Harga Perpaket</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_hargaFnB" name="up_hargaFnB"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_ket" class="col-sm-4 col-form-label">Catatan</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" id="up_ket" name="up_ket"
+                                        inputmode="text" oninput="this.value=this.value.replace(/[^a-zA-Z0-9.,\s/-]/g,'');" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        //akhir modal Update fnb
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -462,7 +574,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         <script>
             $(document).ready(function(){
                 const fasilitasId = '<?= $client_id ?>';
-                //  console.log("Fasilitas ID yang akan dikirim: ", fasilitasId);
 
                 if(fasilitasId){
                     $.ajax({
@@ -517,14 +628,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                             <tr>
                                                 <td>${noFnB++}</td>
                                                 <td>${item.fasilitas_name}</td>
+                                                <td>${item.qty}</td>
                                                 <td>${item.price.toLocaleString('id-ID')}</td>
-                                                <td>${item.price_vend.toLocaleString('id-ID')}</td>
+                                                <td>${item.spec}</td>
                                                 <td>
-                                                    <button class="btn btn-warning " data-bs-toggle="modal" data-bs-target="#upateFasilitasWk"
-                                                        data-id="${item.id_markom}"
-                                                        data-kategori="${item.group_head}"
-                                                        data-nama="${item.group_detail}"
-                                                        data-qty="${item.stok}"
+                                                    <button class="btn btn-warning btnUpdateFnB" data-bs-toggle="modal" data-bs-target="#upateFnB"
+                                                        data-idFnB="${item.data_id}"
+                                                        data-menu="${item.fasilitas_name}"
+                                                        data-qtyFnB="${item.qty}"
+                                                        data-harga="${item.price}"
+                                                        data-ket="${item.spec}"
                                                         >
                                                         <i class="fa-solid fa-file-pen"></i> edit
                                                     </button>
@@ -793,7 +906,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $('#up_fasilitasVendor').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=update_fasilitasVend';
-                console.log("data di kirim: ", formData);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -829,6 +941,128 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                         Swal.fire({
                             icon: 'error',
                             title: 'Error Ajax',
+                            text: error
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            const viewMenuFnB = <?= json_encode($viewFnB); ?>;
+            const modelEll = document.getElementById('tambahFnB');
+            const selectFnB = document.getElementById("fnbHead");
+
+            document.getElementById('fnb').value = viewMenuFnB[0].group_head;
+            modelEll.addEventListener('show.bs.modal', function(){
+                selectFnB.innerHTML = '<option value="">---pilih menu---</option>';
+                viewMenuFnB.forEach((item) =>{
+                    const option = document.createElement("option");
+                    option.value = item.group_detail;
+                    option.textContent = item.group_detail;
+                    selectFnB.appendChild(option);
+                });
+            });
+            //tambah
+            $('#fnbAdd').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=tambahFnB';
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(res){
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'respon salah',
+                                text: 'Terjadi kesalahan jaringan'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        swal.fire({
+                            icon: 'error',
+                            title: 'Error Jaringan'
+                        });
+                    }
+                });
+            });
+
+            //update
+            const upFnB = document.getElementById("up_fnbHead");
+
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateFnB') || e.target.closest('.btnUpdateFnB')){
+                    const button = e.target.closest('.btnUpdateFnB');
+                    const idFnB = button.getAttribute('data-idFnB');
+                    const menu = button.getAttribute('data-menu');
+                    const qty = button.getAttribute('data-qtyFnB');
+                    const harga = button.getAttribute('data-harga');
+                    const catatan = button.getAttribute('data-ket');
+
+                    document.getElementById('idFnB').value = idFnB;
+                    document.getElementById('up_jumlah').value = qty;
+                    document.getElementById('up_hargaFnB').value = harga;
+                    document.getElementById('up_ket').value = catatan;
+
+                    upFnB.innerHTML = '<option value="">---pilih kategori---</option>';
+                    viewMenuFnB.forEach((item) =>{
+                        const option = document.createElement("option");
+                        option.value = item.group_detail;
+                        option.textContent = item.group_detail;
+                        upFnB.appendChild(option);
+                    });
+                    upFnB.value = menu;
+                }
+            });
+
+            $('#up_fnbAdd').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=updateFnB';
+                // console.log("data up: ", formData);
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(res){
+                        // console.log("server res: ", res);
+                        let response = [];
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e) {
+                            swal.fire({
+                                icon: 'error',
+                                title: 'formt respon salah'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        } else {
+                            swal.fire({
+                                icon: 'error',
+                                title: 'gagal',
+                                text: 'Gagal memperbaharui data',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Oke',
+                                allowEscapeKey: false,
+                                allowOutsideClick: false
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        swal.fire({
+                            icon: 'error',
+                            title: 'error ajax',
                             text: error
                         });
                     }

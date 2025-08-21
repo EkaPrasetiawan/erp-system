@@ -10,7 +10,11 @@
             Sales
         </a>
         <div class="sb-sidenav-menu-heading">Work</div>
-        <a class="nav-link" href="rombongan.php">
+        <a class="nav-link" href="client.php">
+            <div class="sb-nav-link-icon"><i class="fa-regular fa-id-badge"></i></div>
+            Client
+        </a>
+        <a class="nav-link" href="#">
             <div class="sb-nav-link-icon"><i class="fa-solid fa-people-pulling"></i></div>
             Rombongan
         </a>

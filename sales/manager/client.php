@@ -1,7 +1,7 @@
 <?php
 
 require '../../assets/fungsi.php';
-$allRom = getAllRombongan($konek);
+$allRom = getAllClient($konek);
 
 ?>
 
@@ -13,7 +13,7 @@ $allRom = getAllRombongan($konek);
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Rombogan</title>
+        <title>Client</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
@@ -34,12 +34,12 @@ $allRom = getAllRombongan($konek);
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Rombongan</h1>
+                        <h1 class="mt-4">Client</h1>
                         <ol class="breadcrumb mb-4">
                             <li class="breadcrumb-item active"></li>
                         </ol>
                         <div class="btn"> 
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahDataRombogan">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahDataClient">
                             <i class="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
@@ -53,15 +53,15 @@ $allRom = getAllRombongan($konek);
                                     <thead>
                                         <tr>
                                             <th>NO</th>
-                                            <th>KODE</th>
+                                            <th>ID</th>
                                             <th>INSTANSI</th>
                                             <th>SALES</th>
-                                            <th>TANGGAL KUNJUNGAN</th>
-                                            <th>JUMLAH_PAX</th>
+                                            <th>PIC</th>
+                                            <th>TELEPHONE</th>
                                             <th>AKSI</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="dtRombogan">
+                                    <tbody id="dtClient">
                                     </tbody>
                                 </table>
                             </div>
@@ -74,11 +74,11 @@ $allRom = getAllRombongan($konek);
             </div>
         </div>
         //modal Tambah data Rombogan
-        <div class="modal fade" id="tambahDataRombogan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="tambahDataClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Client</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="tambahClient" method="POST" autocomplete="off">
@@ -111,25 +111,6 @@ $allRom = getAllRombongan($konek);
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="kunjungan" class="col-sm-4 col-form-label">Rencana Kunjugan</label>
-                                    <div class="col-sm-8">
-                                        <input type="date" class="form-control" id="tgl_kunjungan" name="tgl_kunjungan">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="gate" class="col-sm-4 col-form-label">Gate IN</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="gate" name="gate">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
                                     <label for="alamat" class="col-sm-4 col-form-label">Alamat</label>
                                     <div class="col-sm-8">
                                         <textarea class="form-control" name="alamat" id="alamat" required></textarea>
@@ -146,13 +127,13 @@ $allRom = getAllRombongan($konek);
                 </div>
             </div>
         </div>
-        //akhir modal tambah data rombongan
-        //modal Update data Rombogan
-        <div class="modal fade" id="updateDataRombogan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <!-- akhir modal tambah data Client -->
+        <!-- modal Update data Client -->
+        <div class="modal fade" id="updateDataClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update data Rombongan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update data Client</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="updateClient" action="POST" autocomplete="off">
@@ -185,24 +166,6 @@ $allRom = getAllRombongan($konek);
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_tgl_kunjungan" class="col-sm-4 col-form-label">Rencana Kunjugan</label>
-                                    <div class="col-sm-8">
-                                        <input type="date" class="form-control" id="up_tgl_kunjungan" name="tgl_kunjungan">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_jumlah" class="col-sm-4 col-form-label">Jumlah_Pax</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_jumlah" name="jumlah">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_gate" class="col-sm-4 col-form-label">Gate IN</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_gate" name="gate">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
                                     <label for="up_alamat" class="col-sm-4 col-form-label">Alamat</label>
                                     <div class="col-sm-8">
                                         <textarea class="form-control" name="alamat" id="up_alamat" required></textarea>
@@ -219,7 +182,7 @@ $allRom = getAllRombongan($konek);
                 </div>
             </div>
         </div>
-        //akhir modal Update data rombongan
+        <!-- akhir modal Update data Client -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -228,7 +191,7 @@ $allRom = getAllRombongan($konek);
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
             const viewRombogan = <?= json_encode($allRom); ?>;
-            const tbody = document.getElementById("dtRombogan");
+            const tbody = document.getElementById("dtClient");
             viewRombogan.forEach((item, index)=>{
                 const row = document.createElement("tr");
                 row.innerHTML =`
@@ -236,22 +199,16 @@ $allRom = getAllRombongan($konek);
                 <td>${item.client_id}</td>
                 <td>${item.client_name}</td>
                 <td>${item.marketing_name}</td>
-                <td>${item.tgl_kunjungan}</td>
-                <td>${item.jumlah}</td>
+                <td>${item.pic}</td>
+                <td>${item.phone}</td>
                 <td>
-                    <button class="btn btn-warning btnUpdateRombongan" data-bs-toggle="modal" data-bs-target="#updateDataRombogan"
+                    <button class="btn btn-warning btnUpdateClient" data-bs-toggle="modal" data-bs-target="#updateDataClient"
                         data-id="${item.client_id}"
                         data-instansi="${item.client_name}"
                         data-pic="${item.pic}"
                         data-noTlp="${item.phone}"
-                        data-tglKunjungan="${item.tgl_kunjungan}"
-                        data-jumlah="${item.jumlah}"
-                        data-gate="${item.gate}"
                         data-alamat="${item.address}"
                         ><i class="fa-solid fa-file-pen"></i> Edit
-                    </button>
-                    <button class="btn btn-primary btnEdit" data-bs-toggle="modal" data-bs-target="#editSales"
-                        ><i class="fa-regular fa-eye"></i> View
                     </button>
                 </td>
                 `;
@@ -261,13 +218,15 @@ $allRom = getAllRombongan($konek);
         <script>
             $('#tambahClient').on('submit', function(e) {
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
+                const formData = $(this).serialize()+'&aksi=tambah_dataClient';
+                console.log("data kirim ", formData);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
+                        console.log("respon : ", res);
                         let response = {};
                         try {
                             response = JSON.parse(res);
@@ -284,7 +243,7 @@ $allRom = getAllRombongan($konek);
                         Swal.fire({
                         icon: 'success',
                         title: 'Validasi Berhasil',
-                        text: 'Data rombongan berhasil ditambahkan.',
+                        text: 'Data Client berhasil ditambahkan.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
                         confirmButtonText: 'Oke', // Teks tombol konfirmasi
@@ -300,7 +259,7 @@ $allRom = getAllRombongan($konek);
                             Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: 'Gagal menambahkan data rombongan!!!',
+                            text: 'Gagal menambahkan data Client!!!',
                             showConfirmButton: true, // Tampilkan tombol konfirmasi
                             confirmButtonText: 'Oke', // Teks tombol konfirmasi
                             allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
@@ -327,22 +286,18 @@ $allRom = getAllRombongan($konek);
         </script>
         <script>
             document.addEventListener('click',function(e){
-                if(e.target.classList.contains('btnUpdateRombongan') || e.target.closest('.btnUpdateRombongan')){
-                    const button = e.target.closest('.btnUpdateRombongan');
+                if(e.target.classList.contains('btnUpdateClient') || e.target.closest('.btnUpdateClient')){
+                    const button = e.target.closest('.btnUpdateClient');
                     const id = button.getAttribute('data-id');
                     const instansi = button.getAttribute('data-instansi');
                     const pic = button.getAttribute('data-pic');
                     const noTlp = button.getAttribute('data-noTlp');
-                    const tglKunjungan = button.getAttribute('data-tglKunjungan');
-                    const gate = button.getAttribute('data-gate');
                     const alamat = button.getAttribute('data-alamat');
 
                     document.getElementById('up_kode').value = id;
                     document.getElementById('up_instansi').value = instansi;
                     document.getElementById('up_pic').value = pic;
                     document.getElementById('up_noTlp').value = noTlp;
-                    document.getElementById('up_tgl_kunjungan').value = tglKunjungan;
-                    document.getElementById('up_gate').value = gate;
                     document.getElementById('up_alamat').value = alamat;
                 }
             });
@@ -351,7 +306,7 @@ $allRom = getAllRombongan($konek);
             $('#updateClient').on('submit', function(e){
                 e.preventDefault();
 
-                const formData = $(this).serialize() + '&aksi=update_dataRombongan';
+                const formData = $(this).serialize() + '&aksi=update_dataClient';
                 console.log("data dikirim :",formData);
                 
                 $.ajax({
@@ -390,7 +345,7 @@ $allRom = getAllRombongan($konek);
                             Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: 'Gagal menambahkan data rombongan!!!',
+                            text: 'Gagal menambahkan data Client!!!',
                             showConfirmButton: true, // Tampilkan tombol konfirmasi
                             confirmButtonText: 'Oke', // Teks tombol konfirmasi
                             allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar

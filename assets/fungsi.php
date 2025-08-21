@@ -27,7 +27,7 @@ function getAllSales($konek){
     return $sales;
 }
 
-function getAllRombongan($konek) {
+function getAllClient($konek) {
     $allRom = [];
     $cekAllRom = $konek->query("SELECT * FROM client");
     if ($cekAllRom) { // untuk memeriksa queri berhasil atau tidak
@@ -104,6 +104,19 @@ function getKategoriFst($konek) {
         error_log("Error fetching facility categories: " . $konek->error);
     }
     return $kategori;
+}
+
+function getFnB($konek){
+    $fnb = [];
+    $result = $konek->query("SELECT group_head, group_detail FROM markom_service WHERE group_head = 'Food and Beverages'");
+    if($result){
+        while($row = $result->fetch_assoc()){
+            $fnb[] = $row;
+        }
+    } else {
+        error_log("Data tidak ada: ".$result->error);
+    }
+    return $fnb;
 }
 
 function getKodeVen(mysqli $konek): string {
@@ -206,22 +219,20 @@ $code = generateKodeClient($konek);
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
-    if($_POST['aksi'] === 'tambah_dataRombongan'){
+    if($_POST['aksi'] === 'tambah_dataClient'){
         $kode = sanitize_text($_POST['kode']);
         $instansi = sanitize_text($_POST['instansi']);
         $pic = sanitize_text($_POST['pic']);
         $noTlp = sanitize_text($_POST['noTlp']);
-        $tgl_kunjungan = sanitize_text($_POST['tgl_kunjungan']);
-        $jumlah = sanitize_text($_POST['jumlah']);
-        $gate = sanitize_text($_POST['gate']);
         $alamat = sanitize_text($_POST['alamat']);
+        $tanggal = date("Y-m-d H:i:s");
         $marketing_id = '02-001';
         $marketing_name = 'eka';
         $remark = 'perusahaan';
 
-        $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tgl_kunjungan, jumlah, gate, marketing_id, marketing_name, remarks)
-                                VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssssssissss", $kode, $instansi, $alamat, $pic, $noTlp, $tgl_kunjungan, $jumlah, $gate, $marketing_id, $marketing_name, $remark);
+        $stmt = $konek->prepare("INSERT INTO client(client_id, client_name, address, pic, phone, tanggal, marketing_id, marketing_name, remarks)
+                                VALUES(?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("sssssssss", $kode, $instansi, $alamat, $pic, $noTlp, $tanggal, $marketing_id, $marketing_name, $remark);
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success']);
         } else {
@@ -231,18 +242,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt->close();
         exit;
     }
-    if($_POST['aksi'] === 'update_dataRombongan'){
+    if($_POST['aksi'] === 'update_dataClient'){
         $kode = sanitize_text($_POST['kode']);
         $instansi = sanitize_text($_POST['instansi']);
         $pic = sanitize_text($_POST['pic']);
         $noTlp = sanitize_text($_POST['noTlp']);
-        $tglKunjungan = sanitize_text($_POST['tgl_kunjungan']);
-        $jumlah = sanitize_text($_POST['jumlah']);
-        $gate = sanitize_text($_POST['gate']);
         $alamat = sanitize_text($_POST['alamat']);
 
         //ambil data
-        $stmt_cek = $konek->prepare("SELECT client_name, address, pic, phone, tgl_kunjungan, jumlah, gate FROM client WHERE client_id = ?");
+        $stmt_cek = $konek->prepare("SELECT client_name, address, pic, phone FROM client WHERE client_id = ?");
         $stmt_cek->bind_param("s",$kode);
         $stmt_cek->execute();
         $result_cek = $stmt_cek->get_result();
@@ -259,18 +267,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             $cek['client_name'] === $instansi &&
             $cek['address'] === $alamat &&
             $cek['pic'] === $pic &&
-            $cek['phone'] === $noTlp &&
-            $cek['tgl_kunjungan'] === $tglKunjungan &&
-            $cek['jumlah'] === $jumlah &&
-            $cek['gate'] === $gate
+            $cek['phone'] === $noTlp
         ){
             echo json_encode(['status' => 'nochange']);
             exit;
         }
         //update dta
         $stmt_update = $konek->prepare("UPDATE client SET client_name = ?,
-                        address = ?, pic = ?, phone = ?, tgl_kunjungan = ?, jumlah = ?, gate = ? WHERE client_id = ?");
-        $stmt_update->bind_param("sssssiss", $instansi, $alamat, $pic, $noTlp, $tglKunjungan, $jumlah, $gate, $kode);
+                        address = ?, pic = ?, phone = ? WHERE client_id = ?");
+        $stmt_update->bind_param("sssss", $instansi, $alamat, $pic, $noTlp, $kode);
         if($stmt_update->execute()){
             echo json_encode(['status' => 'success']);
             exit;
@@ -482,7 +487,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $fasil = $_POST['fasilitas_id'] ??'';
 
         if(!empty($fasil)){
-            $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
+            $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec
             FROM rombongan_detail WHERE fasilitas_id = ?");
 
             // $stmt = $konek->prepare("SELECT * FROM rombongan_detail WHERE fasilitas_id = ?");
@@ -642,6 +647,76 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             exit;
         } else {
             error_log("Update data Error: ". $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+    //FnB
+    if($_POST['aksi'] === 'tambahFnB'){
+        $idClient = sanitize_text($_POST['cId']);
+        $clientName = sanitize_text($_POST['cName']);
+        $fnb = sanitize_text($_POST['fnb']);
+        $menu = sanitize_text($_POST['fnbHead']);
+        $jumlah = sanitize_text($_POST['jumlah']);
+        $harga = sanitize_text($_POST['hargaFnB']);
+        $detail = sanitize_text($_POST['ket']);
+        $tanggal = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name)
+                                VALUES(?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("sssiissss", $fnb, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName);
+        if($stmt->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("gagal: ". $stmt->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt->close();
+        exit;
+    }
+
+    if($_POST['aksi'] === 'updateFnB'){
+        $id = sanitize_text($_POST['idFnB']);
+        $menu = sanitize_text($_POST['up_fnbHead']);
+        $jumlah = sanitize_text($_POST['up_jumlah']);
+        $harga = sanitize_text($_POST['up_hargaFnB']);
+        $keterangan = sanitize_text($_POST['up_ket']);
+
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec
+                                    FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $id);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        if(
+            $cek['fasilitas_name'] === $menu &&
+            $cek['qty'] === $jumlah &&
+            $cek['price'] === $harga &&
+            $cek['spec'] === $keterangan
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name =?, qty = ?, price = ?, spec = ?
+                                        WHERE data_id = ?");
+        $stmt_update->bind_param("siisi", $menu, $jumlah, $harga, $keterangan, $id);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("update data error: ".$stmt_update->error);
             echo json_encode(['status' => 'error']);
             exit;
         }
