@@ -438,8 +438,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal tambah fnn
-        //modal Update fnb
+        <!-- akhir modal tambah fnn -->
+        <!-- modal Update fnb -->
         <div class="modal fade" id="upateFnB" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -492,7 +492,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 </div>
             </div>
         </div>
-        //akhir modal Update fnb
+        <!-- akhir modal Update fnb -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

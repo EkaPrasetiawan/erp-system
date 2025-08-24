@@ -28,14 +28,27 @@ function getAllSales($konek){
 }
 
 function getAllClient($konek) {
-    $allRom = [];
-    $cekAllRom = $konek->query("SELECT * FROM client");
-    if ($cekAllRom) { // untuk memeriksa queri berhasil atau tidak
-        while ($row = $cekAllRom->fetch_assoc()){
-            $allRom[] = $row;
+    $allClient = [];
+    $cekAllCLient = $konek->query("SELECT * FROM client");
+    if ($cekAllCLient) { // untuk memeriksa queri berhasil atau tidak
+        while ($row = $cekAllCLient->fetch_assoc()){
+            $allClient[] = $row;
         }
     } else {
         error_log("Error fetching all rombongan: " . $konek->error);
+    }
+    return $allClient;
+}
+
+function viewRombongan($konek){
+    $allRom = [];
+    $result = $konek->query("SELECT * FROM rombongan_master");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $allRom[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
     }
     return $allRom;
 }
@@ -288,7 +301,36 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
     }
 
 }
-//akhir bagian rombongan
+//akhir bagian client
+
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
+
+    if($_POST['aksi'] === 'tambah_dataRombongan'){
+        $idRom = sanitize_text($_POST['id_rom']);
+        $nama = sanitize_text($_POST['instansi']);
+        $pic = sanitize_text($_POST['pic']);
+        $noTlp = sanitize_text($_POST['noTlp']);
+        $tanggal_plan = sanitize_text($_POST['tgl_dtng']);
+        $gate = sanitize_text($_POST['gate']);
+        $jumlah = sanitize_text($_POST['pax']);
+        $nominal = sanitize_text($_POST['harga']);
+        $judul = sanitize_text($_POST['judul']);
+        $tgl_input = date("Y-m-d H:i:s");
+        $sales = 'Noer Halimah';
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, date_input, date_plan, client_pic, phone, jumlah_pax, marketing, gate_in, hrg_tiket, judul)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("ssssssissis", $idRom, $nama, $tgl_input, $tanggal_plan, $pic, $noTlp, $jumlah, $sales, $gate, $nominal, $judul);
+        if($stmt->execute()){
+            echo json_encode(['status' => 'success']);
+        } else {
+            error_log("Error Systen: ".$STmt->error);
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt->close();
+        exit;
+    }
+}
 
 //bagian fasilitas
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){

@@ -14,7 +14,7 @@
             <div class="sb-nav-link-icon"><i class="fa-regular fa-id-badge"></i></div>
             Client
         </a>
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="rombongan.php">
             <div class="sb-nav-link-icon"><i class="fa-solid fa-people-pulling"></i></div>
             Rombongan
         </a>
