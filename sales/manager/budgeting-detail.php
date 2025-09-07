@@ -5,6 +5,7 @@ $dataFs = getFasilitasWK($konek);
 $headFs = getKategoriFst($konek);
 $vendorFs = getViewVendor($konek);
 $viewFnB = getFnB($konek);
+$viewCnC = getCnc($konek);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_id = $_POST['client_id'] ??'';
@@ -44,26 +45,22 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 <main>
                     <div class="container-fluid px-4">
                         <!-- <h1 class="mt-4">Budgeting</h1> -->
-                        <ol class="breadcrumb mb-4">
+                        <ol class="breadcrumb mb-4 mt-4">
                             <li class="breadcrumb-item active">
                                 <i class="fa-solid fa-arrow-left"></i> Budgeting</li>
                         </ol>
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="mb-3 row">
+                                    <label for="" class="col-sm-2 col-form-label">ID Rombongan</label>
                                     <div class="col-sm-4">
                                     <input type="text" class="form-control" value="<?= $client_id ?>" id="" name="" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
+                                    <label for="" class="col-sm-2 col-form-label">Nama Instansi</label>
                                     <div class="col-sm-4">
                                     <input type="text" class="form-control" value="<?= $client_name ?>" id="" name="" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="" class="col-sm-1 col-form-label">HTM</label>
-                                    <div class="col-sm-4">
-                                    <input type="text" class="form-control" id="htm" name="htm">
                                     </div>
                                 </div>
                             </div>
@@ -135,6 +132,28 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                         </tr>
                                     </thead>
                                     <tbody id="fasilitas-fnb">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                Cabana and Cabin
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahCnC">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Pengguna</th>
+                                            <th>Nama Facility</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cabanaAndcanbin">
                                     </tbody>
                                 </table>
                             </div>
@@ -493,6 +512,85 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             </div>
         </div>
         <!-- akhir modal Update fnb -->
+        <!-- modal Tambah cabin and cabana -->
+        <div class="modal fade" id="tambahCnC" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Cabana and Cabin</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cncAdd" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="" id="idCnC" name="idCnC">
+                                <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
+                                <div class="mb-3 row">
+                                    <label for="nPeng" class="col-sm-4 col-form-label">Nama Pengguna</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="nPeng" name="nPeng" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="fcnc" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="fcnc" name="fcnc" required>
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <!-- akhir modal tambah cabin and cabana -->
+        <!-- modal Update cabin and cabana -->
+        <div class="modal fade" id="upateCnC" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Cabana and Cabin</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cncUpdate" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="" id="cId" name="cId">
+                                <div class="mb-3 row">
+                                    <label for="up_nPeng" class="col-sm-4 col-form-label">Nama Pengguna</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_nPeng" name="up_nPeng" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_fcnc" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_fcnc" name="up_fcnc" required>
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <!-- akhir modal Update cabin and cabana -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -590,11 +688,13 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                             $('#fasilitas-wk').empty();
                             $('#fasilitas-vendor').empty();
                             $('#fasilitas-fnb').empty();
+                            $('#cabanaAndcanbin').empty();
 
                             //pisah data
                             let noWk = 1;
                             let noVend = 1;
                             let noFnB = 1;
+                            let noCnC = 1;
 
                             if (Array.isArray(res)) {
                                 res.forEach(item => {
@@ -638,6 +738,25 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                                         data-qtyFnB="${item.qty}"
                                                         data-harga="${item.price}"
                                                         data-ket="${item.spec}"
+                                                        >
+                                                        <i class="fa-solid fa-file-pen"></i> edit
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm">
+                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                </td>
+                                            </tr>
+                                        `);
+                                    }else if(item.group_fasilitas && item.group_fasilitas.toLowerCase() === 'cabana and cabin'){
+                                        $('#cabanaAndcanbin').append(`
+                                            <tr>
+                                                <td>${noCnC++}</td>
+                                                <td>${item.catatan}</td>
+                                                <td>${item.fasilitas_name}</td>
+                                                <td>
+                                                    <button class="btn btn-warning btnUpdateCnC" data-bs-toggle="modal" data-bs-target="#upateCnC"
+                                                        data-idCnC="${item.data_id}"
+                                                        data-penguna="${item.catatan}"
+                                                        data-fasilitas="${item.fasilitas_name}"
                                                         >
                                                         <i class="fa-solid fa-file-pen"></i> edit
                                                     </button>
@@ -1068,6 +1187,80 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     }
                 });
             });
+        </script>
+        <script>
+            const viewCnc = <?= json_encode($viewCnC); ?>;
+            const modalCnc = document.getElementById('tambahCnC');
+            const selectCnc = document.getElementById("fcnc");
+
+            modalCnc.addEventListener('show.bs.modal', function(){
+                selectCnc.innerHTML = '<option value="">---pilih fasilitas---</option>';
+                viewCnc.forEach((item) => {
+                    const option = document.createElement("option");
+                    option.value = item.facility_name;
+                    option.textContent = item.facility_name;
+                    selectCnc.appendChild(option);
+                });
+            });
+
+            $('#cncAdd').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabin';
+                console.log("data kirim: ", formData);
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        console.log("server: ", res);
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'respon salah',
+                                text: 'Terjadi kesalahan saat load'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        console.log("ajax error: ", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'error jaringan'
+                        });
+                    }
+                });
+            });
+
+            //update
+            const upFcnc = document.getElementById("up_fcnc");
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateCnC') || e.target.closest('.btnUpdateCnC')){
+                    const button = e.target.closest('.btnUpdateCnC');
+                    const idCnC = button.getAttribute('data-idCnC');
+                    const pengguna = button.getAttribute('data-penguna');
+                    const fasilitas = button.getAttribute('data-fasilitas');
+
+                    document.getElementById('idCnC').value = idCnC;
+                    document.getElementById('up_nPeng').value = pengguna;
+
+                    upFcnc.innerHTML = '<option value="">---pilih fasilitas---</option>';
+                    viewCnc.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.facility_name;
+                        option.textContent = item.facility_name;
+                        upFcnc.appendChild(option);
+                    });
+                    upFcnc.value = fasilitas;
+                }
+            })
         </script>
     </body>
 </html>

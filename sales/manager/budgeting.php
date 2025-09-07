@@ -1,7 +1,7 @@
 <?php
 
 require '../../assets/fungsi.php';
-$allRom = getAllRombongan($konek) ?? [];
+$allRom = viewRombongan($konek) ?? [];
 
 
 ?>
@@ -81,13 +81,17 @@ $allRom = getAllRombongan($konek) ?? [];
 
             viewBudget.forEach((item, index) => {
                 const row = document.createElement('tr');
+                const tanggalDb = new Date(item.date_plan);
+                const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
+                const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
+                
                 row.innerHTML =`
                 <td>${index + 1 }</td>
                 <td>${item.client_name}</td>
                 <td>${item.client_id}</td>
-                <td>${item.marketing_name}</td>
-                <td>${item.tgl_kunjungan}</td>
-                <td>${item.marketing_name}</td>
+                <td>${item.marketing}</td>
+                <td>${plan}</td>
+                <td>${item.oleh}</td>
                 <td>
                     <a class="btn btn-primary btnDetail"
                     data-client-id="${item.client_id}"

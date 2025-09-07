@@ -86,7 +86,7 @@ $allrombongan = viewRombongan($konek);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="text" class="form-control" id="noTlp" name="noTlp">
+                                <input type="hidden" class="form-control" id="noTlp" name="noTlp">
                                 <div class="mb-3 row">
                                     <label for="id_rom" class="col-sm-4 col-form-label">ID Rombongan</label>
                                     <div class="col-sm-8">
@@ -150,56 +150,67 @@ $allrombongan = viewRombongan($konek);
                 </div>
             </div>
         </div>
-        <!-- akhir modal tambah data Client -->
-        <!-- modal Update data Client -->
-        <div class="modal fade" id="updateDataClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <!-- akhir modal tambah data rombongan -->
+        <!-- modal Update data rombongan -->
+        <div class="modal fade" id="updateDataRombongan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update data Rombogan</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit data Rombogan</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="updateClient" action="POST" autocomplete="off">
+                <form id="updateRombongan" action="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
                                 <div class="mb-3 row">
-                                    <label for="kategori" class="col-sm-4 col-form-label">ID ROMBONGAN</label>
+                                    <label for="up_IDrom" class="col-sm-4 col-form-label">ID Rombongan</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="kategori" name="kategori" required>
-                                            <option value="">---pilih kategori---</option>
-                                        </select>
+                                        <input type="text" class="form-control" id="up_IDrom" name="up_IDrom" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_kode" class="col-sm-4 col-form-label">Kode</label>
+                                    <label for="up_instansi" class="col-sm-4 col-form-label">Rombongan</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_kode" name="kode" value="<?= $code; ?>" readonly>
+                                        <input type="text" class="form-control" id="up_instansi" name="up_instansi" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_instansi" class="col-sm-4 col-form-label">Nama Instansi</label>
+                                    <label for="upPic" class="col-sm-4 col-form-label">PIC</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_instansi" name="instansi" required>
+                                        <input type="text" class="form-control" id="upPic" name="upPic" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_pic" class="col-sm-4 col-form-label">Nama PIC</label>
+                                    <label for="upTgl_dtng" class="col-sm-4 col-form-label">Rencana Kedatangan</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_pic" name="pic" required>
+                                        <input type="date" class="form-control" id="upTgl_dtng" name="upTgl_dtng" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_noTlp" class="col-sm-4 col-form-label">Nomor Telephone</label>
+                                    <label for="up_gate" class="col-sm-4 col-form-label">Gate In</label>
                                     <div class="col-sm-8">
-                                        <input type="tel" class="form-control" id="up_noTlp" name="noTlp"
-                                        pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                        <input type="text" class="form-control" id="up_gate" name="up_gate" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_alamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <label for="up_pax" class="col-sm-4 col-form-label">Jumlah</label>
                                     <div class="col-sm-8">
-                                        <textarea class="form-control" name="alamat" id="up_alamat" required></textarea>
+                                        <input type="tel" class="form-control" id="up_pax" name="up_pax"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="upHarga" class="col-sm-4 col-form-label">Harga Perpax</label>
+                                    <div class="col-sm-8">
+                                        <input type="tel" class="form-control" id="upHarga" name="upHarga"
+                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_judul" class="col-sm-4 col-form-label">Judul</label>
+                                    <div class="col-sm-8">
+                                        <input type="tel" class="form-control" id="up_judul" name="up_judul" required>
                                     </div>
                                 </div>
                             </div>
@@ -238,12 +249,15 @@ $allrombongan = viewRombongan($konek);
                 <td>${item.client_pic}</td>
                 <td>${kunjungan}</td>
                 <td>
-                    <button class="btn btn-warning btnUpdateClient" data-bs-toggle="modal" data-bs-target="#updateDataClient"
+                    <button class="btn btn-warning btnUpdateRombongan" data-bs-toggle="modal" data-bs-target="#updateDataRombongan"
                         data-id="${item.client_id}"
                         data-instansi="${item.client_name}"
-                        data-pic="${item.pic}"
-                        data-noTlp="${item.phone}"
-                        data-alamat="${item.address}"
+                        data-pic="${item.client_pic}"
+                        data-tanggal="${item.date_plan}"
+                        data-gate="${item.gate_in}"
+                        data-jumlah="${item.jumlah_pax}"
+                        data-harga="${item.hrg_tiket}"
+                        data-judul="${item.judul}"
                         ><i class="fa-solid fa-file-pen"></i> Edit
                     </button>
                 </td>
@@ -360,35 +374,41 @@ $allrombongan = viewRombongan($konek);
         </script>
         <script>
             document.addEventListener('click',function(e){
-                if(e.target.classList.contains('btnUpdateClient') || e.target.closest('.btnUpdateClient')){
-                    const button = e.target.closest('.btnUpdateClient');
+                if(e.target.classList.contains('btnUpdateRombongan') || e.target.closest('.btnUpdateRombongan')){
+                    const button = e.target.closest('.btnUpdateRombongan');
                     const id = button.getAttribute('data-id');
                     const instansi = button.getAttribute('data-instansi');
                     const pic = button.getAttribute('data-pic');
-                    const noTlp = button.getAttribute('data-noTlp');
-                    const alamat = button.getAttribute('data-alamat');
+                    const tanggal = button.getAttribute('data-tanggal');
+                    const gate = button.getAttribute('data-gate');
+                    const jumlah = button.getAttribute('data-jumlah');
+                    const harga = button.getAttribute('data-harga');
+                    const judul = button.getAttribute('data-judul');
 
-                    document.getElementById('up_kode').value = id;
+                    const formaTanggal = tanggal ? tanggal.substring(0, 10) : '';
+
+                    document.getElementById('up_IDrom').value = id;
                     document.getElementById('up_instansi').value = instansi;
-                    document.getElementById('up_pic').value = pic;
-                    document.getElementById('up_noTlp').value = noTlp;
-                    document.getElementById('up_alamat').value = alamat;
+                    document.getElementById('upPic').value = pic;
+                    document.getElementById('upTgl_dtng').value = formaTanggal;
+                    document.getElementById('up_gate').value = gate;
+                    document.getElementById('up_pax').value = jumlah;
+                    document.getElementById('upHarga').value = harga;
+                    document.getElementById('up_judul').value = judul;
                 }
             });
         </script>
         <script>
-            $('#updateClient').on('submit', function(e){
+            $('#updateRombongan').on('submit', function(e){
                 e.preventDefault();
 
                 const formData = $(this).serialize() + '&aksi=update_dataRombongan';
-                console.log("data dikirim :",formData);
                 
                 $.ajax({
                     url : '../../assets/fungsi.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
-                        console.log("respon dari server update: ", res);
                         let response = {};
                         try {
                             response = JSON.parse(res);
