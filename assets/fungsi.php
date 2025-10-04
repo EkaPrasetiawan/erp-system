@@ -92,18 +92,18 @@ function getViewVendor($konek){
     return $viewVend;
 }
 
-function getFasilitasWK($konek){
-    $dataFs = [];
-    $result =$konek->query("SELECT group_head, group_detail FROM markom_service WHERE group_head != 'Food and Beverages'");
-    if($result){
-        while($row = $result->fetch_assoc()){
-            $dataFs[] = $row;
-        }
-    } else {
-        error_log("error data tidak ditemukan: " . $konek->error);
-    }
-    return $dataFs;
-}
+// function getFasilitasWK($konek){
+//     $dataFs = [];
+//     $result =$konek->query("SELECT group_head, group_detail FROM markom_service WHERE group_head != 'Food and Beverages'");
+//     if($result){
+//         while($row = $result->fetch_assoc()){
+//             $dataFs[] = $row;
+//         }
+//     } else {
+//         error_log("error data tidak ditemukan: " . $konek->error);
+//     }
+//     return $dataFs;
+// }
 
 function getKategoriFst($konek) {
     $kategori = [];
@@ -132,17 +132,17 @@ function getFnB($konek){
     return $fnb;
 }
 
-function getCnc($konek){
-    $cnc = [];
-    $result = $konek->query("SELECT urut, facility_name FROM facility");
-    if($result){
-        while($row = $result->fetch_assoc())
-            $cnc[] = $row;
-    } else {
-        error_log("Data Kosong".$result->error);
-    }
-    return $cnc;
-}
+// function getCnc($konek){
+//     $cnc = [];
+//     $result = $konek->query("SELECT urut, facility_name FROM facility");
+//     if($result){
+//         while($row = $result->fetch_assoc())
+//             $cnc[] = $row;
+//     } else {
+//         error_log("Data Kosong".$result->error);
+//     }
+//     return $cnc;
+// }
 
 function getKodeVen(mysqli $konek): string {
     $prefix = "VEN";
@@ -166,6 +166,98 @@ function getKodeVen(mysqli $konek): string {
 
     $nextId = str_pad($lastId + 1, 3, "0", STR_PAD_LEFT);
     return $prefix . $bulan . $nextId;
+}
+
+function getCnc($konek, $date, $client_id) {
+    // Amankan input tanggal
+    $safe_date = mysqli_real_escape_string($konek, $date);
+    $safe_client_id = mysqli_real_escape_string($konek, $client_id);
+
+    // Jika tanggal atau client_id kosong, kembalikan array kosong
+    if (empty($safe_date) || empty($safe_client_id)) {
+        return [];
+    }
+
+    // 1. Subquery: Cari NAMA fasilitas yang sudah terpakai.
+    $query_booked_names = "
+        SELECT
+            DISTINCT rd.fasilitas_name
+        FROM
+            rombongan_detail rd
+        JOIN
+            rombongan_master rm ON rd.fasilitas_id = rm.client_id
+        WHERE
+            rm.date_plan = '{$safe_date}'
+            AND rm.client_id != '{$safe_client_id}'
+    ";
+
+    // 2. Query utama: Ambil semua fasilitas yang namanya TIDAK ada dalam daftar yang sudah terpakai.
+    $query_available = "
+        SELECT
+            f.*
+        FROM
+            facility f
+        WHERE
+            f.facility_name NOT IN ({$query_booked_names})
+        ORDER BY
+            f.facility_name
+    ";
+
+    $result = mysqli_query($konek, $query_available);
+
+    if ($result) {
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } else {
+        // Jika gagal, kembalikan array kosong dan catat error untuk debugging
+        error_log("Query Gagal getAvailableFasilitasForDate: " . mysqli_error($konek));
+        return [];
+    }
+}
+
+function getFasilitasWK($konek, $date, $client_id) {
+    // Amankan input tanggal
+    $safe_date = mysqli_real_escape_string($konek, $date);
+    $safe_client_id = mysqli_real_escape_string($konek, $client_id);
+
+    // Jika tanggal atau client_id kosong, kembalikan array kosong
+    if (empty($safe_date) || empty($safe_client_id)) {
+        return [];
+    }
+
+    // 1. Subquery: Cari NAMA fasilitas yang sudah terpakai.
+    $query_booked_names = "
+        SELECT
+            DISTINCT rd.fasilitas_name
+        FROM
+            rombongan_detail rd
+        JOIN
+            rombongan_master rm ON rd.fasilitas_id = rm.client_id
+        WHERE
+            rm.date_plan = '{$safe_date}'
+            AND rm.client_id != '{$safe_client_id}'
+    ";
+
+    // 2. Query utama: Ambil semua fasilitas yang namanya TIDAK ada dalam daftar yang sudah terpakai.
+    $query_available = "
+        SELECT
+            ms.*
+        FROM
+            markom_service ms
+        WHERE
+            ms.group_detail NOT IN ({$query_booked_names})
+        ORDER BY
+            ms.group_detail
+    ";
+
+    $result = mysqli_query($konek, $query_available);
+
+    if ($result) {
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } else {
+        // Jika gagal, kembalikan array kosong dan catat error untuk debugging
+        error_log("Query Gagal getAvailableFasilitasForDate: " . mysqli_error($konek));
+        return [];
+    }
 }
 
 
@@ -589,8 +681,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec, catatan
             FROM rombongan_detail WHERE fasilitas_id = ?");
 
-            // $stmt = $konek->prepare("SELECT * FROM rombongan_detail WHERE fasilitas_id = ?");
-
             $stmt->bind_param("s", $fasil);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -847,6 +937,78 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt->close();
         exit;
     }
+
+    if($_POST['aksi'] === 'update_cabanaAndcabin'){
+        $idCnC = ($_POST['cncId']);
+        $pengguna = sanitize_text($_POST['up_nPeng']);
+        $fasilitas = sanitize_text($_POST['up_fcnc']);
+
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, catatan FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $idCnC);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        if(
+            $cek['fasilitas_name'] === $fasilitas &&
+            $cek['catatan'] === $pengguna
+        ){
+            echo json_encode(['sttus' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE data_id = ?");
+        $stmt_update->bind_param("ssi", $fasilitas, $pengguna, $idCnC);
+        if($stmt_update->execute()){
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("update data error: ".$stmt_update->error);
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+    function getAvailableFacilities($konek, $rombongan_id) {
+        $sql = "
+            SELECT f.facility_name
+            FROM facility f
+            WHERE f.fasilitas_id NOT IN (
+                SELECT rd.fasilitas_name
+                FROM rombongan_detail rd
+                JOIN rombongan_master rm 
+                    ON rd.fasilitas_id = rm.client_id
+                WHERE rm.date_plan = (
+                    SELECT date_plan
+                    FROM rombongan_master 
+                    WHERE client_id = ?
+                )
+            )
+        ";
+
+        $stmt = $konek->prepare($sql);
+        if (!$stmt) {
+            die('Prepare failed: ' . $konek->error);
+        }
+        $stmt->bind_param("i", $rombongan_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $facilities = [];
+        while ($row = $result->fetch_assoc()) {
+            $facilities[] = $row;
+        }
+
+        $stmt->close();
+        return $facilities;
+    }
+
 }
 
 

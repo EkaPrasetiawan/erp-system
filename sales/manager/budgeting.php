@@ -95,7 +95,8 @@ $allRom = viewRombongan($konek) ?? [];
                 <td>
                     <a class="btn btn-primary btnDetail"
                     data-client-id="${item.client_id}"
-                    data-client-name="${item.client_name}">
+                    data-client-name="${item.client_name}"
+                    data-client-date="${item.date_plan}">
                     <i class="fa-solid fa-newspaper"></i> Detail</a>
                 </td>
                 `;
@@ -114,6 +115,7 @@ $allRom = viewRombongan($konek) ?? [];
 
                     const clientId = clickedElement.dataset.clientId;
                     const clientName = clickedElement.dataset.clientName;
+                    const clientDate = clickedElement.dataset.clientDate;
 
                     const form = document.createElement('form');
                     form.method = 'POST';
@@ -129,8 +131,14 @@ $allRom = viewRombongan($konek) ?? [];
                     inputName.name = 'client_name';
                     inputName.value = clientName;
 
+                    const inputDate = document.createElement('input');
+                    inputDate.type = 'hidden';
+                    inputDate.name = 'date_plan';
+                    inputDate.value = clientDate;
+
                     form.appendChild(inputId);
                     form.appendChild(inputName);
+                    form.appendChild(inputDate);
 
                     document.body.appendChild(form);
                     form.submit();

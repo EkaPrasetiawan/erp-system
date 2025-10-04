@@ -1,16 +1,22 @@
 <?php
 
 require '../../assets/fungsi.php';
-$dataFs = getFasilitasWK($konek);
-$headFs = getKategoriFst($konek);
-$vendorFs = getViewVendor($konek);
-$viewFnB = getFnB($konek);
-$viewCnC = getCnc($konek);
+
+$client_id = '';
+$client_name = '';
+$client_date = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_id = $_POST['client_id'] ??'';
     $client_name = $_POST['client_name'] ??'';
+    $client_date = $_POST['date_plan'] ??'';
 }
+
+$dataFs = getFasilitasWK($konek, $client_date, $client_id);
+$headFs = getKategoriFst($konek);
+$vendorFs = getViewVendor($konek);
+$viewFnB = getFnB($konek);
+$viewCnC = getCnc($konek, $client_date, $client_id);
 
 
 ?>
@@ -524,7 +530,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="" id="idCnC" name="idCnC">
+                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
                                     <label for="nPeng" class="col-sm-4 col-form-label">Nama Pengguna</label>
@@ -564,7 +570,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="" id="cncId" name="cncId">
                                 <div class="mb-3 row">
                                     <label for="up_nPeng" class="col-sm-4 col-form-label">Nama Pengguna</label>
                                     <div class="col-sm-8">
@@ -1146,7 +1152,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $('#up_fnbAdd').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=updateFnB';
-                // console.log("data up: ", formData);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -1244,11 +1249,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             document.addEventListener('click', function(e){
                 if(e.target.classList.contains('btnUpdateCnC') || e.target.closest('.btnUpdateCnC')){
                     const button = e.target.closest('.btnUpdateCnC');
-                    const idCnC = button.getAttribute('data-idCnC');
+                    const idCnc = button.getAttribute('data-idCnC');
                     const pengguna = button.getAttribute('data-penguna');
                     const fasilitas = button.getAttribute('data-fasilitas');
 
-                    document.getElementById('idCnC').value = idCnC;
+                    document.getElementById('cncId').value = idCnc;
                     document.getElementById('up_nPeng').value = pengguna;
 
                     upFcnc.innerHTML = '<option value="">---pilih fasilitas---</option>';
@@ -1260,7 +1265,43 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     });
                     upFcnc.value = fasilitas;
                 }
-            })
+            });
+
+            $('#cncUpdate').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=update_cabanaAndcabin';
+                console.log("data dikirim: ",formData);
+
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        console.log("server: ", res);
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        }catch(e){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'respons salah',
+                                text: 'terjadi kesalahan jaringan'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        console.log("ajak error :", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'error jaringan'
+                        });
+                    }
+                });
+            });
         </script>
     </body>
 </html>
