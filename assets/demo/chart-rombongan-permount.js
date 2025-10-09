@@ -26,7 +26,6 @@ var myBarChart = new Chart(ctx, {
       {
         label: "Jumlah Rombongan",
         backgroundColor: "rgba(2,117,216,1)",
-        borderColor: "rgba(2,117,216,1)",
         data: values, // jumlah per bulan
       },
     ],

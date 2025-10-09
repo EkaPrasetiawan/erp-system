@@ -38,20 +38,16 @@ $allRom = viewRombongan($konek) ?? [];
                             <li class="breadcrumb-item active">Home</li>
                         </ol> -->
                         <div class="row">
-                            <!-- <div class="col-xl-6">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-area me-1"></i>
-                                        Area Chart Example
-                                    </div>
-                                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
-                                </div>
-                            </div> -->
+                            <div class="mb-3">
+                                <label for="yearSelect">Pilih Tahun:</label>
+                                <select id="yearSelect" class="form-select" style="width:auto; display:inline-block;"></select>
+                            </div>
+
                             <div class="col-xl-6">
                                 <div class="card mb-4">
                                     <div class="card-header">
                                         <i class="fas fa-chart-bar me-1"></i>
-                                        Bar Chart Example
+                                        Data Rombongan Perbulan
                                     </div>
                                     <div class="card-body"><canvas id="mySalesMount" width="100%" height="40"></canvas></div>
                                 </div>
@@ -60,9 +56,9 @@ $allRom = viewRombongan($konek) ?? [];
                                 <div class="card mb-4">
                                     <div class="card-header">
                                         <i class="fas fa-chart-bar me-1"></i>
-                                        Bar Chart Example
+                                        Data Rombongan Persales
                                     </div>
-                                    <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+                                    <div class="card-body"><canvas id="mySalesName" width="100%" height="40"></canvas></div>
                                 </div>
                             </div>
                         </div>
@@ -95,16 +91,14 @@ $allRom = viewRombongan($konek) ?? [];
                 </footer>
             </div>
         </div>
+
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="../../js/scripts.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-        <script>const allRom = <?= json_encode($allRom); ?>;</script>
-        <script src="../../assets/demo/chart-bar-rombongan-permount.js"></script>
-        <script src="../../assets/demo/chart-bar-demo.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script> -->
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
-
         <script>
             const viewBudget = <?= json_encode($allRom); ?>;
             const tbody = document.getElementById('dtRombonganAll');
@@ -125,7 +119,132 @@ $allRom = viewRombongan($konek) ?? [];
                 `;
                 tbody.appendChild(row);
             });
+        </script>
+        <script>
+            const allRom = <?= json_encode($allRom); ?>;
+            const yearSelect = document.getElementById("yearSelect");
+            // Ambil semua tahun unik dari date_plan
+            const years = [
+            ...new Set(allRom.map((item) => new Date(item.date_plan).getFullYear())),
+            ].sort();
 
+            // Isi dropdown tahun
+            years.forEach((year) => {
+            const opt = document.createElement("option");
+            opt.value = year;
+            opt.textContent = year;
+            yearSelect.appendChild(opt);
+            });
+
+            // Tentukan tahun default (tahun sekarang atau terakhir di data)
+            const currentYear = new Date().getFullYear();
+            yearSelect.value = years.includes(currentYear)
+            ? currentYear
+            : years[years.length - 1];
+
+            // Urutan nama bulan tetap
+            const monthOrder = [
+            "Januari",
+            "Februari",
+            "Maret",
+            "April",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
+            "September",
+            "Oktober",
+            "November",
+            "Desember",
+            ];
+
+            // Variabel global untuk menyimpan chart agar bisa di-destroy nanti
+            let chartPerBulan = null;
+            let chartPerSales = null;
+
+            // Fungsi render semua grafik berdasarkan tahun
+            function renderCharts(year) {
+            const filtered = allRom.filter(
+                (item) => new Date(item.date_plan).getFullYear() === parseInt(year)
+            );
+
+            // =============== Grafik 1: Rombongan Per Bulan ====================
+            const monthlyCount = {};
+            filtered.forEach((item) => {
+                const month = new Date(item.date_plan).toLocaleString("id-ID", {
+                month: "long",
+                });
+                monthlyCount[month] = (monthlyCount[month] || 0) + 1;
+            });
+
+            const labelsMonth = monthOrder.filter((m) =>
+                Object.keys(monthlyCount).includes(m)
+            );
+            const valuesMonth = labelsMonth.map((m) => monthlyCount[m] || 0);
+
+            if (chartPerBulan) chartPerBulan.destroy();
+            const ctxMonth = document.getElementById("mySalesMount").getContext("2d");
+            chartPerBulan = new Chart(ctxMonth, {
+                type: "bar",
+                data: {
+                labels: labelsMonth,
+                datasets: [
+                    {
+                    label: `Jumlah Rombongan per Bulan (${year})`,
+                    backgroundColor: "rgba(2,117,216,0.7)",
+                    borderColor: "rgba(2,117,216,1)",
+                    data: valuesMonth,
+                    },
+                ],
+                },
+                options: {
+                scales: {
+                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
+                },
+                plugins: { legend: { display: true } },
+                },
+            });
+
+            // =============== Grafik 2: Rombongan Per Sales ====================
+            const salesCount = {};
+            filtered.forEach((item) => {
+                const sales = item.marketing || "Tidak Ada Sales";
+                salesCount[sales] = (salesCount[sales] || 0) + 1;
+            });
+
+            const labelsSales = Object.keys(salesCount);
+            const valuesSales = Object.values(salesCount);
+            const colors = labelsSales.map((_, i) => `hsl(${(i * 60) % 360}, 70%, 50%)`);
+
+            if (chartPerSales) chartPerSales.destroy();
+            const ctxSales = document.getElementById("mySalesName").getContext("2d");
+            chartPerSales = new Chart(ctxSales, {
+                type: "bar",
+                data: {
+                labels: labelsSales,
+                datasets: [
+                    {
+                    label: `Jumlah Rombongan per Sales (${year})`,
+                    backgroundColor: colors,
+                    // borderColor: colors,
+                    data: valuesSales,
+                    },
+                ],
+                },
+                options: {
+                scales: {
+                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
+                },
+                plugins: { legend: { display: false } },
+                },
+            });
+            }
+
+            // Render pertama kali
+            renderCharts(yearSelect.value);
+
+            // Ubah grafik jika tahun diganti
+            yearSelect.addEventListener("change", (e) => renderCharts(e.target.value));
         </script>
     </body>
 </html>
