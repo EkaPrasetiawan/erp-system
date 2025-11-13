@@ -93,11 +93,18 @@ $allRom = viewRombongan($konek) ?? [];
                 <td>${plan}</td>
                 <td>${item.oleh}</td>
                 <td>
-                    <a class="btn btn-primary btnDetail"
-                    data-client-id="${item.client_id}"
-                    data-client-name="${item.client_name}"
-                    data-client-date="${item.date_plan}">
-                    <i class="fa-solid fa-newspaper"></i> Detail</a>
+                    <div class="d-grid gap-1">
+                        <a class="btn btn-primary btnDetail"
+                        data-client-id="${item.client_id}"
+                        data-client-name="${item.client_name}"
+                        data-client-date="${item.date_plan}">
+                        <i class="fa-solid fa-newspaper"></i> Detail</a>
+                        <a class="btn btn-success btnPrint"
+                        data-client-id="${item.client_id}"
+                        data-client-name="${item.client_name}"
+                        data-client-date="${item.date_plan}">
+                        <i class="fa-solid fa-print"></i> Print</a>
+                    </div>
                 </td>
                 `;
                 tbody.appendChild(row);
@@ -139,6 +146,40 @@ $allRom = viewRombongan($konek) ?? [];
                     form.appendChild(inputId);
                     form.appendChild(inputName);
                     form.appendChild(inputDate);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        </script>
+        <script>
+            //even delegation
+            document.body.addEventListener('click', function(e) {
+                // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
+                const clickedElement = e.target.closest('.btnPrint');
+
+                if (clickedElement) {
+                    e.preventDefault();
+
+                    const cliId = clickedElement.dataset.clientId;
+                    const cliName = clickedElement.dataset.clientName;
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = 'print.php';
+
+                    const inputId = document.createElement('input');
+                    inputId.type = 'hidden';
+                    inputId.name = 'client_id';
+                    inputId.value = cliId;
+
+                    const inputName = document.createElement('input');
+                    inputName.type = 'hidden';
+                    inputName.name = 'client_name';
+                    inputName.value = cliName;
+
+                    form.appendChild(inputId);
+                    form.appendChild(inputName);
 
                     document.body.appendChild(form);
                     form.submit();

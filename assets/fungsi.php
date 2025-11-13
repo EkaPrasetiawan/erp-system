@@ -260,6 +260,38 @@ function getFasilitasWK($konek, $date, $client_id) {
     }
 }
 
+function getViewBudgeting ($konek, $client_id){
+    $sf_client_id = mysqli_real_escape_string($konek, $client_id);
+    
+    if(empty($sf_client_id)){
+        return[];
+    }
+
+    $viewBudgeting = [];
+    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id'");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $viewBudgeting[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
+    }
+    return $viewBudgeting;
+}
+function getRombonganOk ($konek, $client_id){
+    $rombonganOk = [];
+    $result = $konek->query("SELECT date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, client_id
+                            FROM rombongan_master WHERE client_id = '$client_id'");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $rombonganOk[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
+    }
+    return $rombonganOk;
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'update_sales') {
     // Gunakan prepared statements untuk mencegah SQL Injection

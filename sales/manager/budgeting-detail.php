@@ -79,18 +79,20 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFasilitas">
                                     <i class="fa-solid fa-plus"></i> Add
                                 </button>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Fasilitas</th>
-                                            <th>Harga</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fasilitas-wk">
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Fasilitas</th>
+                                                <th>Harga</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fasilitas-wk">
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         <div class="card mb-4">
@@ -101,21 +103,23 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFasilitasVendor">
                                     <i class="fa-solid fa-plus"></i> Add
                                 </button>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Vendor</th>
-                                            <th>Nama Fasilitas</th>
-                                            <th>Jumlah</th>
-                                            <th>Harga Jual</th>
-                                            <th>Harga Vendor</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fasilitas-vendor">
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Vendor</th>
+                                                <th>Nama Fasilitas</th>
+                                                <th>Jumlah</th>
+                                                <th>Harga Jual</th>
+                                                <th>Harga Vendor</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fasilitas-vendor">
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         <div class="card mb-4">
@@ -126,20 +130,22 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahFnB">
                                     <i class="fa-solid fa-plus"></i> Add
                                 </button>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Fasilitas</th>
-                                            <th>Qty</th>
-                                            <th>Harga</th>
-                                            <th>Catatan</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fasilitas-fnb">
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Fasilitas</th>
+                                                <th>Qty</th>
+                                                <th>Harga</th>
+                                                <th>Catatan</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fasilitas-fnb">
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         <div class="card mb-4">
@@ -150,18 +156,20 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#tambahCnC">
                                     <i class="fa-solid fa-plus"></i> Add
                                 </button>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Pengguna</th>
-                                            <th>Nama Facility</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="cabanaAndcanbin">
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Pengguna</th>
+                                                <th>Nama Facility</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cabanaAndcanbin">
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -714,18 +722,20 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                 <td>${item.price.toLocaleString('id-ID')}</td>
                                                 <td>${item.price_vend.toLocaleString('id-ID')}</td>
                                                 <td>
-                                                    <button class="btn btn-warning btnUpdateFsVend" data-bs-toggle="modal" data-bs-target="#upateFasilitasVendor"
-                                                        data-idf="${item.data_id}"
-                                                        data-head="${item.client_id}"
-                                                        data-fsl="${item.fasilitas_name}"
-                                                        data-qty="${item.qty}"
-                                                        data-price="${item.price}"
-                                                        data-priceVend="${item.price_vend}"
-                                                        >
-                                                        <i class="fa-solid fa-file-pen"></i> edit
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm">
-                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
+                                                        <button class="btn btn-warning btnUpdateFsVend" data-bs-toggle="modal" data-bs-target="#upateFasilitasVendor"
+                                                            data-idf="${item.data_id}"
+                                                            data-head="${item.client_id}"
+                                                            data-fsl="${item.fasilitas_name}"
+                                                            data-qty="${item.qty}"
+                                                            data-price="${item.price}"
+                                                            data-priceVend="${item.price_vend}"
+                                                            >
+                                                            <i class="fa-solid fa-file-pen"></i> edit
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                        <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `);
@@ -738,17 +748,19 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                 <td>${item.price.toLocaleString('id-ID')}</td>
                                                 <td>${item.spec}</td>
                                                 <td>
-                                                    <button class="btn btn-warning btnUpdateFnB" data-bs-toggle="modal" data-bs-target="#upateFnB"
-                                                        data-idFnB="${item.data_id}"
-                                                        data-menu="${item.fasilitas_name}"
-                                                        data-qtyFnB="${item.qty}"
-                                                        data-harga="${item.price}"
-                                                        data-ket="${item.spec}"
-                                                        >
-                                                        <i class="fa-solid fa-file-pen"></i> edit
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm">
-                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
+                                                        <button class="btn btn-warning btnUpdateFnB" data-bs-toggle="modal" data-bs-target="#upateFnB"
+                                                            data-idFnB="${item.data_id}"
+                                                            data-menu="${item.fasilitas_name}"
+                                                            data-qtyFnB="${item.qty}"
+                                                            data-harga="${item.price}"
+                                                            data-ket="${item.spec}"
+                                                            >
+                                                            <i class="fa-solid fa-file-pen"></i> edit
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                        <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `);
@@ -759,15 +771,17 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                 <td>${item.catatan}</td>
                                                 <td>${item.fasilitas_name}</td>
                                                 <td>
-                                                    <button class="btn btn-warning btnUpdateCnC" data-bs-toggle="modal" data-bs-target="#upateCnC"
-                                                        data-idCnC="${item.data_id}"
-                                                        data-penguna="${item.catatan}"
-                                                        data-fasilitas="${item.fasilitas_name}"
-                                                        >
-                                                        <i class="fa-solid fa-file-pen"></i> edit
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm">
-                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
+                                                        <button class="btn btn-warning btnUpdateCnC" data-bs-toggle="modal" data-bs-target="#upateCnC"
+                                                            data-idCnC="${item.data_id}"
+                                                            data-penguna="${item.catatan}"
+                                                            data-fasilitas="${item.fasilitas_name}"
+                                                            >
+                                                            <i class="fa-solid fa-file-pen"></i> edit
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                        <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `);
@@ -778,18 +792,20 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                 <td>${item.fasilitas_name}</td>
                                                 <td>${item.price.toLocaleString('id-ID')}</td>
                                                 <td>
-                                                    <button class="btn btn-warning btnUpdateFsWk" data-bs-toggle="modal" data-bs-target="#upateFasilitasWk"
-                                                        data-idf="${item.data_id}"
-                                                        data-kode="${item.fasilitas_id}"
-                                                        data-head="${item.group_fasilitas}"
-                                                        data-fsl="${item.fasilitas_name}"
-                                                        data-qty="${item.qty}"
-                                                        data-price="${item.price}"
-                                                        >
-                                                        <i class="fa-solid fa-file-pen"></i> edit
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm">
-                                                    <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
+                                                        <button class="btn btn-warning btnUpdateFsWk" data-bs-toggle="modal" data-bs-target="#upateFasilitasWk"
+                                                            data-idf="${item.data_id}"
+                                                            data-kode="${item.fasilitas_id}"
+                                                            data-head="${item.group_fasilitas}"
+                                                            data-fsl="${item.fasilitas_name}"
+                                                            data-qty="${item.qty}"
+                                                            data-price="${item.price}"
+                                                            >
+                                                            <i class="fa-solid fa-file-pen"></i> edit
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                        <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `);
