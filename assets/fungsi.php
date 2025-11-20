@@ -458,9 +458,32 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                                 VALUES(?,?,?,?,?,?,?,?,?,?,?)");
         $stmt->bind_param("ssssssissis", $idRom, $nama, $tgl_input, $tanggal_plan, $pic, $noTlp, $jumlah, $sales, $gate, $nominal, $judul);
         if($stmt->execute()){
+            $newData = [
+                "client_id"   => $idRom,
+                "client_name" => $nama,
+                "client_pic"  => $pic,
+                "phone"       => $noTlp,
+                "jumlah_pax"  => $jumlah,
+                "marketing"   => $sales,
+                "date_plan"   => $tanggal_plan,
+                "gate_in"     => $gate,
+                "hrg_tiket"   => $nominal,
+                "judul"       => $judul
+            ];
+
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                211,
+                "add",                    // jenis aksi
+                "rombongan_master",       // nama tabel
+                $idRom,                   // ID data
+                '',                     // old_value (karena INSERT)
+                json_encode($newData)     // new_value
+            );
             echo json_encode(['status' => 'success']);
         } else {
-            error_log("Error Systen: ".$STmt->error);
+            error_log("Error Systen: ".$stmt->error);
             echo json_encode(['status' => 'error']);
         }
         $stmt->close();
@@ -481,20 +504,27 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt_cek->bind_param("s", $idRom);
         $stmt_cek->execute();
         $result_cek = $stmt_cek->get_result();
-        $cek = $result_cek->fetch_assoc();
+        // $cek = $result_cek->fetch_assoc();
+        $oldData = $result_cek->fetch_assoc();
         $stmt_cek->close();
 
-        if(!$cek){
+        if(!$oldData){
             echo json_encode(['status' => 'error']);
             exit;
         }
-        if(
-            $cek['date_plan'] === $tanggal &&
-            $cek['gate_in'] === $gate &&
-            $cek['jumlah_pax'] === $jumlah &&
-            $cek['hrg_tiket'] === $price &&
-            $cek['judul'] === $judul
-        ){
+
+        $changes = [];
+        if($oldData['date_plan'] != $tanggal)
+            $changes['date_plan'] = ['old'=>$oldData['date_plan'], 'new'=>$tanggal];
+        if($oldData['jumlah_pax'] != $jumlah)
+            $changes['jumlah_pax'] = ['old'=>$oldData['jumlah_pax'], 'new'=>$jumlah];
+        if($oldData['gate_in'] != $gate)
+            $changes['gate_in'] = ['old'=>$oldData['gate_in'], 'new'=>$gate];
+        if($oldData['hrg_tiket'] != $price)
+            $changes['hrg_tiket'] = ['old'=>$oldData['hrg_tiket'], 'new'=>$price];
+        if($oldData['judul'] != $judul)
+            $changes['judul'] = ['old'=>$oldData['judul'], 'new'=>$judul];
+        if(empty($changes)){
             echo json_encode(['status' => 'nochange']);
             exit;
         }
@@ -502,6 +532,226 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt_update = $konek->prepare("UPDATE rombongan_master SET date_plan = ?, jumlah_pax = ?, gate_in = ?, hrg_tiket = ?, judul = ? WHERE client_id = ?");
         $stmt_update->bind_param("sissss", $tanggal, $jumlah, $gate, $price, $judul, $idRom);
         if($stmt_update->execute()){
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],      // siapa yg update
+                911,
+                "update",                  // aksi
+                "rombongan_master",        // tabel
+                $idRom,                    // record ID
+                json_encode($oldData),     // old_value
+                json_encode($changes)      // HANYA value yg berubah
+            );
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("Update Error: " . $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt_update->close();
+        exit;
+    }
+    
+    //update dp rombongan
+    if($_POST['aksi'] === 'update_dp_rombongan'){
+        $id_dpRom = sanitize_text($_POST['up_IDromDP']);
+        $dp_amount = $_POST['up_dp'] ?? 0;
+        //folder img
+        $target_dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . "img" . DIRECTORY_SEPARATOR . "downPayment" . DIRECTORY_SEPARATOR;
+        $image_path = null;
+        $uploaded_at = date('Y-m-d H:i:s'); // Catat waktu upload
+
+            // ========== 1. Ambil data lama dulu ==========
+        $qOld = $konek->prepare("SELECT down_payment, img_dp, dp_uploaded_at FROM rombongan_master WHERE client_id = ?");
+        $qOld->bind_param("s", $id_dpRom);
+        $qOld->execute();
+        $result = $qOld->get_result();
+        $oldRow = $result->fetch_assoc();
+        $qOld->close();
+
+        $oldData = json_encode($oldRow); 
+
+        $has_new_image = false;
+
+        if (isset($_FILES['picDP']) && $_FILES['picDP']['error'] === UPLOAD_ERR_OK) {
+            $has_new_image = true;
+            $file_name = $_FILES['picDP']['name'];
+            $file_tmp = $_FILES['picDP']['tmp_name'];
+            $file_size = $_FILES['picDP']['size']; 
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $allowed_ext = ['jpg', 'jpeg', 'png'];
+        
+            // Pengecekan Ekstensi dan Ukuran
+            if (!in_array($file_ext, $allowed_ext)) {
+                echo json_encode(['status' => 'error', 'message' => 'Format file DP tidak diizinkan. Hanya JPG, JPEG, PNG.']);
+                exit();
+            }
+            if ($file_size > 2000000) { // 2MB
+                echo json_encode(['status' => 'error', 'message' => 'Ukuran file DP melebihi batas 2MB.']);
+                exit();
+            }
+            // Generate nama unik (misalnya: ID_ROMBONGAN_DP_timestamp.ext)
+            $new_file_name = $id_dpRom . '_DP_' . time() . '.' . $file_ext;
+            $target_file = $target_dir . $new_file_name;
+
+            if (move_uploaded_file($file_tmp, $target_file)) {
+                // Path relatif yang akan disimpan di database
+                $image_path = 'img/downPayment/' . $new_file_name; 
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal memindahkan file DP yang diupload.']);
+                exit();
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'File gambar DP wajib diupload. Error: ' . $_FILES['picDP']['error']]);
+            exit();
+        }
+        // Update Data ke Database
+         if ($has_new_image) {
+                $stmt_update = $konek->prepare("
+                    UPDATE rombongan_master 
+                    SET down_payment = ?, img_dp = ?, dp_uploaded_at = ?
+                    WHERE client_id = ?
+                ");
+                $stmt_update->bind_param("isss", $dp_amount, $image_path, $uploaded_at, $id_dpRom);
+            } else {
+                $stmt_update = $konek->prepare("
+                    UPDATE rombongan_master 
+                    SET down_payment = ?
+                    WHERE client_id = ?
+                ");
+                $stmt_update->bind_param("is", $dp_amount, $id_dpRom);
+            }
+    
+        if ($stmt_update->execute()) {
+
+            // ========== Ambil data baru ==========
+            $qNew = $konek->prepare("SELECT down_payment, img_dp, dp_uploaded_at
+                                    FROM rombongan_master WHERE client_id = ?");
+            $qNew->bind_param("s", $id_dpRom);
+            $qNew->execute();
+            $resultNew = $qNew->get_result();
+            $newRow = $resultNew->fetch_assoc();
+            $qNew->close();
+
+            $newData = json_encode($newRow);
+
+            // ========== Simpan history log ==========
+            logActivity(
+                $konek,
+                112,
+                "update_dp",
+                "rombongan_master",
+                $id_dpRom,
+                $oldData,
+                $newData,
+            );
+
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            error_log("Update Error: " . $stmt_update->error);
+            echo json_encode(['status' => 'error']);
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+    //clear payment
+    if($_POST['aksi'] === 'update_cp_rombongan'){
+        $id_cpRom = sanitize_text($_POST['up_IDromCP']);
+        $cp_amount = $_POST['up_cp'] ?? 0;
+        //folder img
+        // $target_dir = dirname(dirname(__DIR__)) . "../img/downPayment/";
+        $target_dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . "img" . DIRECTORY_SEPARATOR . "clearPayment" . DIRECTORY_SEPARATOR;
+        $image_path = null;
+        $uploaded_at = date('Y-m-d H:i:s'); // Catat waktu upload
+
+            // ========== 1. Ambil data lama dulu ==========
+        $qOld = $konek->prepare("SELECT clear_payment, img_cp, cp_uploaded_at FROM rombongan_master WHERE client_id = ?");
+        $qOld->bind_param("s", $id_cpRom);
+        $qOld->execute();
+        $result = $qOld->get_result();
+        $oldRow = $result->fetch_assoc();
+        $qOld->close();
+
+        $oldData = json_encode($oldRow); 
+
+        $has_new_image = false;
+
+        if (isset($_FILES['picCP']) && $_FILES['picCP']['error'] === UPLOAD_ERR_OK) {
+            $has_new_image = true;
+            $file_name = $_FILES['picCP']['name'];
+            $file_tmp = $_FILES['picCP']['tmp_name'];
+            $file_size = $_FILES['picCP']['size']; 
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $allowed_ext = ['jpg', 'jpeg', 'png'];
+        
+            // Pengecekan Ekstensi dan Ukuran
+            if (!in_array($file_ext, $allowed_ext)) {
+                echo json_encode(['status' => 'error', 'message' => 'Format file tidak diizinkan. Hanya JPG, JPEG, PNG.']);
+                exit();
+            }
+            if ($file_size > 2000000) { // 2MB
+                echo json_encode(['status' => 'error', 'message' => 'Ukuran file melebihi batas 2MB.']);
+                exit();
+            }
+            // Generate nama unik (misalnya: ID_ROMBONGAN_CP_timestamp.ext)
+            $new_file_name = $id_cpRom . '_CP_' . time() . '.' . $file_ext;
+            $target_file = $target_dir . $new_file_name;
+
+            if (move_uploaded_file($file_tmp, $target_file)) {
+                // Path relatif yang akan disimpan di database
+                // Contoh: 'img/imgDP/ID_ROMBONGAN_DP_timestamp.jpg'
+                $image_path = 'img/clearPayment/' . $new_file_name; 
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal memindahkan file yang diupload.']);
+                exit();
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'File gambar wajib diupload. Error: ' . $_FILES['picDP']['error']]);
+            exit();
+        }
+        // Update Data ke Database
+         if ($has_new_image) {
+                $stmt_update = $konek->prepare("
+                    UPDATE rombongan_master 
+                    SET clear_payment = ?, img_cp = ?, cp_uploaded_at = ?
+                    WHERE client_id = ?
+                ");
+                $stmt_update->bind_param("isss", $cp_amount, $image_path, $uploaded_at, $id_cpRom);
+            } else {
+                $stmt_update = $konek->prepare("
+                    UPDATE rombongan_master 
+                    SET clear_payment = ?
+                    WHERE client_id = ?
+                ");
+                $stmt_update->bind_param("is", $cp_amount, $id_cpRom);
+            }
+    
+        if ($stmt_update->execute()) {
+
+            // ========== Ambil data baru ==========
+            $qNew = $konek->prepare("SELECT clear_payment, img_cp, cp_uploaded_at
+                                    FROM rombongan_master WHERE client_id = ?");
+            $qNew->bind_param("s", $id_cpRom);
+            $qNew->execute();
+            $resultNew = $qNew->get_result();
+            $newRow = $resultNew->fetch_assoc();
+            $qNew->close();
+
+            $newData = json_encode($newRow);
+
+            // ========== Simpan history log ==========
+            logActivity(
+                $konek,
+                112,
+                "update clear payment",
+                "rombongan_master",
+                $id_cpRom,
+                $oldData,
+                $newData,
+            );
+
             echo json_encode(['status' => 'success']);
             exit;
         } else {
@@ -1042,6 +1292,33 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
     }
 
 }
+
+function logActivity($konek, $user_id, $action, $table_name, $record_id, $old_value = null, $new_value = null){
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+    $created_at = date("Y-m-d H:i:s");
+
+    $stmt = $konek->prepare("INSERT INTO log_act
+        (user_id, action, table_name, record_id, old_value, new_value, ip_address, user_agent, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+
+    $stmt->bind_param("issssssss", 
+        $user_id, 
+        $action,
+        $table_name,
+        $record_id,
+        $old_value,
+        $new_value,
+        $ip_address,
+        $user_agent,
+        $created_at
+    );
+
+    $stmt->execute();
+    $stmt->close();
+}
+
 
 
 ?>

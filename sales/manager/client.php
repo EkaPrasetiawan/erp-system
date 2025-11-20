@@ -202,7 +202,7 @@ $allRom = getAllClient($konek);
                 <td>${item.pic}</td>
                 <td>${item.phone}</td>
                 <td>
-                    <button class="btn btn-warning btnUpdateClient" data-bs-toggle="modal" data-bs-target="#updateDataClient"
+                    <button class="btn btn-success btnUpdateClient" data-bs-toggle="modal" data-bs-target="#updateDataClient"
                         data-id="${item.client_id}"
                         data-instansi="${item.client_name}"
                         data-pic="${item.pic}"
