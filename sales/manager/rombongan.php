@@ -449,17 +449,24 @@ $allrombongan = viewRombongan($konek);
             });
         </script>
         <script>
-            $('#harga').on('input', function(e) {
-                let rawValue = $(this).val();
-                $(this).val(formatNumber(rawValue));
+            $('#harga, #pax').on('input', function () {
+                setFormattedInput(this);
             });
             $('#addRombongan').on('submit', function(e) {
                 e.preventDefault();
-                const formatHrg = $('#harga').val();
-                $('#harga').val(formatHrg.replace(/\./g, ''));
+                                // simpan tampilan
+                let hargaDisplay = $('#harga').val();
+                let paxDisplay   = $('#pax').val();
+
+                // ubah ke angka murni
+                $('#harga').val(hargaDisplay.replace(/\./g, ''));
+                $('#pax').val(paxDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
                 console.log("data kirim ", formData);
-                $('#harga').val(formatHrg);
+                // restore tampilan format
+                $('#harga').val(hargaDisplay);
+                $('#pax').val(paxDisplay);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
@@ -544,7 +551,7 @@ $allrombongan = viewRombongan($konek);
                     document.getElementById('upPic').value = pic;
                     document.getElementById('upTgl_dtng').value = formaTanggal;
                     document.getElementById('up_gate').value = gate;
-                    document.getElementById('up_pax').value = jumlah;
+                    document.getElementById('up_pax').value = formatNumber(jumlah);
                     document.getElementById('upHarga').value = formatNumber(harga);
                     document.getElementById('up_judul').value = judul;
                 }
@@ -669,16 +676,25 @@ $allrombongan = viewRombongan($konek);
             });
         </script>
         <script>
-            $('#upHarga').on('input', function(e) {
-                let rawValue = $(this).val();
-                $(this).val(formatNumber(rawValue));
+            $('#upHarga, #up_pax').on('input', function () {
+                setFormattedInput(this);
             });
             $('#updateRombongan').on('submit', function(e){
                 e.preventDefault();
-                const formatupHrg = $('#upHarga').val();
-                $('#upHarga').val(formatupHrg.replace(/\./g, ''));
+
+                // simpan tampilan
+                let hargaDisplay = $('#upHarga').val();
+                let paxDisplay   = $('#up_pax').val();
+
+                // ubah ke angka murni
+                $('#upHarga').val(hargaDisplay.replace(/\./g, ''));
+                $('#up_pax').val(paxDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize() + '&aksi=update_dataRombongan';
-                $('#upHarga').val(formatupHrg);
+        
+                // restore tampilan format
+                $('#upHarga').val(hargaDisplay);
+                $('#up_pax').val(paxDisplay);
                 
                 $.ajax({
                     url : '../../assets/fungsi.php',
@@ -872,44 +888,33 @@ $allrombongan = viewRombongan($konek);
 
         </script>
         <script>
-            // Fungsi untuk memformat angka dengan pemisah ribuan (titik)
-            function formatNumber(angka) {
-                if (typeof angka !== 'string') {
-                    angka = String(angka);
-                }
-                // Hanya sisakan angka murni (jika ada koma/titik lain, hapus)
-                var number_string = angka.replace(/[^0-9]/g, '');
-                
-                // Format dengan titik sebagai pemisah ribuan
-                var sisa 	= number_string.length % 3,
-                    rupiah 	= number_string.substr(0, sisa),
-                    ribuan 	= number_string.substr(sisa).match(/\d{3}/g);
-                    
-                if (ribuan) {
-                    separator = sisa ? '.' : '';
-                    rupiah += separator + ribuan.join('.');
-                }
-                
-                return rupiah;
+            function formatNumber(value) {
+                value = value.replace(/\D/g, '');
+                return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             }
 
-            // 1. Terapkan format real-time pada modal TAMBAH
-            const tambahFormattedInputs = ['#pax', '#harga'];
-            tambahFormattedInputs.forEach(id => {
-                $(id).on('input', function(e) {
-                    // Mendapatkan nilai murni dan memformatnya kembali
-                    let rawValue = $(this).val();
-                    $(this).val(formatNumber(rawValue));
+            function setFormattedInput(el) {
+                let cursorPos = el.selectionStart;
+                let beforeLen = el.value.length;
+
+                let formatted = formatNumber(el.value);
+                el.value = formatted;
+
+                let afterLen = formatted.length;
+                el.selectionEnd = cursorPos + (afterLen - beforeLen);
+            }
+
+            // tambah
+            ['#pax', '#harga'].forEach(id => {
+                $(document).on('input', id, function() {
+                    setFormattedInput(this);
                 });
             });
 
-            // 2. Terapkan format real-time pada modal UPDATE
-            const updateFormattedInputs = ['#up_pax', '#upHarga'];
-            updateFormattedInputs.forEach(id => {
-                $(id).on('input', function(e) {
-                    // Mendapatkan nilai murni dan memformatnya kembali
-                    let rawValue = $(this).val();
-                    $(this).val(formatNumber(rawValue));
+            // update
+            ['#up_pax', '#upHarga'].forEach(id => {
+                $(document).on('input', id, function() {
+                    setFormattedInput(this);
                 });
             });
         </script>

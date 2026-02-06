@@ -7,7 +7,8 @@ $client_name = $_POST['client_name'] ?? '';
 
 // Panggil fungsi-fungsi Anda. 
 $viewBudgeting = getViewBudgeting ($konek, $client_id);
-$rombonganOk = getRombonganOk ($konek, $client_id); 
+$rombonganOk = getRombonganOk ($konek, $client_id);
+ 
 ?>
 
 <!doctype html>
@@ -116,19 +117,6 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                 </div>
             </div>
         </div>
-
-        <!-- <div class="row border border-dark fw-bold bg-light p-1">
-            <div class="col-10">
-                <div class="row">
-                    <div class="col-5">Fasilitas / Group</div>
-                    <div class="col-2 text-center">Qty</div>
-                    <div class="col-1 text-center"> </div>
-                    <div class="col-2 text-end">Price / Cost</div>
-                    <div class="col-2 text-end">Subtotal</div>
-                </div>
-            </div>
-            <div class="col-2 text-center">REMARK</div>
-        </div> -->
 
         <!-- bagian pendapatan dan pengeluaran -->
         <div class="row border border-dark">

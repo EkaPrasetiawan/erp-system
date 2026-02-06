@@ -242,7 +242,7 @@ $allRom = getAllClient($konek);
                         if (response.status === "success") {
                         Swal.fire({
                         icon: 'success',
-                        title: 'Validasi Berhasil',
+                        title: 'Berhasil ditambahkan',
                         text: 'Data Client berhasil ditambahkan.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
@@ -344,8 +344,7 @@ $allRom = getAllClient($konek);
                         }else{
                             Swal.fire({
                             icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal menambahkan data Client!!!',
+                            text: 'Tidak ada perubahan data Client!!!',
                             showConfirmButton: true, // Tampilkan tombol konfirmasi
                             confirmButtonText: 'Oke', // Teks tombol konfirmasi
                             allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar

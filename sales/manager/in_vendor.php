@@ -54,6 +54,7 @@ $kodeVen = getKodeVen($konek);
                                             <th>Nama Vendor</th>
                                             <th>PIC</th>
                                             <th>Nomor Telephone</th>
+                                            <th>Kategori</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -107,6 +108,16 @@ $kodeVen = getKodeVen($konek);
                                         pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="ket" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="ket" name="ket" required>
+                                            <option value="">---pilih kategori---</option>
+                                            <option value="Perlengkapan">Perlengkapan</option>
+                                            <option value="Food and Beverages">Food and Beverages</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -156,6 +167,16 @@ $kodeVen = getKodeVen($konek);
                                         pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="up_ket" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_ket" name="up_ket" required>
+                                            <option value="">---pilih kategori---</option>
+                                            <option value="Perlengkapan">Perlengkapan</option>
+                                            <option value="Food and Beverages">Food and Beverages</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,12 +207,14 @@ $kodeVen = getKodeVen($konek);
                 <td>${item.nama_vendor}</td>
                 <td>${item.pic}</td>
                 <td>${item.noTlp}</td>               
+                <td>${item.kategori}</td>               
                 <td>
                     <button class="btn btn-warning btnUpdateFsv" data-bs-toggle="modal" data-bs-target="#updateFasilitasVen"
                         data-kd="${item.kode_vendor}"
                         data-nama="${item.nama_vendor}"
                         data-pic="${item.pic}"
                         data-noTlp="${item.noTlp}"
+                        data-ket="${item.ket}"
                         >
                         <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -270,11 +293,13 @@ $kodeVen = getKodeVen($konek);
                     const namaVen = button.getAttribute('data-nama');
                     const pic = button.getAttribute('data-pic');
                     const noTlp = button.getAttribute('data-noTlp');
+                    const ket = button.getAttribute('data-ket');
 
                     document.getElementById('up_kdVendor') . value = kode;
                     document.getElementById('up_namaVen') . value = namaVen;
                     document.getElementById('up_pic') . value = pic;
                     document.getElementById('up_noTlp') . value = noTlp;
+                    document.getElementById('up_ket') . value = ket;
                 };
             });
         </script>

@@ -40,7 +40,7 @@ $viewVendor = getViewVendor($konek);
                             <li class="breadcrumb-item active">Vendor</li>
                         </ol>
                         <div class="btn"> 
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahFasilitasVendor">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahFasVendor">
                             <i class="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
@@ -50,9 +50,9 @@ $viewVendor = getViewVendor($konek);
                                     <thead>
                                         <tr>
                                             <th>NO</th>
+                                            <th>Kategori</th>
                                             <th>Vendor</th>
                                             <th>Fasilitas</th>
-                                            <th>Jumlah</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -69,7 +69,7 @@ $viewVendor = getViewVendor($konek);
             </div>
         </div>
         //modal Tambah data fasilitas
-        <div class="modal fade" id="tambahFasilitasVendor" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="tambahFasVendor" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
@@ -80,6 +80,14 @@ $viewVendor = getViewVendor($konek);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
+                                <div class="mb-3 row">
+                                    <label for="ktgr" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="ktgr" name="ktgr" required>
+                                            <option value="">---pilih kategori---</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="vendorName" class="col-sm-4 col-form-label">Nama Vendor</label>
                                     <div class="col-sm-8">
@@ -92,13 +100,6 @@ $viewVendor = getViewVendor($konek);
                                     <label for="fasilitasName" class="col-sm-4 col-form-label">Nama Fasilitas</label>
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" id="fasilitasName" name="fasilitasName" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                     </div>
                                 </div>
                             </div>
@@ -127,7 +128,15 @@ $viewVendor = getViewVendor($konek);
                             <div class="card-body">
                                 <div class="mb-3 row">
                                     <input type="hidden" id="up_id" name="up_id" class="col-form-label">
-                                    <label for="up_vendorName" class="col-sm-4 col-form-label">Kategori</label>
+                                    <label for="up_ktgr" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_ktgr" name="up_ktgr" required>
+                                            <option value="">---pilih kategori---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_vendorName" class="col-sm-4 col-form-label">Vendor</label>
                                     <div class="col-sm-8">
                                         <select class="form-select" id="up_vendorName" name="up_vendorName" required>
                                             <option value="">---pilih vendor---</option>
@@ -138,13 +147,6 @@ $viewVendor = getViewVendor($konek);
                                     <label for="up_fasilitasName" class="col-sm-4 col-form-label">Nama Fasilitas</label>
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" id="up_fasilitasName" name="up_fasilitasName" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_qty" class="col-sm-4 col-form-label">Jumlah</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_qty" name="up_qty"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                     </div>
                                 </div>
                             </div>
@@ -174,14 +176,14 @@ $viewVendor = getViewVendor($konek);
                 row.innerHTML =`
                 <td>${index + 1}</td>
                 <td>${item.vendor_head}</td>
+                <td>${item.vendor_name}</td>
                 <td>${item.vendor_detail}</td>
-                <td>${item.stok}</td>
                 <td>
                     <button class="btn btn-warning btnUpdateVend" data-bs-toggle="modal" data-bs-target="#updateFasilitas"
                     data-id="${item.id_vendor}"
                     data-vend="${item.vendor_head}"
-                    data-nama="${item.vendor_detail}"
-                    data-qty="${item.stok}"
+                    data-name="${item.vendor_name}"
+                    data-detail="${item.vendor_detail}"
                     >
                     <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -192,26 +194,40 @@ $viewVendor = getViewVendor($konek);
         </script>
         <script>
             const viewVendor = <?= json_encode($vendor); ?>;
+            const headVend = [...new Set(viewVendor.map(item => item.kategori))];
+            const modelVen = document.getElementById('tambahFasVendor');
+            const selectVend = document.getElementById("ktgr");
+            const nameVend = document.getElementById("vendorName");
 
-            const modelEl = document.getElementById('tambahFasilitasVendor');
-            const selectVend = document.getElementById('vendorName');
-
-            modelEl.addEventListener('show.bs.modal', function(){
-                selectVend.innerHTML = '<option>---pilih vendor----</option>';
-
-                viewVendor.forEach((item) => {
+            modelVen.addEventListener('show.bs.modal', function(){
+                selectVend.innerHTML = '<option value="">---pilih kategori---</option>';
+                nameVend.innerHTML = '<option value="">---pilih vendor---</option>';
+                headVend.forEach((item) => {
                     const option = document.createElement("option");
-                    option.value = item.nama_vendor;
-                    option.textContent = item.nama_vendor;
+                    option.value = item;
+                    option.textContent = item;
                     selectVend.appendChild(option);
                 });
             });
-        </script>
-        <script>
+            selectVend.addEventListener('change', function(){
+                const selectVend = this.value;
+                nameVend.innerHTML = '<option value="">---pilih vendor---</option>';
+
+                if(selectVend){
+                    const filteredVendors = viewVendor.filter(item => item.kategori === selectVend);
+                    filteredVendors.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.nama_vendor;
+                        option.textContent = item.nama_vendor;
+                        nameVend.appendChild(option);
+                    });
+                }
+            });
+
+            // tambah fasilitas vendor
             $('#tambahFsVend').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=tambah_fasilitasVendor';
-                console.log("data dikirim: ", formData);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
@@ -273,35 +289,55 @@ $viewVendor = getViewVendor($konek);
                     } 
                 });
             });
-        </script>
-        <script>
-            document.addEventListener('click', function(e){
-                const viewVendor = <?= json_encode($vendor) ?>;
-                if(e.target.classList.contains('btnUpdateVend') || e.target.closest('.btnUpdateVend')){
-                    const button = e.target.closest('.btnUpdateVend');
-                    const id_vendor = button.getAttribute('data-id');
-                    const vendor = button.getAttribute('data-vend');
-                    const nama = button.getAttribute('data-nama');
-                    const qty = button.getAttribute('data-qty');
-                    const upVend = document.getElementById("up_vendorName")
+            // akhir tambah fasilitas vendor
 
-                    document.getElementById('up_id').value = id_vendor;
-                    document.getElementById('up_vendorName').value = vendor;
-                    document.getElementById('up_fasilitasName').value = nama;
-                    document.getElementById('up_qty').value = qty;
+            // fungsi update fasilitas vendor
+            const upSelectHead = document.getElementById("up_ktgr");
+            const upNameVend = document.getElementById("up_vendorName");
 
-                    upVend.innerHTML = '<option value="">---pilih kategori---</option>';
-                    viewVendor.forEach((item) => {
+            function updateVendorOptions(selectVend, nameVend = null){
+                upNameVend.innerHTML = '<option value="">---pilih vendor---</option>';
+
+                if(selectVend){
+                    const filteredVendors = viewVendor.filter(item => item.kategori === selectVend);
+                    filteredVendors.forEach((item) => {
                         const option = document.createElement("option");
                         option.value = item.nama_vendor;
                         option.textContent = item.nama_vendor;
-                        upVend.appendChild(option);
+                        upNameVend.appendChild(option);
                     });
-                    upVend.value = vendor;
+                    if(nameVend){
+                        upNameVend.value = nameVend;
+                    }
+                    return;
+                }
+            }
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateVend') || e.target.closest('.btnUpdateVend')){
+                    const button = e.target.closest('.btnUpdateVend');
+                    const id_vendor = button.getAttribute('data-id');
+                    const vend = button.getAttribute('data-vend');
+                    const name = button.getAttribute('data-name');
+                    const detail = button.getAttribute('data-detail');
+
+                    document.getElementById('up_id').value = id_vendor;
+                    document.getElementById('up_fasilitasName').value = detail;
+
+                    upSelectHead.innerHTML = '<option value="">---pilih kategori---</option>';
+                    headVend.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        option.textContent = item;
+                        upSelectHead.appendChild(option);
+                    });
+                    upSelectHead.value = vend;
+                    updateVendorOptions(vend, name);
                 }
             });
-        </script>
-        <script>
+            upSelectHead.addEventListener('change', function(){
+                updateVendorOptions(this.value);
+            });
+
             $('#updateFsVend').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=update_fasilitasVendor';

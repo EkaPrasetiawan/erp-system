@@ -13,9 +13,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 }
 
 $dataFs = getFasilitasWK($konek, $client_date, $client_id);
-$headFs = getKategoriFst($konek);
+// $headFs = getKategoriFst($konek);
 $vendorFs = getViewVendor($konek);
-$viewFnB = getFnB($konek);
 $viewCnC = getCnc($konek, $client_date, $client_id);
 
 
@@ -51,10 +50,17 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 <main>
                     <div class="container-fluid px-4">
                         <!-- <h1 class="mt-4">Budgeting</h1> -->
-                        <ol class="breadcrumb mb-4 mt-4">
+                        <!-- <ol class="breadcrumb mb-4 mt-4">
                             <li class="breadcrumb-item active">
-                                <i class="fa-solid fa-arrow-left"></i> Budgeting</li>
-                        </ol>
+                                <i class="fa-solid fa-arrow-left"></i> Rombongan Details</li>
+                        </ol> -->
+                        <div class="row mt-3 mb-3">
+                            <a class="nav-link" href="rombongan-detail.php">
+                                <div class="sb-nav-link-icon text-lg fw-bold"><i class="fa-solid fa-arrow-left"></i>
+                                    Rombongan Detils
+                                </div>
+                            </a>
+                        </div>
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="mb-3 row">
@@ -81,7 +87,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 </button>
                                 <div class="table-responsive">
                                     <table class="table">
-                                        <thead>
+                                        <thead class="text-center">
                                             <tr>
                                                 <th>No</th>
                                                 <th>Nama Fasilitas</th>
@@ -158,7 +164,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 </button>
                                 <div class="table-responsive">
                                     <table class="table">
-                                        <thead>
+                                        <thead class="text-center">
                                             <tr>
                                                 <th>No</th>
                                                 <th>Nama Pengguna</th>
@@ -430,7 +436,14 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                             <div class="card-body">
                                 <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
-                                <input type="hidden" class="form-control" value="" id="fnb" name="fnb">
+                                <div class="mb-3 row">
+                                    <label for="fnbVendor" class="col-sm-4 col-form-label">Vendor</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="fnbVendor" name="fnbVendor" required>
+                                            <option value="">---pilih Vendor---</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="fnbHead" class="col-sm-4 col-form-label">Menu</label>
                                     <div class="col-sm-8">
@@ -485,6 +498,14 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                         <div class="card">
                             <div class="card-body">
                                 <input type="hidden" class="form-control" value="" id="idFnB" name="idFnB">
+                                <div class="mb-3 row">
+                                    <label for="up_fnbVendor" class="col-sm-4 col-form-label">Vendor</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_fnbVendor" name="up_fnbVendor" required>
+                                            <option value="">---pilih Vendor---</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="up_fnbHead" class="col-sm-4 col-form-label">Menu</label>
                                     <div class="col-sm-8">
@@ -612,8 +633,8 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
 
         <script>
             const viewFs = <?= json_encode($dataFs); ?>;
-            const viewHeadFs = <?= json_encode($headFs); ?>;
-
+            
+            const headFs = [...new Set(viewFs.map(item => item.group_head))];
             const modelEl = document.getElementById('tambahFasilitas');
             const selectHead = document.getElementById("kategori");
             const selectFs = document.getElementById("fasilitas");
@@ -623,7 +644,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 selectHead.innerHTML = '<option value="">---pilih kategori---</option>';
                 selectFs.innerHTML = '<option value="">---pilih fasilitas---</option>';
 
-                viewHeadFs.forEach((item) =>{
+                headFs.forEach((item) =>{
                     const option = document.createElement("option");
                     option.value = item;
                     option.textContent = item;
@@ -632,11 +653,11 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
             //even listtener untuk dropdown ke-2
             selectHead.addEventListener('change', function(){
-                const selectedHead = this.value;
+                const selectHead = this.value;
                 selectFs.innerHTML = '<option value="">---pilih fasilitas---</option>';
 
-                if(selectedHead){
-                    const filteredFs = viewFs.filter(item => item.group_head === selectedHead);
+                if(selectHead){
+                    const filteredFs = viewFs.filter(item => item.group_head === selectHead);
                     filteredFs.forEach((item) =>{
                         const option = document.createElement("option");
                         option.value = item.group_detail;
@@ -647,9 +668,24 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
         </script>
         <script>
+            $('#qty, #hargaWk').on('input', function () {
+                setFormattedInput(this);
+            });
             $('#fasilitasWK').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let qtyDisplay   = $('#qty').val();
+                let hargaDisplay = $('#hargaWk').val();
+
+                //hapus format sebelum dikirim
+                $('#qty').val(qtyDisplay.replace(/\./g, ''));
+                $('#hargaWk').val(hargaDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=tambah_fasilitasWK';
+
+                // restore tampilan format
+                $('#hargaWk').val(hargaDisplay);
+                $('#qty').val(qtyDisplay);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -670,6 +706,10 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                         }
                         if(response.status === "success"){
                             location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning'); // Tampilkan pesan bahwa data sudah ada
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -718,9 +758,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                 <td>${noVend++}</td>
                                                 <td>${item.client_id}</td>
                                                 <td>${item.fasilitas_name}</td>
-                                                <td>${item.qty}</td>
-                                                <td>${item.price.toLocaleString('id-ID')}</td>
-                                                <td>${item.price_vend.toLocaleString('id-ID')}</td>
+                                                <td>${Number(item.qty).toLocaleString('id-ID')}</td>
+                                                <td>${Number(item.price).toLocaleString('id-ID')}</td>
+                                                <td>${Number(item.price_vend).toLocaleString('id-ID')}</td>
                                                 <td>
                                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
                                                         <button class="btn btn-warning btnUpdateFsVend" data-bs-toggle="modal" data-bs-target="#upateFasilitasVendor"
@@ -733,7 +773,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
-                                                        <button class="btn btn-danger btn-sm">
+                                                        <button class="btn btn-danger btn-sm btnHapusFsVend"
+                                                            data-idfvend="${item.data_id}"
+                                                            data-namefvend="${item.fasilitas_name}">
                                                         <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                     </div>
                                                 </td>
@@ -751,6 +793,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
                                                         <button class="btn btn-warning btnUpdateFnB" data-bs-toggle="modal" data-bs-target="#upateFnB"
                                                             data-idFnB="${item.data_id}"
+                                                            data-vendor="${item.client_id}"
                                                             data-menu="${item.fasilitas_name}"
                                                             data-qtyFnB="${item.qty}"
                                                             data-harga="${item.price}"
@@ -758,7 +801,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
-                                                        <button class="btn btn-danger btn-sm">
+                                                        <button class="btn btn-danger btn-sm btnHapusFnB"
+                                                            data-idFnB="${item.data_id}"
+                                                            data-nameFnB="${item.fasilitas_name}">
                                                         <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                     </div>
                                                 </td>
@@ -779,7 +824,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
-                                                        <button class="btn btn-danger btn-sm">
+                                                        <button class="btn btn-danger btn-sm btnHapusCnC"
+                                                            data-idCnC="${item.data_id}"
+                                                            data-nameCnC="${item.fasilitas_name}">
                                                         <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                     </div>
                                                 </td>
@@ -803,7 +850,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
-                                                        <button class="btn btn-danger btn-sm">
+                                                        <button class="btn btn-danger btn-sm btnHapusFsWk"
+                                                            data-idfWk="${item.data_id}"
+                                                            data-namefWk="${item.fasilitas_name}">
                                                         <i class="fa-regular fa-trash-can"></i> Hapus</button>
                                                     </div>
                                                 </td>
@@ -826,20 +875,20 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             const upKategori = document.getElementById("up_kategori");
             const upFasilitas = document.getElementById("up_fsl");
 
-            function populatedUpFasilitas(selectedHead, selectedFs = null) {
+            function populatedUpFasilitas(headFs, selectFs = null) {
                 upFasilitas.innerHTML = '<option value="">---pilih fasilitas---</option>';
                 // Perbaikan: gunakan parameter 'selectedHead'
-                if (selectedHead) { 
-                    const filteredFs = viewFs.filter(item => item.group_head === selectedHead);
+                if(headFs){
+                    const filteredFs = viewFs.filter(item => item.group_head === headFs);
                     filteredFs.forEach((item) => {
                         const option = document.createElement("option");
                         option.value = item.group_detail;
                         option.textContent = item.group_detail;
                         upFasilitas.appendChild(option);
-                    });
+                    });  
                     // Perbaikan: gunakan parameter 'selectedFs'
-                    if (selectedFs) {
-                        upFasilitas.value = selectedFs;
+                    if (selectFs) {
+                        upFasilitas.value = selectFs;
                     }
                 }
             }
@@ -856,18 +905,17 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
 
                     document.getElementById('idf').value = idf;
                     document.getElementById('up_kode').value = kode;
-                    document.getElementById('up_qty').value = qty;
-                    document.getElementById('up_hargaWk').value = harga;
+                    document.getElementById('up_qty').value = formatNumber(qty);
+                    document.getElementById('up_hargaWk').value = formatNumber(harga);
 
                     upKategori.innerHTML = '<option value="">---pilih kategori---</option>';
-                    viewHeadFs.forEach((item) => {
+                    headFs.forEach((item) => {
                         const option = document.createElement("option");
                         option.value = item;
                         option.textContent = item;
                         upKategori.appendChild(option);
                     });
                     upKategori.value = head;
-
                     // Memanggil fungsi dengan variabel 'head' dan 'namaFs'
                     populatedUpFasilitas(head, namaFs);
                 }
@@ -879,10 +927,24 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
         </script>
         <script>
+            $('#up_qty, #up_hargaWk').on('input', function () {
+                setFormattedInput(this);
+            });
             $('#up_fasilitasWK').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let qtyDisplay   = $('#up_qty').val();
+                let hargaDisplay = $('#up_hargaWk').val();
+
+                //hapus format sebelum dikirim
+                $('#up_qty').val(qtyDisplay.replace(/\./g, ''));
+                $('#up_hargaWk').val(hargaDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=update_fasilitasWK';
-                console.log("data di kirim: ", formData);
+
+                // restore tampilan format
+                $('#up_qty').val(qtyDisplay);
+                $('#up_hargaWk').val(hargaDisplay);
                 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -927,14 +989,18 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
         <script>
             //view dropdown vendor fasilitas
             const viewFsvend = <?= json_encode($vendorFs); ?>;
-            const headVendor = [...new Set(viewFsvend.map(item => item.vendor_head))];
+            //filter hanya kategori Perlengkapan
+            const perlengkapanOnly = viewFsvend.filter(
+                item => item.vendor_head.toLowerCase() === 'perlengkapan'
+            );
+            const headVendor = [...new Set(perlengkapanOnly.map(item => item.vendor_name))];
             const modalEl = document.getElementById('tambahFasilitasVendor');
             const vendHead = document.getElementById("vendorHead");
             const nameFast = document.getElementById("namaFasilitas");
 
             modalEl.addEventListener('show.bs.modal', function(){
-                vendHead.innerHTML = '<option value="">---pilih kategori---</option>';
-                nameFast.innerHTML = '<option value="">---pilih kategori---</option>';
+                vendHead.innerHTML = '<option value="">---pilih vendor---</option>';
+                nameFast.innerHTML = '<option value="">---pilih fasilitas---</option>';
                 headVendor.forEach((item) =>{
                     const option = document.createElement("option");
                     option.value = item;
@@ -947,7 +1013,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 nameFast.innerHTML = '<option value="">---pilih kategori---</option>';
 
                 if(vendHead){
-                    const filterHead = viewFsvend.filter(item => item.vendor_head === vendHead);
+                    const filterHead = viewFsvend.filter(item => item.vendor_name === vendHead);
                     filterHead.forEach((item) => {
                         const option = document.createElement("option");
                         option.value = item.vendor_detail;
@@ -958,10 +1024,26 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
         </script>
         <script>
+            $('#qty, #harga, #hargaVend').on('input', function () {
+                setFormattedInput(this);
+            });
             $('#fasilitasVendor').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let qtyDisplay   = $('#qty').val();
+                let hargaDisplay = $('#harga').val();
+                let hargaVendDisplay = $('#hargaVend').val();
+
+                //hapus format sebelum dikirim
+                $('#qty').val(qtyDisplay.replace(/\./g, ''));
+                $('#harga').val(hargaDisplay.replace(/\./g, ''));
+                $('#hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=tambah_fasilitasVend';
-                console.log("data Dikirim: ", formData);
+
+                $('#qty').val(qtyDisplay);
+                $('#harga').val(hargaDisplay);
+                $('#hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -999,12 +1081,12 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             const upNamaFasilits = document.getElementById("up_namaFasilitas");
 
             function updateFasilitasVend(headVendor, nameFast = null){
-                upNamaFasilits.innerHTML = '<option value="">---pilih fasilits---</option>'
+                upNamaFasilits.innerHTML = '<option value="">---pilih fasilits---</option>';
 
                 if(headVendor){
-                    const filterFsV = viewFsvend.filter(item => item.vendor_head === headVendor);
+                    const filterFsV = viewFsvend.filter(item => item.vendor_name === headVendor);
                     filterFsV.forEach((item) => {
-                         const option = document.createElement("option");
+                        const option = document.createElement("option");
                         option.value = item.vendor_detail;
                         option.textContent = item.vendor_detail;
                         upNamaFasilits.appendChild(option);
@@ -1025,9 +1107,9 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     const hargaJual = button.getAttribute('data-priceVend');
 
                     document.getElementById('idFv').value = idFv;
-                    document.getElementById('up_qtyV').value = qty;
-                    document.getElementById('up_harga').value = harga;
-                    document.getElementById('up_hargaVend').value = hargaJual;
+                    document.getElementById('up_qtyV').value = formatNumber(qty);
+                    document.getElementById('up_harga').value = formatNumber(harga);
+                    document.getElementById('up_hargaVend').value = formatNumber(hargaJual);
 
                     upVendorHed.innerHTML = '<option value="">---pilih kategori---</option>';
                     headVendor.forEach((item) => {
@@ -1044,9 +1126,27 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 updateFasilitasVend(this.value);
             });
 
+            $('up_qtyV, #up_harga, #up_hargaVend').on('input', function () {
+                setFormattedInput(this);
+            });
             $('#up_fasilitasVendor').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let qtyDisplay   = $('#up_qtyV').val();
+                let hargaDisplay = $('#up_harga').val();
+                let hargaVendDisplay = $('#up_hargaVend').val();
+
+                //hapus format sebelum dikirim
+                $('#up_qtyV').val(qtyDisplay.replace(/\./g, ''));
+                $('#up_harga').val(hargaDisplay.replace(/\./g, ''));
+                $('#up_hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=update_fasilitasVend';
+
+                // restore tampilan format
+                $('#up_qtyV').val(qtyDisplay);
+                $('#up_harga').val(hargaDisplay);
+                $('#up_hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -1089,24 +1189,60 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
         </script>
         <script>
-            const viewMenuFnB = <?= json_encode($viewFnB); ?>;
+            const viewFSvendor = <?= json_encode($vendorFs); ?>;
+            //filter hanya kategori Food and Beverages
+            const fnBOnly = viewFSvendor.filter(
+                item => item.vendor_head.toLowerCase() === 'food and beverages'
+            );
+            const fnbVendorHead = [...new Set(fnBOnly.map(item => item.vendor_name))];
             const modelEll = document.getElementById('tambahFnB');
+            const selectFnBVendor = document.getElementById("fnbVendor");
             const selectFnB = document.getElementById("fnbHead");
 
-            document.getElementById('fnb').value = viewMenuFnB[0].group_head;
             modelEll.addEventListener('show.bs.modal', function(){
+                selectFnBVendor.innerHTML = '<option value="">---pilih vendor---</option>';
                 selectFnB.innerHTML = '<option value="">---pilih menu---</option>';
-                viewMenuFnB.forEach((item) =>{
+                fnbVendorHead.forEach((item) =>{
                     const option = document.createElement("option");
-                    option.value = item.group_detail;
-                    option.textContent = item.group_detail;
-                    selectFnB.appendChild(option);
+                    option.value = item;
+                    option.textContent = item;
+                    selectFnBVendor.appendChild(option);
                 });
             });
+            selectFnBVendor.addEventListener('change', function(){
+                const selectFnBVendor = this.value;
+                selectFnB.innerHTML = '<option value="">---pilih menu---</option>';
+
+                if(selectFnBVendor){
+                    const filterHead = fnBOnly.filter(item => item.vendor_name === selectFnBVendor);
+                    filterHead.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.vendor_detail;
+                        option.textContent = item.vendor_detail;
+                        selectFnB.appendChild(option);
+                    });
+                }
+            });
+
             //tambah
+            $('#jumlah, #hargaFnB').on('input', function () {
+                setFormattedInput(this);
+            });
             $('#fnbAdd').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let jumlahDisplay   = $('#jumlah').val();
+                let hargafnbDisplay = $('#hargaFnB').val();
+
+                //hapus format sebelum dikirim
+                $('#jumlah').val(jumlahDisplay.replace(/\./g, ''));
+                $('#hargaFnB').val(hargafnbDisplay.replace(/\./g, ''));
                 const formData = $(this).serialize()+'&aksi=tambahFnB';
+                console.log("data kirim: ", formData);
+
+                // restore tampilan format
+                $('#jumlah').val(jumlahDisplay);
+                $('#hargaFnB').val(hargafnbDisplay);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -1138,36 +1274,74 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             });
 
             //update
+            const upFnbVendor = document.getElementById("up_fnbVendor");
             const upFnB = document.getElementById("up_fnbHead");
+
+            function updateMenuFnB(fnbVendorHead, selectFnB = null){
+                upFnB.innerHTML = '<option value="">---pilih menu---</option>';
+
+                if(fnbVendorHead){
+                    const filterFnB = fnBOnly.filter(item => item.vendor_name === fnbVendorHead);
+                    filterFnB.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.vendor_detail;
+                        option.textContent = item.vendor_detail;
+                        upFnB.appendChild(option);
+                    });
+                    if(selectFnB){
+                        upFnB.value = selectFnB;
+                    }
+                }
+            }
 
             document.addEventListener('click', function(e){
                 if(e.target.classList.contains('btnUpdateFnB') || e.target.closest('.btnUpdateFnB')){
                     const button = e.target.closest('.btnUpdateFnB');
                     const idFnB = button.getAttribute('data-idFnB');
+                    const vendor = button.getAttribute('data-vendor');
                     const menu = button.getAttribute('data-menu');
                     const qty = button.getAttribute('data-qtyFnB');
                     const harga = button.getAttribute('data-harga');
                     const catatan = button.getAttribute('data-ket');
 
                     document.getElementById('idFnB').value = idFnB;
-                    document.getElementById('up_jumlah').value = qty;
-                    document.getElementById('up_hargaFnB').value = harga;
+                    document.getElementById('up_jumlah').value = formatNumber(qty);
+                    document.getElementById('up_hargaFnB').value = formatNumber(harga);
                     document.getElementById('up_ket').value = catatan;
 
-                    upFnB.innerHTML = '<option value="">---pilih kategori---</option>';
-                    viewMenuFnB.forEach((item) =>{
+                    upFnbVendor.innerHTML = '<option value="">---pilih vendor---</option>';
+                    fnbVendorHead.forEach((item) =>{
                         const option = document.createElement("option");
-                        option.value = item.group_detail;
-                        option.textContent = item.group_detail;
-                        upFnB.appendChild(option);
+                        option.value = item;
+                        option.textContent = item;
+                        upFnbVendor.appendChild(option);
                     });
-                    upFnB.value = menu;
+                    upFnbVendor.value = vendor;
+                    updateMenuFnB(vendor, menu);
                 }
             });
+            upFnbVendor.addEventListener('change', function(){
+                updateMenuFnB(this.value);
+            });
 
+            $('#up_jumlah, #up_hargaFnB').on('input', function(e){
+                setFormattedInput(this);
+            });
             $('#up_fnbAdd').on('submit', function(e){
                 e.preventDefault();
+                //simpan tampilan
+                let jumlahDisplay   = $('#up_jumlah').val();
+                let hargaFnBDisplay = $('#up_hargaFnB').val();
+
+                //hapus format sebelum dikirim
+                $('#up_jumlah').val(jumlahDisplay.replace(/\./g, ''));
+                $('#up_hargaFnB').val(hargaFnBDisplay.replace(/\./g, ''));
+
                 const formData = $(this).serialize()+'&aksi=updateFnB';
+
+                // restore tampilan format
+                $('#up_jumlah').val(jumlahDisplay);
+                $('#up_hargaFnB').val(hargaFnBDisplay);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -1235,6 +1409,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     data: formData,
                     success : function(res){
                         console.log("server: ", res);
+                        exit;
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -1316,6 +1491,202 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                             title: 'error jaringan'
                         });
                     }
+                });
+            });
+        </script>
+        <script>
+            $(document).on('click', '.btnHapusFsVend', function() {
+                const idFvend = $(this).attr('data-idfvend');
+                const namaFvend = $(this).attr('data-namefvend');
+                if (!idFvend) return;
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Fasilitas "${namaFvend}" akan dihapus dari daftar.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            method: 'POST',
+                            data: {
+                                aksi: 'hapus_data_generik',
+                                id: idFvend,
+                                tabel: 'rombongan_detail', // Nama tabel
+                                kolom: 'data_id',           // Nama kolom ID di tabel
+                                nama_item: namaFvend
+                            },
+                            success: function(res) {
+                                if (res.trim() === "success") {
+                                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                                    .then(() => {
+                                        location.reload(); // Refresh halaman agar filter getCnc bekerja
+                                    });
+                                } else {
+                                    Swal.fire('Gagal!', 'Terjadi kesalahan: ' + res, 'error');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            //hapus Cnc
+            $(document).on('click', '.btnHapusCnC', function() {
+                const idCnC = $(this).attr('data-idCnC');
+                const namaCnC = $(this).attr('data-nameCnC');
+                if (!idCnC) return;
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Fasilitas "${namaCnC}" akan dihapus dari daftar.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            method: 'POST',
+                            data: {
+                                aksi: 'hapus_data_generik',
+                                id: idCnC,
+                                tabel: 'rombongan_detail', // Nama tabel
+                                kolom: 'data_id',           // Nama kolom ID di tabel
+                                nama_item: namaCnC
+                            },
+                            success: function(res) {
+                                if (res.trim() === "success") {
+                                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                                    .then(() => {
+                                        location.reload(); // Refresh halaman agar filter getCnc bekerja
+                                    });
+                                } else {
+                                    Swal.fire('Gagal!', 'Terjadi kesalahan: ' + res, 'error');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            //hapus FnB
+            $(document).on('click', '.btnHapusFnB', function() {
+                const idFnB = $(this).attr('data-idFnB');
+                const namaFnB = $(this).attr('data-nameFnB');
+                if (!idFnB) return;
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Fasilitas "${namaFnB}" akan dihapus dari daftar.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            method: 'POST',
+                            data: {
+                                aksi: 'hapus_data_generik',
+                                id: idFnB,
+                                tabel: 'rombongan_detail', // Nama tabel
+                                kolom: 'data_id',           // Nama kolom ID di tabel
+                                nama_item: namaFnB
+                            },
+                            success: function(res) {
+                                if (res.trim() === "success") {
+                                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                                    .then(() => {
+                                        location.reload(); // Refresh halaman agar filter getCnc bekerja
+                                    });
+                                } else {
+                                    Swal.fire('Gagal!', 'Terjadi kesalahan: ' + res, 'error');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            //hapus fsWK
+            $(document).on('click', '.btnHapusFsWk', function() {
+                const idFsWk = $(this).attr('data-idfWk');
+                const namaFsWk = $(this).attr('data-namefWk');
+                if (!idFsWk) return;
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Fasilitas "${namaFsWk}" akan dihapus dari daftar.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            method: 'POST',
+                            data: {
+                                aksi: 'hapus_data_generik',
+                                id: idFsWk,
+                                tabel: 'rombongan_detail', // Nama tabel
+                                kolom: 'data_id',           // Nama kolom ID di tabel
+                                nama_item: namaFsWk
+                            },
+                            success: function(res) {
+                                if (res.trim() === "success") {
+                                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                                    .then(() => {
+                                        location.reload(); // Refresh halaman agar filter getCnc bekerja
+                                    });
+                                } else {
+                                    Swal.fire('Gagal!', 'Terjadi kesalahan: ' + res, 'error');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            function formatNumber(value) {
+                value = value.replace(/\D/g, '');
+                return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            function setFormattedInput(el) {
+                let cursorPos = el.selectionStart;
+                let beforeLen = el.value.length;
+
+                let formatted = formatNumber(el.value);
+                el.value = formatted;
+
+                let afterLen = formatted.length;
+                el.selectionEnd = cursorPos + (afterLen - beforeLen);
+            }
+
+            // tambah
+            ['#qty', '#hargaWk', '#harga', '#hargaVend', '#jumlah', '#hargaFnB'].forEach(id => {
+                $(document).on('input', id, function() {
+                    setFormattedInput(this);
+                });
+            });
+
+            // update
+            ['#up_qty', '#up_hargaWk', '#up_harga', '#up_qtyV', '#up_hargaVend', '#up_jumlah', '#up_hargaFnB'].forEach(id => {
+                $(document).on('input', id, function() {
+                    setFormattedInput(this);
                 });
             });
         </script>
