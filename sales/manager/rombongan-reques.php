@@ -1064,6 +1064,10 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                         }
                         if(response.status === "success"){
                             location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning');
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
                         }
                     },
                     error: function(xhr, status, error){
@@ -1238,7 +1242,6 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 $('#jumlah').val(jumlahDisplay.replace(/\./g, ''));
                 $('#hargaFnB').val(hargafnbDisplay.replace(/\./g, ''));
                 const formData = $(this).serialize()+'&aksi=tambahFnB';
-                console.log("data kirim: ", formData);
 
                 // restore tampilan format
                 $('#jumlah').val(jumlahDisplay);
@@ -1262,6 +1265,10 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                         }
                         if(response.status === "success"){
                             location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning');
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
                         }
                     },
                     error: function(xhr, status, error){
@@ -1408,8 +1415,6 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     method: 'POST',
                     data: formData,
                     success : function(res){
-                        console.log("server: ", res);
-                        exit;
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -1423,6 +1428,10 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                         }
                         if(response.status === "success"){
                             location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning');
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
                         }
                     },
                     error: function(xhr, status, error){

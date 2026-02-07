@@ -160,11 +160,15 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                     <div class="row">
                         <p class="fw-bold mt-2 mb-1">PAYMENT</p>
                     </div>
-                </div>
-                <div class="col-2">
-                      <div class="row">
-                        <p class="fw-bold mt-2 mb-1">Total Payment</p>
+                    <div class="row">
+                        <div class="row text-end"><strong id="sisa_payment"></strong></div>
                     </div>
+                </div>
+                <div class="col-2 small">
+                      <div class="row">
+                        <p class="fw-bold mt-2 mb-1">Total Payment: </p>
+                    </div>
+                    <div class="row text-end"><strong id="total_pendapatan1"></strong></div>
                 </div>
             </div>
         </div>
@@ -429,6 +433,18 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
 
 
         $(document).ready(function() {
+
+            function formatTanggal(dateString) {
+                if (!dateString || dateString === "0000-00-00 00:00:00") 
+                    return "-";
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return "-"; // Cek jika tanggal tidak valid
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
             
             // --- 1. MENGISI DETAIL ROMBONGAN (Header) ---
             let dataRombongan = {};
@@ -437,30 +453,30 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                 
                 // ... (Logika pengisian data rombongan di sini) ...
                 
-                let formattedDate = '-';
-                if (dataRombongan.date_plan) {
-                    const datePlan = new Date(dataRombongan.date_plan);
-                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; 
-                    formattedDate = datePlan.toLocaleDateString('id-ID', options); 
-                }
-                let formatDateInput = '-';
-                if (dataRombongan.date_input){
-                    const dateInput = new Date(dataRombongan.date_input);
-                    const day = dateInput.getDate().toString().padStart(2, '0');
-                    const year = dateInput.getFullYear();
-                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const monthShort = monthNames[dateInput.getMonth()];
-                    formatDateInput = `${day}-${monthShort}-${year}`;
-                }
+                // let formattedDate = '-';
+                // if (dataRombongan.date_plan) {
+                //     const datePlan = new Date(dataRombongan.date_plan);
+                //     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; 
+                //     formattedDate = datePlan.toLocaleDateString('id-ID', options); 
+                // }
+                // let formatDateInput = '-';
+                // if (dataRombongan.date_input){
+                //     const dateInput = new Date(dataRombongan.date_input);
+                //     const day = dateInput.getDate().toString().padStart(2, '0');
+                //     const year = dateInput.getFullYear();
+                //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                //     const monthShort = monthNames[dateInput.getMonth()];
+                //     formatDateInput = `${day}-${monthShort}-${year}`;
+                // }
 
-                $('#tgl_plan').text(': ' + formattedDate);
+                $('#tgl_plan').text(': ' + formatTanggal(dataRombongan.date_plan));
                 $('#instansi').text(': ' + dataRombongan.client_name || '-');
                 $('#pic').text(': ' + dataRombongan.client_pic || '-');
                 $('#tlp').text(': ' + dataRombongan.phone || '-');
                 $('#sales').text(': ' + dataRombongan.marketing || '-'); 
 
                 $('#idCl').text(dataRombongan.client_id || '-'); 
-                $('#tgl_in').text(formatDateInput); 
+                $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
                 $('#tema').text(dataRombongan.judul || '-'); 
                 $('#jumlah').text(dataRombongan.jumlah_pax +' pax' || '-'); 
             }
@@ -493,6 +509,32 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                     </div>`;
             } else {
                 initialRevenueHtml = '<p class="ps-4">Data tiket utama tidak ditemukan.</p>';
+            }
+
+            // Siapkan informasi pembayaran DP dan Sisa Payment
+            if(dataRombongan.down_payment > 0 && dataRombongan.clear_payment > 0 && dataRombongan.dp_uploaded_at && dataRombongan.cp_uploaded_at){
+                const downPayment = parseFloat(dataRombongan.down_payment || 0);
+                const clearPayment = parseFloat(dataRombongan.clear_payment || 0);
+                const dateDP = dataRombongan.dp_uploaded_at;
+                const dateCP = dataRombongan.cp_uploaded_at;
+
+                paymentDp = `
+                    <div class="row class= text-start fw-normal small">
+                        <div class="col-4">Down Payment:</div>
+                        <div class="col-2"></div>
+                        <div class="col-2">Bukti: ${formatTanggal(dateDP)}</div>
+                        <div class="col-4 text-end">${formatRupiah(downPayment)}</div>
+                    </div>
+                    <div class="row class= text-start fw-normal small">
+                        <div class="col-4">Clear Payment:</div>
+                        <div class="col-2">Transfer</div>
+                        <div class="col-2">Bukti: ${formatTanggal(dateCP)}</div>
+                        <div class="col-4 text-end">${formatRupiah(clearPayment)}</div>
+                    </div>`;
+            }else{
+                paymentDp = `<div class="row">
+                                <div class="col-12">Payment data not available.</div>
+                            </div>`;
             }
 
             //Vendor
@@ -529,6 +571,8 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                 // Hitung Gross Profit
                 const grossProfit = totalPendapatan - totalPengeluaran;
                 $('#gross_profit').text(formatRupiah(grossProfit));
+                
+                $('#sisa_payment').html(paymentDp);
 
             } else {
                 // Jika hanya ada data tiket utama
@@ -536,9 +580,9 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                 $('#total_pendapatan').text(formatRupiah(totalPendapatan));
                 
                 // Data budgeting kosong
-                $('#detail_pengeluaran').html('<p class="ps-4">Data fasilitas pengeluaran tidak ditemukan.</p>');
+                $('#detail_pengeluaran').html('<p class="ps-4">HTM ONLY</p>');
                 $('#total_pengeluaran').text(formatRupiah(0));
-                $('#gross_profit').text(formatRupiah(totalPendapatan)); 
+                $('#gross_profit').text(formatRupiah(totalPendapatan));
             }
         });
     </script>

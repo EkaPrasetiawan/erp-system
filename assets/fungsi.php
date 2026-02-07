@@ -234,7 +234,7 @@ function getViewBudgeting ($konek, $client_id){
     }
 
     $viewBudgeting = [];
-    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id'");
+    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id' AND del_status = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
             $viewBudgeting[] = $row;
@@ -246,8 +246,8 @@ function getViewBudgeting ($konek, $client_id){
 }
 function getRombonganOk ($konek, $client_id){
     $rombonganOk = [];
-    $result = $konek->query("SELECT date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, client_id
-                            FROM rombongan_master WHERE client_id = '$client_id'");
+    $result = $konek->query("SELECT date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, down_payment, clear_payment, dp_uploaded_at, cp_uploaded_at, client_id
+                            FROM rombongan_master WHERE client_id = '$client_id' AND del_status = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
             $rombonganOk[] = $row;
@@ -1209,6 +1209,22 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
 
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE client_id = ? AND fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("sss", $vendorName, $idClient, $VenFasilitas);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Fasilitas ' . $VenFasilitas . ' dari vendor ' . $vendorName . ' sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
+
         $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name)
                                 VALUES(?,?,?,?,?,?,?,?,?,?)");
         $stmt->bind_param("ssssiiisss", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient);
@@ -1282,6 +1298,22 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $vendor = 'food and beverages';
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
+
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $idClient, $menu);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Menu ' . $menu . ' sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
 
         $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name)
                                 VALUES(?,?,?,?,?,?,?,?,?,?)");
@@ -1390,6 +1422,22 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pemakai = sanitize_text($_POST['nPeng']);
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer Halimah';
+
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $idClient, $namaFasilitas);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Fasilitas ini sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
 
         $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan)
                                 VALUES(?,?,?,?,?,?,?)");
