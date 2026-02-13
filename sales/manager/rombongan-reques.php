@@ -75,6 +75,16 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                     <input type="text" class="form-control" value="<?= $client_name ?>" id="" name="" readonly>
                                     </div>
                                 </div>
+                                <form action="budgeting-print.php" method="POST" target="_blank">
+                                    <input type="hidden" name="client_id" value="<?= $client_id ?>">
+                                    <input type="hidden" name="client_name" value="<?= $client_name ?>">
+                                    <input type="hidden" name="date_plan" value="<?= $date_plan ?>">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa-solid fa-print"></i> Print Budget
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                         <div class="card mb-4">

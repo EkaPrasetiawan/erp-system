@@ -53,6 +53,25 @@ function viewRombongan($konek){
     return $allRom;
 }
 
+function viewPayemnt($konek, $client_id){
+    $safe_client_id = mysqli_real_escape_string($konek, $client_id);
+
+    if(empty($safe_client_id)){
+        return [];
+    }
+
+    $viewPay = [];
+    $result = $konek->query("SELECT * FROM rombongan_payment WHERE rombongan_id = '$safe_client_id'");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $viewPay[] = $row;
+        }
+    } else {
+        error_log("Error fetching payment data: " . $konek->error);
+    }
+    return $viewPay;
+}
+
 function getAllFasilitas($konek){
     $fasilitas = [];
     $cekFs = $konek->query("SELECT * FROM markom_service");
@@ -622,111 +641,243 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         exit;
     }
 
-    //clear payment
-    if($_POST['aksi'] === 'update_cp_rombongan'){
-        $id_cpRom = sanitize_text($_POST['up_IDromCP']);
-        $cp_amount = $_POST['up_cp'] ?? 0;
-        //folder img
-        // $target_dir = dirname(dirname(__DIR__)) . "../img/downPayment/";
-        $target_dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . "img" . DIRECTORY_SEPARATOR . "clearPayment" . DIRECTORY_SEPARATOR;
-        $image_path = null;
-        $uploaded_at = date('Y-m-d H:i:s'); // Catat waktu upload
+    //payment rombongan
+    if (isset($_POST['aksi']) && $_POST['aksi'] === 'tambah_payment') {
+        $idPay    = mysqli_real_escape_string($konek, $_POST['idPay']);
+        $instansi = mysqli_real_escape_string($konek, $_POST['instansi']);
+        $pic      = mysqli_real_escape_string($konek, $_POST['picPay']);
+        $jenis    = mysqli_real_escape_string($konek, $_POST['jenis']);
+        $metode   = mysqli_real_escape_string($konek, $_POST['metode']);
+        $tgl_pay  = mysqli_real_escape_string($konek, $_POST['tgl_pay']);
+        $price    = mysqli_real_escape_string($konek, $_POST['price']);
+        $tgl_input = date("Y-m-d H:i:s");
+        $sales = 'Noer Halimah';
 
-            // ========== 1. Ambil data lama dulu ==========
-        $qOld = $konek->prepare("SELECT clear_payment, img_cp, cp_uploaded_at FROM rombongan_master WHERE client_id = ?");
-        $qOld->bind_param("s", $id_cpRom);
-        $qOld->execute();
-        $result = $qOld->get_result();
-        $oldRow = $result->fetch_assoc();
-        $qOld->close();
-
-        $oldData = json_encode($oldRow); 
-
-        $has_new_image = false;
-
-        if (isset($_FILES['picCP']) && $_FILES['picCP']['error'] === UPLOAD_ERR_OK) {
-            $has_new_image = true;
-            $file_name = $_FILES['picCP']['name'];
-            $file_tmp = $_FILES['picCP']['tmp_name'];
-            $file_size = $_FILES['picCP']['size']; 
-            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-            $allowed_ext = ['jpg', 'jpeg', 'png'];
-        
-            // Pengecekan Ekstensi dan Ukuran
-            if (!in_array($file_ext, $allowed_ext)) {
-                echo json_encode(['status' => 'error', 'message' => 'Format file tidak diizinkan. Hanya JPG, JPEG, PNG.']);
-                exit();
-            }
-            if ($file_size > 2000000) { // 2MB
-                echo json_encode(['status' => 'error', 'message' => 'Ukuran file melebihi batas 2MB.']);
-                exit();
-            }
-            // Generate nama unik (misalnya: ID_ROMBONGAN_CP_timestamp.ext)
-            $new_file_name = $id_cpRom . '_CP_' . time() . '.' . $file_ext;
-            $target_file = $target_dir . $new_file_name;
-
-            if (move_uploaded_file($file_tmp, $target_file)) {
-                // Path relatif yang akan disimpan di database
-                // Contoh: 'img/imgDP/ID_ROMBONGAN_DP_timestamp.jpg'
-                $image_path = 'img/clearPayment/' . $new_file_name; 
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Gagal memindahkan file yang diupload.']);
-                exit();
-            }
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'File gambar wajib diupload. Error: ' . $_FILES['picDP']['error']]);
-            exit();
-        }
-        // Update Data ke Database
-         if ($has_new_image) {
-                $stmt_update = $konek->prepare("
-                    UPDATE rombongan_master 
-                    SET clear_payment = ?, img_cp = ?, cp_uploaded_at = ?
-                    WHERE client_id = ?
-                ");
-                $stmt_update->bind_param("isss", $cp_amount, $image_path, $uploaded_at, $id_cpRom);
-            } else {
-                $stmt_update = $konek->prepare("
-                    UPDATE rombongan_master 
-                    SET clear_payment = ?
-                    WHERE client_id = ?
-                ");
-                $stmt_update->bind_param("is", $cp_amount, $id_cpRom);
-            }
-    
-        if ($stmt_update->execute()) {
-
-            // ========== Ambil data baru ==========
-            $qNew = $konek->prepare("SELECT clear_payment, img_cp, cp_uploaded_at
-                                    FROM rombongan_master WHERE client_id = ?");
-            $qNew->bind_param("s", $id_cpRom);
-            $qNew->execute();
-            $resultNew = $qNew->get_result();
-            $newRow = $resultNew->fetch_assoc();
-            $qNew->close();
-
-            $newData = json_encode($newRow);
-
-            // ========== Simpan history log ==========
-            logActivity(
-                $konek,
-                112,
-                "update clear payment",
-                "rombongan_master",
-                $id_cpRom,
-                $oldData,
-                $newData,
-            );
-
-            echo json_encode(['status' => 'success']);
+        // VALIDASI FILE
+        if (empty($_FILES['imgPay']['name'])) {
+            echo json_encode(["status"=>"error","message"=>"File bukti wajib diupload"]);
             exit;
-        } else {
-            error_log("Update Error: " . $stmt_update->error);
-            echo json_encode(['status' => 'error']);
         }
-        $stmt_update->close();
+
+        $allowed = ['jpg','jpeg','png'];
+        $nama_file = $_FILES['imgPay']['name'];
+        $tmp_file  = $_FILES['imgPay']['tmp_name'];
+        $size_file = $_FILES['imgPay']['size'];
+        $ekstensi  = strtolower(pathinfo($nama_file, PATHINFO_EXTENSION));
+
+        if (!in_array($ekstensi, $allowed)) {
+            echo json_encode(["status"=>"error","message"=>"Format file tidak diizinkan"]);
+            exit;
+        }
+
+        if ($size_file > 2*1024*1024) {
+            echo json_encode(["status"=>"error","message"=>"Ukuran file > 2MB"]);
+            exit;
+        }
+
+        // INSERT TANPA GAMBAR DULU
+        $stmt = $konek->prepare("
+            INSERT INTO rombongan_payment
+            (rombongan_id, rombongan_name, pic, sales, jenis, date_input, date_pay, price, metode)
+            VALUES (?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param(
+            "sssssssss", $idPay, $instansi, $pic, $sales, $jenis, $tgl_input, $tgl_pay,
+            $price, $metode);
+
+        if (!$stmt->execute()) {
+            echo json_encode([
+                "status"=>"error",
+                "message"=>$stmt->error
+            ]);
+            exit;
+        }
+
+        // AMBIL payment_id
+        $payment_id = $konek->insert_id;
+
+        // BUAT NAMA FILE BERBASIS ID
+        $namaFileBaru =
+            "pay_{$payment_id}_{$idPay}_{$jenis}_" .
+            time() . "." . $ekstensi;
+
+        $pathUpload = "../img/payments/" . $namaFileBaru;
+        $pathDB     = "img/payments/" . $namaFileBaru;
+
+        // UPLOAD FILE
+        if (!move_uploaded_file($tmp_file, $pathUpload)) {
+
+            // rollback record DB jika upload gagal
+            $konek->query("DELETE FROM rombongan_payment WHERE id='$payment_id'");
+
+            echo json_encode([
+                "status"=>"error",
+                "message"=>"Upload file gagal"
+            ]);
+            exit;
+        }
+
+        // UPDATE KOLOM GAMBAR
+        $stmt2 = $konek->prepare("
+            UPDATE rombongan_payment SET img_payment=?
+            WHERE id=?");
+
+        $stmt2->bind_param("ss", $pathDB, $payment_id);
+        $stmt2->execute();
+        $newData = [
+            "payment_id"     => $payment_id,
+            "rombongan_id"   => $idPay,
+            "rombongan_name" => $instansi,
+            "pic"            => $pic,
+            "sales"          => $sales,
+            "jenis"          => $jenis,
+            "metode"         => $metode,
+            "date_pay"       => $tgl_pay,
+            "price"          => $price,
+            "img_payment"    => $pathDB
+        ];
+
+        logActivity(
+            $konek,
+            211,                    // ganti dengan $_SESSION['user_id'] jika ada
+            "Insert Pembayaran",
+            "rombongan_payment",
+            $idPay,
+            '',
+            json_encode($newData)
+        );
+        echo json_encode([
+            "status"=>"success",
+        ]);
         exit;
     }
+    //akhir payment rombongan
+    //update payment rombongan
+    if (isset($_POST['aksi']) && $_POST['aksi'] === 'update_payment') {
+        try {
+            $id = $_POST['paymentId'] ?? '';
+            if ($id=='') throw new Exception("payment_id kosong");
+            $id = mysqli_real_escape_string($konek,$id);
+            $old = $konek->query("SELECT * FROM rombongan_payment WHERE id='$id'")
+                        ->fetch_assoc();
+
+            if (!$old) throw new Exception("Data tidak ditemukan");
+
+            $jenis   = trim($_POST['up_jenis'] ?? '');
+            $metode  = trim($_POST['up_metode'] ?? '');
+            $price   = $_POST['up_price'] ?? '';
+            $tgl_pay = trim($_POST['up_tgl_pay'] ?? '');
+
+            $price = preg_replace('/[^0-9.]/','',$price);
+
+            // VALIDASI: PRICE CHANGE → WAJIB GAMBAR BARU
+            $priceLama = (float)$old['price'];
+            $priceBaru = (float)$price;
+
+            if ($priceBaru != $priceLama && empty($_FILES['up_imgPay']['name'])) {
+                echo json_encode([
+                    "status"  => "cek",
+                    "message" => "cek lagi"
+                ]);
+                exit;
+            }
+
+            $fields=[];
+            $params=[];
+            $types="";
+
+            $addField = function(&$fields,&$params,&$types,$name,$value){
+                $fields[]="$name=?";
+                $params[]=$value;
+                $types.="s";
+            };
+
+            if ($jenis !== trim($old['jenis']))
+                $addField($fields,$params,$types,'jenis',$jenis);
+
+            if ($metode !== trim($old['metode']))
+                $addField($fields,$params,$types,'metode',$metode);
+
+            if ($priceBaru != $priceLama)
+                $addField($fields,$params,$types,'price',$priceBaru);
+
+            // if ($tgl_pay !== $old['date_pay'])
+            //     $addField($fields,$params,$types,'date_pay',$tgl_pay);
+            $tglOld = substr($old['date_pay'],0,10);
+
+            if ($tgl_pay !== $tglOld)
+                $addField($fields,$params,$types,'date_pay',$tgl_pay);
+
+            // ===== HANDLE IMAGE =====
+            if (!empty($_FILES['up_imgPay']['name'])) {
+
+                $ext = strtolower(pathinfo($_FILES['up_imgPay']['name'],PATHINFO_EXTENSION));
+                if (!in_array($ext,['jpg','jpeg','png']))
+                    throw new Exception("Format gambar salah");
+
+                if ($_FILES['up_imgPay']['size'] > 2*1024*1024)
+                    throw new Exception("Gambar > 2MB");
+
+                if ($old['img_payment'] && file_exists("../".$old['img_payment'])) {
+                    $info = pathinfo("../".$old['img_payment']);
+                    $renameOld =
+                        $info['dirname'].'/'.
+                        $info['filename'].'_old_'.time().'.'.$info['extension'];
+
+                    rename("../".$old['img_payment'],$renameOld);
+                }
+
+                $newName = "pay_{$id}_{$old['rombongan_id']}_{$jenis}_".time().".$ext";
+                $uploadPath = "../img/payments/".$newName;
+                $dbPath = "img/payments/".$newName;
+
+                if (!move_uploaded_file($_FILES['up_imgPay']['tmp_name'],$uploadPath))
+                    throw new Exception("Upload gagal");
+
+                $addField($fields,$params,$types,'img_payment',$dbPath);
+            }
+
+            if (empty($fields)) {
+                echo json_encode(["status"=>"nochange"]);
+                exit;
+            }
+
+            $sql = "UPDATE rombongan_payment SET ".implode(',',$fields)." WHERE id=?";
+            $types.="s";
+            $params[]=$id;
+
+            $stmt = $konek->prepare($sql);
+            if (!$stmt) throw new Exception($konek->error);
+
+            $stmt->bind_param($types,...$params);
+            if (!$stmt->execute())
+                throw new Exception($stmt->error);
+
+            $new = $konek->query("SELECT * FROM rombongan_payment WHERE id='$id'")
+                        ->fetch_assoc();
+
+            logActivity(
+                $konek,
+                211,
+                "update",
+                "rombongan_payment",
+                $id,
+                json_encode($old),
+                json_encode($new)
+            );
+
+            echo json_encode(["status"=>"success"]);
+            exit;
+
+        } catch (Throwable $e) {
+
+            echo json_encode([
+                "status"=>"error",
+                "message"=>$e->getMessage()
+            ]);
+            exit;
+        }
+    }
+    //akhir update payment rombongan
 
     if (isset($_POST['aksi']) && $_POST['aksi'] === 'getDetailRombongan') {
         $client_id = mysqli_real_escape_string($konek, $_POST['client_id']);

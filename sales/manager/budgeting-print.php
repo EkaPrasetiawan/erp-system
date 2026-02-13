@@ -585,6 +585,17 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
                 $('#gross_profit').text(formatRupiah(totalPendapatan));
             }
         });
+
+    </script>
+    <div id="loading">Menyiapkan dokumen print...</div>
+
+    <script>
+    window.onload = function(){
+        setTimeout(function(){
+            document.getElementById('loading').style.display = 'none';
+            window.print();
+        }, 1500);
+    }
     </script>
 
   </body>

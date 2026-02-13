@@ -224,133 +224,6 @@ $allrombongan = viewRombongan($konek);
                 </div>
             </div>
         </div>
-        <!-- akhir modal Update data rombongan -->
-        <!-- modal Update DP rombongan -->
-        <div class="modal fade" id="updateDP" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Down Payment Rombogan</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="updateDPform" method="POST" autocomplete="off">
-                    <div class="modal-body">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="mb-3 row">
-                                    <label for="up_IDromDP" class="col-sm-4 col-form-label">ID Rombongan</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_IDromDP" name="up_IDromDP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_instansiDP" class="col-sm-4 col-form-label">Rombongan</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_instansiDP" name="up_instansiDP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="upPicDP" class="col-sm-4 col-form-label">PIC</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="upPicDP" name="upPicDP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_dp" class="col-sm-4 col-form-label">Down Payment</label>
-                                    <div class="col-sm-8">
-                                        <input type="tel" class="form-control" id="up_dp" name="up_dp"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="picDP" class="col-sm-4 col-form-label">Upload Bukti</label>
-                                    <div class="col-sm-8">
-                                        <input type="file" class="form-control" id="picDP" name="picDP" accept="image/jpeg, image/png, image/jpg">
-                                        <small class="form-text text-muted">Hanya JPG, JPEG, PNG. Maksimal 2MB.</small>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row" id="currentDPImageRow">
-                                    <div class="col-sm-2"></div>
-                                    <div class="col-sm-8">
-                                        <img id="currentDPImage" src="" alt="" style="max-width: 100%; height: auto; display: none;">
-                                        <p id="noImageMessage" style="color: red; display: none;">Belum ada bukti DP terunggah.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </div>
-                </form>
-                </div>
-            </div>
-        </div>
-        <!-- akhir modal Update DP rombongan -->
-        <!-- modal Update CP rombongan -->
-        <div class="modal fade" id="updateClearPayment" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Clear Payment Rombogan</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="updateCPform" method="POST" autocomplete="off">
-                    <div class="modal-body">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="mb-3 row">
-                                    <label for="up_IDromCP" class="col-sm-4 col-form-label">ID Rombongan</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_IDromCP" name="up_IDromCP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_instansiCP" class="col-sm-4 col-form-label">Rombongan</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_instansiCP" name="up_instansiCP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="upPicCP" class="col-sm-4 col-form-label">PIC</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="upPicCP" name="upPicCP" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="up_cp" class="col-sm-4 col-form-label">Clear Payment</label>
-                                    <div class="col-sm-8">
-                                        <input type="tel" class="form-control" id="up_cp" name="up_cp"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label for="picCP" class="col-sm-4 col-form-label">Upload Gambar</label>
-                                    <div class="col-sm-8">
-                                        <input type="file" class="form-control" id="picCP" name="picCP" accept="image/jpeg, image/png, image/jpg" required>
-                                        <small class="form-text text-muted">Hanya JPG, JPEG, PNG. Maksimal 2MB.</small>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row" id="currentCPImageRow">
-                                    <div class="col-sm-2"></div>
-                                    <div class="col-sm-8">
-                                        <img id="currentCPImage" src="" alt="" style="max-width: 100%; height: auto; display: none;">
-                                        <!-- <p id="noImageMessage" style="color: red; display: none;">Belum ada bukti DP terunggah.</p> -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </div>
-                </form>
-                </div>
-            </div>
-        </div>
-        <!-- akhir modal Update CP rombongan -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -387,22 +260,10 @@ $allrombongan = viewRombongan($konek);
                             data-judul="${item.judul}"
                             ><i class="fa-solid fa-file-pen"></i>
                         </button>
-                        <button class="btn btn-warning btnUpdateDP" data-bs-toggle="modal" data-bs-target="#updateDP"
-                            data-id="${item.client_id}"
-                            data-instansi="${item.client_name}"
-                            data-pic="${item.client_pic}"
-                            data-dp="${item.down_payment || ''}"
-                            data-img="${item.img_dp}"
+                        <button class="btn btn-warning btnPayment"
+                            data-client-id="${item.client_id}"
+                            data-nama-id="${item.client_name}"
                         ><i class="fa-solid fa-hand-holding-dollar"></i>
-                        </button>
-                        <button class="btn btn-primary btnUpdateClearPayment" data-bs-toggle="modal" data-bs-target="#updateClearPayment"
-                            data-id="${item.client_id}"
-                            data-instansi="${item.client_name}"
-                            data-pic="${item.client_pic}"
-                            data-cp="${item.clear_payment || ''}"
-                            data-img="${item.img_cp}"
-                            ${item.down_payment > 0 ? '' : 'disabled'}
-                        ><i class="fa-solid fa-circle-dollar-to-slot"></i>
                         </button>
                     </div>
                 </td>
@@ -556,124 +417,6 @@ $allrombongan = viewRombongan($konek);
                     document.getElementById('up_judul').value = judul;
                 }
             });
-
-            document.addEventListener('click',function(e){
-                if(e.target.classList.contains('btnUpdateDP') || e.target.closest('.btnUpdateDP')){
-                    const button = e.target.closest('.btnUpdateDP');
-                    const id = button.getAttribute('data-id');
-                    const instansi = button.getAttribute('data-instansi');
-                    const pic = button.getAttribute('data-pic');
-                    const dp = button.getAttribute('data-dp');
-                    const imgPath = button.getAttribute('data-img');
-                    const imgDefault = '../../assets/img/money.jpg';
-
-                    document.getElementById('up_IDromDP').value = id;
-                    document.getElementById('up_instansiDP').value = instansi;
-                    document.getElementById('upPicDP').value = pic;
-                    document.getElementById('up_dp').value = formatNumber(dp);
-
-                    // --- LOGIKA MENAMPILKAN GAMBAR ---
-                    const imgElement = document.getElementById('currentDPImage');
-                    const noImageMsg = document.getElementById('noImageMessage');
-                    
-                    // --- FIX CEK GAMBAR KOSONG ---
-                    let finalImagePath = "";
-
-                    if (
-                        imgPath !== null &&
-                        imgPath !== undefined &&
-                        imgPath.trim() !== "" &&
-                        imgPath.trim().toLowerCase() !== "null" &&
-                        imgPath.trim().toLowerCase() !== "undefined"
-                    ) {
-                        finalImagePath = '../../' + imgPath;
-                    } else {
-                        finalImagePath = imgDefault;
-                    }
-
-                    imgElement.src = finalImagePath;
-                    imgElement.style.display = 'block';
-                    noImageMsg.style.display = 'none';
-
-                    // Reset input file ketika modal dibuka
-                    document.getElementById('picDP').value = "";
-                }
-            });
-
-            document.getElementById('picDP').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                const previewImg = document.getElementById('currentDPImage');
-                const noImageMsg = document.getElementById('noImageMessage');
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result; // Ganti gambar lama ke gambar baru
-                        previewImg.style.display = 'block';
-                        noImageMsg.style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            document.addEventListener('click',function(e){
-                if(e.target.classList.contains('btnUpdateClearPayment') || e.target.closest('.btnUpdateClearPayment')){
-                    const button = e.target.closest('.btnUpdateClearPayment');
-                    const id = button.getAttribute('data-id');
-                    const instansi = button.getAttribute('data-instansi');
-                    const pic = button.getAttribute('data-pic');
-                    const cp = button.getAttribute('data-cp');
-                    const imgPath = button.getAttribute('data-img');
-                    const imgDefault = '../../assets/img/money.jpg';
-
-                    document.getElementById('up_IDromCP').value = id;
-                    document.getElementById('up_instansiCP').value = instansi;
-                    document.getElementById('upPicCP').value = pic;
-                    document.getElementById('up_cp').value = formatNumber(cp);
-
-                    // --- LOGIKA MENAMPILKAN GAMBAR ---
-                    const imgElement = document.getElementById('currentCPImage');
-                    // const noImageMsg = document.getElementById('noImageMessage');
-                    
-                    // --- FIX CEK GAMBAR KOSONG ---
-                    let finalImagePath = "";
-
-                    if (
-                        imgPath !== null &&
-                        imgPath !== undefined &&
-                        imgPath.trim() !== "" &&
-                        imgPath.trim().toLowerCase() !== "null" &&
-                        imgPath.trim().toLowerCase() !== "undefined"
-                    ) {
-                        finalImagePath = '../../' + imgPath;
-                    } else {
-                        finalImagePath = imgDefault;
-                    }
-
-                    imgElement.src = finalImagePath;
-                    imgElement.style.display = 'block';
-                    // noImageMsg.style.display = 'none';
-
-                    // Reset input file ketika modal dibuka
-                    document.getElementById('picCP').value = "";
-                }
-            });
-
-            document.getElementById('picCP').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                const previewImg = document.getElementById('currentCPImage');
-                // const noImageMsg = document.getElementById('noImageMessage');
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result; // Ganti gambar lama ke gambar baru
-                        previewImg.style.display = 'block';
-                        // noImageMsg.style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
         </script>
         <script>
             $('#upHarga, #up_pax').on('input', function () {
@@ -754,136 +497,34 @@ $allrombongan = viewRombongan($konek);
                     }
                 });
             });
-            //upate dp
-            $('#up_dp').on('input', function(e) {
-                let rawValue = $(this).val();
-                $(this).val(formatNumber(rawValue));
-            });
-            $('#updateDPform').on('submit', function(e){
-                e.preventDefault();
-                // A. Bersihkan input DP dari format titik sebelum FormData dibuat
-                const formattedDP = $('#up_dp').val();
-                $('#up_dp').val(formattedDP.replace(/\./g, ''));
 
-                // B. Buat FormData untuk mengirim file dan data POST
-                const formData = new FormData(this);
-                formData.append('aksi', 'update_dp_rombongan'); 
-                console.log("data kirim DP: ", ...formData);
+            document.body.addEventListener('click', function(e){
+                const clickedElement = e.target.closest('.btnPayment');
+                if(clickedElement){
+                    e.preventDefault();
 
-                // C. Kembalikan format titik di input field
-                $('#up_dp').val(formattedDP);
-                
-                $.ajax({
-                    url : '../../assets/fungsi.php',
-                    method : 'POST',
-                    data : formData,
-                    processData: false, // Wajib untuk FormData
-                    contentType: false, // Wajib untuk FormData
-                    success: function(res){
-                        console.log("respon DP: ", res);
-                        let response = {};
-                        try {
-                            response = JSON.parse(res);
-                        } catch (e) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Format Respon Salah',
-                                text: 'ERROR...' });
-                            return;
-                        }
-                        if(response.status === "success"){
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Update Berhasil',
-                                text: 'Data DP dan Bukti berhasil diperbaharui.',
-                                showConfirmButton: true,
-                                confirmButtonText: 'Oke',
-                                allowOutsideClick: false,
-                                allowEscapeKey: false,
-                            }).then((result)=>{
-                                if(result.isConfirmed){
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: response.message || 'Gagal menyimpan data DP!!!'
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("AJAX Error:", error);
-                        Swal.fire({ icon: 'error', title: 'Error AJAX', text: error });
-                    }
-                });
-            });
+                    const rombonganId = clickedElement.dataset.clientId;
+                    const rombonganName = clickedElement.dataset.namaId;
 
-            //update Clear Payment
-            $('#up_cp').on('input', function(e) {
-                let rawValue = $(this).val();
-                $(this).val(formatNumber(rawValue));
-            });
-            $('#updateCPform').on('submit', function(e){
-                e.preventDefault();
-                // A. Bersihkan input DP dari format titik sebelum FormData dibuat
-                const formattedDP = $('#up_cp').val();
-                $('#up_cp').val(formattedDP.replace(/\./g, ''));
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = 'payment.php';
 
-                // B. Buat FormData untuk mengirim file dan data POST
-                const formData = new FormData(this);
-                formData.append('aksi', 'update_cp_rombongan'); 
-                console.log("data kirim CP: ", ...formData);
+                    const inputID = document.createElement('input');
+                    inputID.type = 'hidden';
+                    inputID.name = 'client_id';
+                    inputID.value = rombonganId;
 
-                // C. Kembalikan format titik di input field
-                $('#up_dp').val(formattedDP);
-                
-                $.ajax({
-                    url : '../../assets/fungsi.php',
-                    method : 'POST',
-                    data : formData,
-                    processData: false, // Wajib untuk FormData
-                    contentType: false, // Wajib untuk FormData
-                    success: function(res){
-                        console.log("respon DP: ", res);
-                        let response = {};
-                        try {
-                            response = JSON.parse(res);
-                        } catch (e) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Format Respon Salah',
-                                text: 'ERROR...' });
-                            return;
-                        }
-                        if(response.status === "success"){
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Update Berhasil',
-                                text: 'Data Clear Payment dan Bukti berhasil diperbaharui.',
-                                showConfirmButton: true,
-                                confirmButtonText: 'Oke',
-                                allowOutsideClick: false,
-                                allowEscapeKey: false,
-                            }).then((result)=>{
-                                if(result.isConfirmed){
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: response.message || 'Gagal menyimpan data CP!!!'
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("AJAX Error:", error);
-                        Swal.fire({ icon: 'error', title: 'Error AJAX', text: error });
-                    }
-                });
+                    const inputName = document.createElement('input');
+                    inputName.type = 'hidden';
+                    inputName.name = 'client_name';
+                    inputName.value = rombonganName;
+                    
+                    form.appendChild(inputName);
+                    form.appendChild(inputID);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             });
 
         </script>

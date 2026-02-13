@@ -70,25 +70,25 @@ $allRom = viewRombongan($konek) ?? [];
                         <div class="modal-dialog">
                             <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">Cabana and Cabin</h1>
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation Form</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <form id="approval" method="POST" autocomplete="off">
                                 <div class="modal-body">
                                     <div class="card">
                                         <div class="card-body">
-                                            <input type="text" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
-                                            <input type="text" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                             <div class="row text-start">
+                                            <input type="text" class="form-control" id="cId" name="cId">
+                                            <input type="text" class="form-control" id="cName" name="cName">
                                                 <div class=" border border-dark">
                                                     <div class="row">
                                                         <p class="fw-bold mt-2 mb-1">Detail Rombongan</p>
                                                         <div id="detailInfo"></div>
-                                                        <div class="row text-end mt-2">
+                                                        <!-- <div class="row text-end mt-2">
                                                             <div class="col-7"></div>
                                                             <div class="col-3"><strong>TOTAL PENDAPATAN :</strong></div>
                                                             <div class="col-2"><strong id="total_pendapatan"></strong></div>
-                                                        </div>
+                                                        </div> -->
                                                     </div>
                                                 </div>
                                             </div>
@@ -135,14 +135,21 @@ $allRom = viewRombongan($konek) ?? [];
                 <td>${item.oleh}</td>
                 <td>
                     <div class="d-grid gap-1">
-                        <a class="btn btn-primary btnDetail"
+                        <a class="btn btn-info btnBs"
                         data-client-id="${item.client_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> Detail</a>
-                        <a class="btn btn-success btnApproval" data-bs-toggle="modal" data-bs-target="#approval"
+                        <i class="fa-solid fa-newspaper"></i> Budget Submission</a>
+
+                        <a class="btn btn-primary btnFb"
                         data-client-id="${item.client_id}"
-                        <i class="fa-solid fa-signature"></i></i> ACC</a>
+                        data-client-name="${item.client_name}"
+                        data-client-date="${item.date_plan}">
+                        <i class="fa-solid fa-newspaper"></i> Final Budget</a>
+
+                        <a class="btn btn-success btnApproval" data-bs-toggle="modal" data-bs-target="#approval"
+                        data-client-id="${item.client_id}">
+                        <i class="fa-solid fa-signature"></i> ACC</a>
                     </div>
                 </td>
                 `;
@@ -151,97 +158,122 @@ $allRom = viewRombongan($konek) ?? [];
 
         </script>
         <script>
-            //even delegation
-            document.body.addEventListener('click', function(e) {
-                // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
-                const clickedElement = e.target.closest('.btnDetail');
+            // Kirim data via POST menggunakan form dinamis
 
-                if (clickedElement) {
-                    e.preventDefault();
+            document.body.addEventListener('click', function(e){
 
-                    const clientId = clickedElement.dataset.clientId;
-                    const clientName = clickedElement.dataset.clientName;
-                    const clientDate = clickedElement.dataset.clientDate;
+                const btn = e.target.closest('.btnBs, .btnFb');
+                if (!btn) return;
+                e.preventDefault();
 
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = 'rombongan-reques.php';
+                /* ---------- tentukan target action ---------- */
+                const actionMap = {
+                    btnBs: 'rombongan-reques.php',
+                    btnFb: 'rombongan-requesFinal.php'
+                };
 
-                    const inputId = document.createElement('input');
-                    inputId.type = 'hidden';
-                    inputId.name = 'client_id';
-                    inputId.value = clientId;
+                const targetClass = btn.classList.contains('btnBs') ? 'btnBs' : 'btnFb';
+                const actionUrl   = actionMap[targetClass];
 
-                    const inputName = document.createElement('input');
-                    inputName.type = 'hidden';
-                    inputName.name = 'client_name';
-                    inputName.value = clientName;
+                /* ---------- ambil dataset ---------- */
+                const data = {
+                    client_id:   btn.dataset.clientId,
+                    client_name: btn.dataset.clientName,
+                    date_plan:   btn.dataset.clientDate
+                };
 
-                    const inputDate = document.createElement('input');
-                    inputDate.type = 'hidden';
-                    inputDate.name = 'date_plan';
-                    inputDate.value = clientDate;
-
-                    form.appendChild(inputId);
-                    form.appendChild(inputName);
-                    form.appendChild(inputDate);
-
-                    document.body.appendChild(form);
-                    form.submit();
+                /* ---------- validasi ---------- */
+                if (!data.client_id) {
+                    console.warn('client_id kosong — submit dibatalkan');
+                    return;
                 }
+
+                /* ---------- submit ---------- */
+                postRedirect(actionUrl, data);
+
             });
+
+
+            /* =====================================================
+            HELPER: POST REDIRECT
+            ===================================================== */
+            function postRedirect(action, data){
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = action;
+
+                Object.entries(data).forEach(([name,value]) => {
+
+                    const input = document.createElement('input');
+                    input.type  = 'hidden';
+                    input.name  = name;
+                    input.value = value ?? '';
+
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         </script>
         <script>
             document.addEventListener("click", function (e) {
-            const btn = e.target.closest(".btnApproval");
-            if (!btn) return;
+                const btn = e.target.closest(".btnApproval");
+                if (!btn) return;
 
-            const clientId = btn.dataset.clientId;
+                const clientId = btn.dataset.clientId;
 
-            $.ajax({
-                url: "../../assets/fungsi.php",
-                type: "POST",
-                data: { aksi: "getDetailRombongan", client_id: clientId },
-                dataType: "json",
-                success: function (res) {
-                    if (res.status !== "success") return;
+                $.ajax({
+                    url: "../../assets/fungsi.php",
+                    type: "POST",
+                    data: { aksi: "getDetailRombongan", client_id: clientId },
+                    dataType: "json",
+                    success: function (res) {
+                        if (res.status !== "success") return;
 
-                    const master = res.master;
-                    const list = res.budget;
+                        const master = res.master;
+                        const list = res.budget;
+                        const tanggalDb = new Date(master.date_plan);
+                        const tgl_ren = tanggalDb.toLocaleDateString('id-ID', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
 
-                    // tampilkan master rombongan
-                    let html = `
-                        <div><strong>Nama Rombongan:</strong> ${master.client_name}</div>
-                        <div><strong>Tanggal Kunjungan:</strong> ${master.date_plan}</div>
-                        <div><strong>Jumlah Pax:</strong> ${master.jumlah_pax} Orang</div>
-                        <div><strong>Marketing:</strong> ${master.marketing}</div>
-                        <hr>
-                        <p class="fw-bold">Detail Fasilitas</p>
-                    `;
-
-                    let totalPendapatan = 0;
-
-                    list.forEach(item => {
-                        const harga = Number(item.price || 0);
-                        const subtotal = harga * Number(item.qty || 0);
-                        totalPendapatan += harga;
-
-                        html += `
-                            <div class="d-flex justify-content-between border-bottom py-1">
-                                <span>${item.fasilitas_name} (${item.qty}x)</span>
-                                <span>Rp ${harga.toLocaleString()}</span>
-                                <span>=</span>
-                                <span>Rp ${subtotal.toLocaleString()}</span>
-                            </div>
+                        // tampilkan master rombongan
+                        let html = `
+                            <div>Nama Rombongan: ${master.client_name}</div>
+                            <div>Tanggal Kunjungan: ${tgl_ren}</div>
+                            <div>Jumlah Pax: ${formatNumber(master.jumlah_pax)} Orang</div>
+                            <div>Marketing: ${master.marketing}</div>
                         `;
-                    });
 
-                    document.getElementById("detailInfo").innerHTML = html;
-                    document.getElementById("total_pendapatan").innerText = 
-                        "Rp " + totalPendapatan.toLocaleString();
-                }
+                        let totalPendapatan = 0;
+
+                        // list.forEach(item => {
+                        //     const harga = Number(item.price || 0);
+                        //     const subtotal = harga * Number(item.qty || 0);
+                        //     totalPendapatan += harga;
+
+                        //     html += `
+                        //         <div class="d-flex justify-content-between border-bottom py-1">
+                        //             <span>${item.fasilitas_name} (${item.qty}x)</span>
+                        //             <span>Rp ${harga.toLocaleString()}</span>
+                        //             <span>=</span>
+                        //             <span>Rp ${subtotal.toLocaleString()}</span>
+                        //         </div>
+                        //     `;
+                        // });
+
+                        document.getElementById("detailInfo").innerHTML = html;
+                        // document.getElementById("total_pendapatan").innerText = 
+                        //     "Rp " + totalPendapatan.toLocaleString();
+                    }
+                });
             });
-        });
+            function formatNumber(v){
+                v = v.toString().replace(/\D/g,'');
+                return v.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+            }
         </script>
     </body>
 </html>
