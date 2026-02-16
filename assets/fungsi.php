@@ -1201,7 +1201,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
         if(!empty($fasil)){
             $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec, catatan
-            FROM rombongan_detail WHERE fasilitas_id = ? and del_status = 0");
+            FROM rombongan_detail WHERE fasilitas_id = ? and del_status = 0 and point = 1");
 
             $stmt->bind_param("s", $fasil);
             $stmt->execute();
@@ -1230,6 +1230,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $harga = sanitize_text($_POST['hargaWk']);
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
+        $pairToken = uniqid('FK_');
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $fasilitas);
@@ -1247,10 +1248,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name)
-                                VALUES(?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("sssiisss", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient);
-        if($stmt->execute()){
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try {
+            foreach ([1,0] as $point) {
+                $stmt->bind_param("sssiisssis", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+                if (!$stmt->execute()) {
+                    throw new Exception($stmt->error);
+                }
+            }
             $newData = [
                 "group_fasilitas"   => $headFs,
                 "fasilitas_id"     => $idClient,
@@ -1259,7 +1266,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 "price"            => $harga,
                 "using_date"       => $tanggal_input,
                 "employee_name"    => $sales,
-                "client_name"      => $nameClient
+                "client_name"      => $nameClient,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Insert (point 1 & 0)"
             ];
             logActivity(
                 $konek,
@@ -1271,12 +1280,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 '',                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
             exit;
-        } else {
-            error_log("gagal: " . $stmt->error);
-            echo json_encode(['status' => 'error']);
-            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+        ]);
+        exit;
         }
         $stmt->close();
         exit;
@@ -1292,7 +1305,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
 
-        $stmt_cek = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend
+        $stmt_cek = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, pair_token, price_vend
             FROM rombongan_detail WHERE data_id = ?");
         $stmt_cek->bind_param("i", $kode);
         $stmt_cek->execute();
@@ -1300,12 +1313,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $cek = $result_cek->fetch_assoc();
         $stmt_cek->close();
 
-        $oldData = json_encode($cek);
-
         if(!$cek){
             echo json_encode(['status' => 'error']);
             exit;
         }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
         if(
             $cek['group_fasilitas'] === $headFs &&
             $cek['fasilitas_name'] === $fasilitas &&
@@ -1315,16 +1330,21 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'nochange']);
             exit;
         }
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET group_fasilitas = ?, fasilitas_name = ?, qty = ?, price = ?, using_date = ?, employee_name = ? WHERE data_id = ?");
-        $stmt_update->bind_param("ssiissi", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $kode);
-        if($stmt_update->execute()){
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET group_fasilitas = ?, fasilitas_name = ?, qty = ?, price = ?, using_date = ?, employee_name = ? WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try {
+            $stmt_update->bind_param("ssiisss", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $pairToken);
+            if (!$stmt_update->execute()) {
+                throw new Exception($stmt_update->error);
+            }
             $newData = [
                 "group_fasilitas"   => $headFs,
                 "fasilitas_name"   => $fasilitas,
                 "qty"              => $qty,
                 "price"            => $harga,
                 "using_date"       => $tanggal_input,
-                "employee_name"    => $sales
+                "employee_name"    => $sales,
+                "mode"              => "Update by pair_token: $pairToken"
             ];
             logActivity(
                 $konek,
@@ -1336,11 +1356,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 $oldData,                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
-            exit;
-        } else {
-            error_log("Update data Error: ". $stmt_update->error);
-            echo json_encode(['status' => 'error']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            error_log("Update FAIL: ".$e->getMessage());
+
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+            ]);
             exit;
         }
         $stmt_update->close();
@@ -1359,6 +1384,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $vendor = 'vendor';
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
+        $pairToken = uniqid('FV_');
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE client_id = ? AND fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("sss", $vendorName, $idClient, $VenFasilitas);
@@ -1376,16 +1402,52 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name)
-                                VALUES(?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssssiiisss", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient);
-        if($stmt->execute()){
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach([1,0] as $point){
+                $stmt->bind_param("ssssiiisssis", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "client_id"         => $vendorName,
+                "group_fasilitas"   => $vendor,
+                "fasilitas_id"     => $idClient,
+                "fasilitas_name"   => $VenFasilitas,
+                "qty"              => $qty,
+                "price"            => $hargaJual,
+                "price_vend"       => $hargaVend,
+                "using_date"       => $tanggal_input,
+                "employee_name"    => $sales,
+                "client_name"      => $nameClient,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Insert (point 1 & 0)"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "add fasilitas Vendor",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                '',                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
             exit;
-        } else {
-            error_log("gagal: " . $stmt->error);
-            echo json_encode(['status' => 'error']);
-            exit;
+        } catch (Exception $e){
+            $konek->rollback();
+            error_log("INSERT Fail: ".$e->getMessage());
+
+        echo json_encode([
+            'status' => 'error',
+            'message'=>$e->getMessage()
+        ]);
+        exit;
         }
         $stmt->close();
         exit;
@@ -1401,7 +1463,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
 
-        $stmt_cek = $konek->prepare("SELECT client_id, fasilitas_name, qty, price, price_vend
+        $stmt_cek = $konek->prepare("SELECT client_id, fasilitas_name, qty, price, pair_token, price_vend
                                     FROM rombongan_detail WHERE data_id = ?");
         $stmt_cek->bind_param("i", $idFas);
         $stmt_cek->execute();
@@ -1413,6 +1475,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'error']);
             exit;
         }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
         if(
             $cek['client_id'] === $vendor &&
             $cek['fasilitas_name'] === $fasilitas &&
@@ -1423,15 +1489,42 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'nochange']);
             exit;
         } 
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET client_id = ?, fasilitas_name = ?, qty = ?, price = ?, price_vend =?, using_date = ?, employee_name = ? WHERE data_id = ?");
-        $stmt_update->bind_param("ssiiissi", $vendor, $fasilitas, $jumlah, $hargaJual, $hargaVend, $tanggal_input, $sales, $idFas);
-        if($stmt_update->execute()){
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET client_id = ?, fasilitas_name = ?, qty = ?, price = ?, price_vend =?, using_date = ?, employee_name = ? WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("ssiiisss", $vendor, $fasilitas, $jumlah, $hargaJual, $hargaVend, $tanggal_input, $sales, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "client_id"         => $vendorName,
+                "fasilitas_name"   => $VenFasilitas,
+                "qty"              => $qty,
+                "price"            => $hargaJual,
+                "price_vend"       => $hargaVend,
+                "using_date"       => $tanggal_input,
+                "employee_name"    => $sales,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Update (point 1 & 0)"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "Update fasilitas Vendor",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
-            exit;
-        } else {
-            error_log("Update data Error: ". $stmt_update->error);
-            echo json_encode(['status' => 'error']);
-            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message' =>$e->getMessage()
+            ]);
         }
         $stmt_update->close();
         exit;
@@ -1449,6 +1542,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $vendor = 'food and beverages';
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
+        $pairToken = uniqid('FnB_');
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $menu);
@@ -1466,10 +1560,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name)
-                                VALUES(?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssssiissss", $vendorFnB, $vendor, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName);
-        if($stmt->execute()){
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach ([1,0] as $point){
+                $stmt->bind_param("ssssiissssis", $vendorFnB, $vendor, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
             $newData = [
                 "client_id"       => $vendorFnB,
                 "group_fasilitas" => $vendor,
@@ -1492,11 +1592,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 '',                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
             exit;
-        } else {
-            error_log("gagal: ". $stmt->error);
-            echo json_encode(['status' => 'error']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message'=>$e->getMessage()
+            ]);
             exit;
         }
         $stmt->close();
@@ -1518,12 +1622,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $cek = $result_cek->fetch_assoc();
         $stmt_cek->close();
 
-        $oldData = json_encode($cek);
-
         if(!$cek){
             echo json_encode(['status' => 'error']);
             exit;
         }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
         if(
             $cek['fasilitas_name'] === $menu &&
             $cek['qty'] === $jumlah &&
@@ -1534,9 +1640,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             exit;
         }
         $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name =?, qty = ?, price = ?, spec = ?
-                                        WHERE data_id = ?");
-        $stmt_update->bind_param("siisi", $menu, $jumlah, $harga, $keterangan, $id);
-        if($stmt_update->execute()){
+                                        WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("siiss", $menu, $jumlah, $harga, $keterangan, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
             $newData = [
                 "fasilitas_name"  => $menu,
                 "qty"             => $jumlah,
@@ -1553,11 +1663,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 $oldData,                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
-            exit;
-        } else {
-            error_log("update data error: ".$stmt_update->error);
-            echo json_encode(['status' => 'error']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+            ]);
             exit;
         }
         $stmt_update->close();
@@ -1684,25 +1797,51 @@ function softDelete($konek, $tabel, $kolom_id, $id_value) {
     $kolom_id = mysqli_real_escape_string($konek, $kolom_id);
     $id_value = mysqli_real_escape_string($konek, $id_value);
 
-    // Mengubah del_status menjadi 1
-    $query = "UPDATE $tabel SET del_status = 1 WHERE $kolom_id = '$id_value'";
-    
+    // CEK APAKAH TABEL PUNYA KOLOM pair_token
+    $cekKolom = mysqli_query($konek,
+        "SHOW COLUMNS FROM `$tabel` LIKE 'pair_token'"
+    );
+
+    $punyaPair = ($cekKolom && mysqli_num_rows($cekKolom) > 0);
+
+    // DEFAULT QUERY
+    $query = "UPDATE `$tabel` SET del_status = 1
+              WHERE `$kolom_id` = '$id_value' AND del_status = 0";
+
+    // JIKA ADA pair_token → DELETE PASANGAN
+    if ($punyaPair) {
+        $q = mysqli_query($konek,
+            "SELECT pair_token FROM `$tabel`
+             WHERE `$kolom_id` = '$id_value'
+             LIMIT 1"
+        );
+        if ($q && $row = mysqli_fetch_assoc($q)) {
+            $pair = $row['pair_token'] ?? '';
+            if (!empty($pair)) {
+                $pair = mysqli_real_escape_string($konek, $pair);
+                $query = "UPDATE `$tabel`
+                          SET del_status = 1
+                          WHERE pair_token = '$pair'
+                          AND del_status = 0";
+            }
+        }
+    }
+    // EXECUTE
     if (mysqli_query($konek, $query)) {
         return "success";
     } else {
         return mysqli_error($konek);
     }
+    // Mengubah del_status menjadi 1
+    // $query = "UPDATE $tabel SET del_status = 1 WHERE $kolom_id = '$id_value'";
+    
+    // if (mysqli_query($konek, $query)) {
+    //     return "success";
+    // } else {
+    //     return mysqli_error($konek);
+    // }
 }
 
-// // Logika penangkap request AJAX (Dispatcher)
-// if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus_data_generik') {
-//     $tabel = $_POST['tabel'];
-//     $id = $_POST['id'];
-//     $kolom = $_POST['kolom']; // Nama kolom ID di tabel tersebut
-
-//     echo softDelete($konek, $tabel, $kolom, $id);
-//     exit;
-// }
 
 if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus_data_generik') {
     $tabel = $_POST['tabel'];
@@ -1718,7 +1857,6 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus_data_generik') {
         $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
         
         // 3. Panggil Fungsi logActivity Anda
-        // Kita simpan nama barang yang dihapus di 'old_value' agar mudah dibaca
         logActivity(
             $konek, 
             // $user_id,
