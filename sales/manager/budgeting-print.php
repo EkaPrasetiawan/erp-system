@@ -5,9 +5,13 @@ require '../../assets/fungsi.php';
 $client_id = $_POST['client_id'] ?? '';
 $client_name = $_POST['client_name'] ?? '';
 
+// $client_id = isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0;
+// $client_name = isset($_POST['client_name']) ? trim($_POST['client_name']) : '';
+
 // Panggil fungsi-fungsi Anda. 
 $viewBudgeting = getViewBudgeting ($konek, $client_id);
 $rombonganOk = getRombonganOk ($konek, $client_id);
+$viewPay = viewPayment ($konek, $client_id);
  
 ?>
 
@@ -18,43 +22,77 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Print Group Package Confirmation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <!-- <style>
-        /* Gaya tambahan untuk cetak yang lebih rapi */
-        @media print {
-            body { font-size: 8pt; }
-            .container { max-width: 100%; }
-        }
-        .row div {
-            min-height: 1.2em; /* Memastikan baris terlihat rapi */
-        }
-    </style> -->
     <style>
+
+        /* =========================
+        PRINT — A4 FIX
+        ========================= */
         @media print {
-            /* 1. Atur margin cetak ke nol. Ini 'mendorong' header/footer browser ke area yang tidak terlihat. */
+
             @page {
                 margin: 0;
-                size: A4 portrait; /* Opsional: Mengatur ukuran kertas */
+                size: A4 portrait;
             }
 
-            /* 2. Beri padding pada body/container untuk memastikan konten Anda tetap memiliki margin visual */
             body {
-                /* Nilai padding ini (misalnya 1cm atau 2cm) akan menjadi margin konten Anda */
                 font-size: 8pt;
-                padding-top: 0.25cm;
-                padding-bottom: 0.25cm;
-                padding-left: 0.25cm;
-                padding-right: 0.25cm;
-                
-                margin: 0; /* Pastikan margin body juga nol */
+                margin: 0;
+                padding: 0.5cm;
             }
 
-            .container { max-width: 100%; }
-            
-            /* Optional: Hilangkan elemen non-konten (misalnya tombol) */
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                transform: scale(1) !important;
+                box-shadow: none !important;
+            }
+
+            /* cegah section terpotong */
+            .row,
+            .border {
+                page-break-inside: avoid;
+            }
+
+            label.col-form-label {
+                font-weight: 600;
+            }
+
+            /* sembunyikan tombol dll */
             .no-print {
                 display: none !important;
             }
         }
+
+
+        /* =========================
+        HP — SCALE PREVIEW A4
+        (tampilan saja, bukan ukuran print)
+        ========================= */
+
+        @media (max-width: 768px) {
+
+            body {
+                background: #eee;
+            }
+
+            .container {
+
+                /* ukuran A4 px */
+                width: 794px !important;
+
+                /* skala tampilan di HP */
+                transform: scale(0.58);
+
+                transform-origin: top center;
+
+                margin: 0 auto;
+                background: white;
+
+                box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            }
+
+        }
+
     </style>
   </head>
   <body>
@@ -120,113 +158,107 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
 
         <!-- bagian pendapatan dan pengeluaran -->
         <div class="row border border-dark">
-            <div class="row text-start">
-                <div class="col-10 border border-dark">
-                    <div class="row">
-                        <p class="fw-bold mt-2 mb-1">1. PENDAPATAN</p>
-                        <div id="detail_pendapatan"></div>
-                        <div class="row text-end mt-2">
-                            <div class="col-7"></div>
-                            <div class="col-3"><strong>TOTAL PENDAPATAN :</strong></div>
-                            <div class="col-2"><strong id="total_pendapatan"></strong></div>
+            <div class="col-12">
+                <div class="row text-start">
+                    <div class="col-10 border border-dark">
+                        <div class="row">
+                            <p class="fw-bold mt-2 mb-1">1. PENDAPATAN</p>
+                            <div id="detail_pendapatan"></div>
+                            <div class="row text-end mt-2">
+                                <div class="col-7"></div>
+                                <div class="col-3"><strong>TOTAL PENDAPATAN :</strong></div>
+                                <div class="col-2"><strong id="total_pendapatan"></strong></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p class="fw-bold mt-2 mb-1">2. BIAYA</p>
+                            <div id="detail_pengeluaran"></div> 
+                            <div id="box_total_biaya" class="row">
+                                <div class="col-7"></div>
+                                <div class="col-3"><strong>TOTAL BIAYA :</strong></div>
+                                <div class="col-2 text-end">
+                                    <strong id="total_pengeluaran"></strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-end mt-2 mb-3">
+                            <div class="col-8 text-start"><strong>3. PROFIT</strong></div>
+                            <div class="col-2"></div>
+                            <div class="col-2"><strong id="gross_profit"></strong></div>
                         </div>
                     </div>
-                    <div class="row">
-                        <p class="fw-bold mt-2 mb-1">2. BIAYA</p>
-                        <div id="detail_pengeluaran"></div> 
-                        <div class="row text-end mt-2">
-                            <div class="col-7"></div>
-                            <div class="col-3"><strong>TOTAL BIAYA :</strong></div>
-                            <div class="col-2"><strong id="total_pengeluaran"></strong></div>
+                    <div class="col-2">
+                        <div class="row">
+                            <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
                         </div>
                     </div>
-                    <div class="row text-end mt-2 mb-3">
-                        <div class="col-8 text-start"><strong>3. PROFIT</strong></div>
-                        <div class="col-2"></div>
-                        <div class="col-2"><strong id="gross_profit"></strong></div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="row">
-                        <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row border border-dark">
-            <div class="row text-start">
-                <div class="col-10 border border-dark">
-                    <div class="row">
-                        <p class="fw-bold mt-2 mb-1">PAYMENT</p>
+        <div class="row">
+            <div class="col-12">
+                <div class="row text-start">
+                    <div class="col-10 border border-dark">
+                        <div class="row">
+                            <p class="fw-bold mt-2 mb-1">PAYMENT</p>
+                        </div>
+                        <div class="row">
+                            <div class="row text-end" id="sisa_payment"></div>
+                        </div>
                     </div>
-                    <div class="row">
-                        <div class="row text-end"><strong id="sisa_payment"></strong></div>
+                    <div class="col-2 small text-start border border-dark">
+                        <div class="mt-4" style="white-space:nowrap;
+                        font-size:clamp(8px, 0.8vw, 10px);" id="bayarLog">
+                        </div>
                     </div>
                 </div>
-                <div class="col-2 small">
-                      <div class="row">
-                        <p class="fw-bold mt-2 mb-1">Total Payment: </p>
-                    </div>
-                    <div class="row text-end"><strong id="total_pendapatan1"></strong></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-2 border border-dark">Dibuat Oleh,</div>
+                    <div class="col-8 border border-dark">Diperiksa</div>
+                    <div class="col-2 border border-dark"></div>
                 </div>
             </div>
         </div>
-        <div class="row border border-dark">
-            <div class="row">
-                <div class="col-2 border border-dark">Dibuat Oleh,</div>
-                <div class="col-8 border border-dark">Diperiksa</div>
-                <div class="col-2"></div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-2 border border-dark">Sales</div>
+                    <div class="col-2 border border-dark">Asst Sales Manager</div>
+                    <div class="col-2 border border-dark">Purchasing</div>
+                    <div class="col-4 border border-dark">ACC & FAT</div>
+                    <div class="col-2 border border-dark">Director</div>
+                </div>
             </div>
         </div>
-        <div class="row border border-dark">
-            <div class="row">
-                <div class="col-2 border border-dark">Sales</div>
-                <div class="col-2 border border-dark">Asst Sales Manager</div>
-                <div class="col-2 border border-dark">Purchasing</div>
-                <div class="col-4 border border-dark">ACC & FAT</div>
-                <div class="col-2">Director</div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row" style="height:160px">
+                    <div class="col-2 border border-dark"></div>
+                    <div class="col-2 border border-dark"></div>
+                    <div class="col-2 border border-dark"></div>
+                    <div class="col-2 border border-dark"></div>
+                    <div class="col-2 border border-dark"></div>
+                    <div class="col-2 border border-dark"></div>
+                </div>
             </div>
         </div>
-        <div class="row border border-dark" style="height:160px">
-            <div class="row">
-                <div class="col-2 border border-dark"></div>
-                <div class="col-2 border border-dark"></div>
-                <div class="col-2 border border-dark"></div>
-                <div class="col-2 border border-dark"></div>
-                <div class="col-2 border border-dark"></div>
-                <div class="col-2"></div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-2 border border-dark">Dedi</div>
+                    <div class="col-2 border border-dark">Septian Adi</div>
+                    <div class="col-2 border border-dark">Rahman J Subita</div>
+                    <div class="col-2 border border-dark">Nanda</div>
+                    <div class="col-2 border border-dark">Nur Walidi</div>
+                    <div class="col-2 border border-dark">S. Widi Karyaningsih</div>
+                </div>
             </div>
         </div>
-        <div class="row border border-dark">
-            <div class="row">
-                <div class="col-2 border border-dark">Dedi</div>
-                <div class="col-2">Septian Adi</div>
-                <div class="col-2 border border-dark">Rahman J Subita</div>
-                <div class="col-2 border border-dark">Nanda</div>
-                <div class="col-2 border border-dark">Nur Walidi</div>
-                <div class="col-2">S. Widi Karyaningsih</div>
-            </div>
-        </div>
-        
-        <!-- <div class="row text-end mt-2">
-            <div class="col-7"></div>
-            <div class="col-3"><strong>TOTAL Pendapatan:</strong></div>
-            <div class="col-2"><strong id="total_pendapatan1"></strong></div>
-        </div>
-        <div class="row text-end mt-2">
-            <div class="col-7"></div>
-            <div class="col-3"><strong>TOTAL PENGELUARAN:</strong></div>
-            <div class="col-2"><strong id="total_pengeluaran1"></strong></div>
-        </div> -->
-
-        <!-- <div class="row text-end mt-3 border-top border-dark pt-2">
-            <div class="col-7"></div>
-            <div class="col-3"><strong>GROSS PROFIT:</strong></div>
-            <div class="col-2"><strong id="gross_profit"></strong></div>
-        </div> -->
-
-        <!--akhir bagian pendapatan dan pengeluaran -->
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -235,7 +267,11 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
 
     <script>
         const viewRombonganOk = <?= json_encode($rombonganOk); ?>;
-        const viewBudgeting = <?= json_encode($viewBudgeting); ?>; 
+        const viewBudgeting = <?= json_encode($viewBudgeting); ?>;
+        const paymentView = <?= json_encode($viewPay); ?>;
+
+        const isHtmOnly = !viewBudgeting || viewBudgeting.length === 0;
+        const totalBox = document.getElementById('box_total_biaya');
 
         // Fungsi helper untuk format mata uang Rupiah
         const formatRupiah = (angka) => {
@@ -258,7 +294,7 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
             let total = 0;
             
             // Tentukan urutan kelompok fasilitas yang diinginkan
-            const groupOrder = ['Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
+            const groupOrder = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
 
             // Fungsi untuk mendapatkan indeks urutan. Jika grup tidak ada di list, taruh di akhir (99).
             const getGroupIndex = (groupName) => {
@@ -329,7 +365,7 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
             let currentGroupSubtotal = 0; 
             
             // Tentukan urutan kelompok fasilitas yang diinginkan
-            const groupOrder = ['Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
+            const groupOrder = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
 
             // Fungsi untuk mendapatkan indeks urutan.
             const getGroupIndex = (groupName) => {
@@ -431,8 +467,18 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
             };
         };
 
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            document.body.classList.add('mobile-print');
+        }
+
 
         $(document).ready(function() {
+            if (isHtmOnly) {
+                totalBox.style.display = 'none';
+            } else {
+                totalBox.style.display = 'flex'; // atau 'block' sesuai layout
+            }
 
             function formatTanggal(dateString) {
                 if (!dateString || dateString === "0000-00-00 00:00:00") 
@@ -447,156 +493,147 @@ $rombonganOk = getRombonganOk ($konek, $client_id);
             }
             
             // --- 1. MENGISI DETAIL ROMBONGAN (Header) ---
+            // hitung jumlah tiket masuk dari viewBudgeting
+            let jumlahTiketMasuk = 0;
+
+            if (Array.isArray(viewBudgeting)) {
+                viewBudgeting.forEach(item => {
+                    if (
+                        item.fasilitas_name &&
+                        item.fasilitas_name.toLowerCase() === 'tiket masuk' &&
+                        parseInt(item.point) === 1
+                    ) {
+                        jumlahTiketMasuk += parseInt(item.qty || 0);
+                    }
+                });
+            }
+            //tampilkan data dari Rombongan ok
             let dataRombongan = {};
             if (viewRombonganOk && viewRombonganOk.length > 0) {
                 dataRombongan = viewRombonganOk[0];
                 
                 // ... (Logika pengisian data rombongan di sini) ...
-                
-                // let formattedDate = '-';
-                // if (dataRombongan.date_plan) {
-                //     const datePlan = new Date(dataRombongan.date_plan);
-                //     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; 
-                //     formattedDate = datePlan.toLocaleDateString('id-ID', options); 
-                // }
-                // let formatDateInput = '-';
-                // if (dataRombongan.date_input){
-                //     const dateInput = new Date(dataRombongan.date_input);
-                //     const day = dateInput.getDate().toString().padStart(2, '0');
-                //     const year = dateInput.getFullYear();
-                //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                //     const monthShort = monthNames[dateInput.getMonth()];
-                //     formatDateInput = `${day}-${monthShort}-${year}`;
-                // }
 
                 $('#tgl_plan').text(': ' + formatTanggal(dataRombongan.date_plan));
-                $('#instansi').text(': ' + dataRombongan.client_name || '-');
-                $('#pic').text(': ' + dataRombongan.client_pic || '-');
-                $('#tlp').text(': ' + dataRombongan.phone || '-');
-                $('#sales').text(': ' + dataRombongan.marketing || '-'); 
+                $('#instansi').text(': ' + (dataRombongan.client_name || '-'));
+                $('#pic').text(': ' + (dataRombongan.client_pic || '-'));
+                $('#tlp').text(': ' + (dataRombongan.phone || '-'));
+                $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
 
                 $('#idCl').text(dataRombongan.client_id || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
                 $('#tema').text(dataRombongan.judul || '-'); 
-                $('#jumlah').text(dataRombongan.jumlah_pax +' pax' || '-'); 
+                $('#jumlah').text(jumlahTiketMasuk > 0 ? jumlahTiketMasuk + ' pax' : '-'); 
             }
 
 
             // --- 2. PROSES PENDAPATAN & PENGELUARAN ---
+            
             let totalPendapatan = 0;
             let totalPengeluaran = 0;
-            let initialRevenue = 0;
-            let initialRevenueHtml = '';
+            let totalDP = 0;
 
-            // A. HITUNG DAN SIAPKAN TIKET UTAMA (ROMBONGAN_MASTER)
-            if (dataRombongan.jumlah_pax && dataRombongan.hrg_tiket) {
-                const pax = parseInt(dataRombongan.jumlah_pax || 0);
-                const ticketPrice = parseFloat(dataRombongan.hrg_tiket || 0);
-                
-                initialRevenue = pax * ticketPrice;
-                totalPendapatan += initialRevenue;
-                totalPengeluaran += initialRevenue;
-                
-                // HTML untuk item Harga Tiket
-                initialRevenueHtml = `
-                    <div class="row ps-4 align-items-center" style="line-height: 1.2;">
-                        <div class="col-4"><strong>Tiket Rombongan</strong></div>
-                        <div class="col-2 text-center">${pax}</div>
-                        <div class="col-1 text-end">x</div>
-                        <div class="col-2 text-end">${formatRupiah(ticketPrice)}</div>
-                        <div class="col-1 text-end">=</div>
-                        <div class="col-2 text-end">${formatRupiah(initialRevenue)}</div>
-                    </div>`;
-            } else {
-                initialRevenueHtml = '<p class="ps-4">Data tiket utama tidak ditemukan.</p>';
-            }
+            // B. HITUNG FASILITAS TAMBAHAN
+            let hasFasilitas = Array.isArray(viewBudgeting) && viewBudgeting.length > 0;
 
-            // Siapkan informasi pembayaran DP dan Sisa Payment
-            if(dataRombongan.down_payment > 0 && dataRombongan.clear_payment > 0 && dataRombongan.dp_uploaded_at && dataRombongan.cp_uploaded_at){
-                const downPayment = parseFloat(dataRombongan.down_payment || 0);
-                const clearPayment = parseFloat(dataRombongan.clear_payment || 0);
-                const dateDP = dataRombongan.dp_uploaded_at;
-                const dateCP = dataRombongan.cp_uploaded_at;
+            if (hasFasilitas) {
 
-                paymentDp = `
-                    <div class="row class= text-start fw-normal small">
-                        <div class="col-4">Down Payment:</div>
-                        <div class="col-2"></div>
-                        <div class="col-2">Bukti: ${formatTanggal(dateDP)}</div>
-                        <div class="col-4 text-end">${formatRupiah(downPayment)}</div>
-                    </div>
-                    <div class="row class= text-start fw-normal small">
-                        <div class="col-4">Clear Payment:</div>
-                        <div class="col-2">Transfer</div>
-                        <div class="col-2">Bukti: ${formatTanggal(dateCP)}</div>
-                        <div class="col-4 text-end">${formatRupiah(clearPayment)}</div>
-                    </div>`;
-            }else{
-                paymentDp = `<div class="row">
-                                <div class="col-12">Payment data not available.</div>
-                            </div>`;
-            }
-
-            //Vendor
-            if (viewBudgeting.qty && viewBudgeting.price_vend) {
-                const qty = parseInt(viewBudgeting.qty || 0);
-                const hrg_vend = parseFloat(viewBudgeting.price_vend || 0);
-                
-                initialCost = qty * hrg_vend;
-                totalPengeluaran += initialCost += initialRevenue;
-            } else {
-                initialCost = '<p class="ps-4">Data tiket utama tidak ditemukan.</p>';
-            }
-
-            // B. PROSES DATA FASILITAS (ROMBONGAN_DETAIL)
-            if (viewBudgeting && viewBudgeting.length > 0) {
-                
-                // 1. PENDAPATAN FASILITAS (menggunakan kolom 'price')
+                // pendapatan fasilitas
                 const revenueResult = displayBudgetingDetails(viewBudgeting, 'price');
                 totalPendapatan += revenueResult.total;
 
-                // Gabungkan HTML Tiket Utama dan Fasilitas
-                $('#detail_pendapatan').html(initialRevenueHtml + revenueResult.html);
-                $('#total_pendapatan').text(formatRupiah(totalPendapatan));
-                $('#total_pendapatan1').text(formatRupiah(totalPendapatan));
-
-
-                // 2. PENGELUARAN FASILITAS (menggunakan kolom 'price_vend')
+                // biaya fasilitas
                 const costResult = displayBudgetingDetailsVend(viewBudgeting, 'price');
                 totalPengeluaran += costResult.total;
-                $('#detail_pengeluaran').html(initialRevenueHtml + costResult.html);
-                $('#total_pengeluaran').text(formatRupiah(totalPengeluaran));
-                $('#total_pengeluaran1').text(formatRupiah(totalPengeluaran));
-                
-                // Hitung Gross Profit
-                const grossProfit = totalPendapatan - totalPengeluaran;
-                $('#gross_profit').text(formatRupiah(grossProfit));
-                
-                $('#sisa_payment').html(paymentDp);
+
+                $('#detail_pendapatan').html(revenueResult.html);
+                $('#detail_pengeluaran').html(costResult.html);
 
             } else {
-                // Jika hanya ada data tiket utama
-                $('#detail_pendapatan').html(initialRevenueHtml);
-                $('#total_pendapatan').text(formatRupiah(totalPendapatan));
-                
-                // Data budgeting kosong
+
+                // HTM only
                 $('#detail_pengeluaran').html('<p class="ps-4">HTM ONLY</p>');
-                $('#total_pengeluaran').text(formatRupiah(0));
-                $('#gross_profit').text(formatRupiah(totalPendapatan));
             }
+
+            // C. TOTAL TAMPIL
+            $('#total_pendapatan').text(formatRupiah(totalPendapatan));
+            $('#total_pendapatan1').text(formatRupiah(totalPendapatan));
+            $('#total_pengeluaran').text(formatRupiah(totalPengeluaran));
+
+            // D. HITUNG PROFIT
+            let grossProfit = hasFasilitas
+                ? totalPendapatan - totalPengeluaran
+                : 0;
+
+            $('#gross_profit').text(formatRupiah(grossProfit));
+
+            // 3. PAYMENT / DP
+
+            let paymentHtml = '';
+            let no = 1;
+
+            if (Array.isArray(paymentView) && paymentView.length > 0){
+
+                paymentView.forEach(pay => {
+
+                    // filter hanya DP jika perlu
+                    if (pay.jenis && pay.jenis.toUpperCase() !== 'DP') return;
+
+                    const nilai = parseFloat(pay.price || 0);
+                    totalDP += nilai;
+
+                    paymentHtml += `
+                        <div class="row small text-start">
+                            <div class="col-1">${no++}</div>
+                            <div class="col-3">${pay.jenis}</div>
+                            <div class="col-2">${pay.metode || '-'}</div>
+                            <div class="col-3">${formatTanggal(pay.date_pay)}</div>
+                            <div class="col-3 text-end">${formatRupiah(nilai)}</div>
+                        </div>`;
+                });
+
+                // paymentHtml += `
+                //     <div class="row fw-bold border-top mt-1">
+                //         <div class="col-9 text-end">TOTAL DP</div>
+                //         <div class="col-3 text-end">${formatRupiah(totalDP)}</div>
+                //     </div>`;
+
+            } else {
+                paymentHtml = `<div class="row text-center"><div class="col-12">Belum ada DP</div></div>`;
+            }
+
+            $('#sisa_payment').html(paymentHtml);
+
+            // 4. HITUNG SISA BAYAR
+
+            let sisaBayar = totalPendapatan - totalDP;
+            if (sisaBayar < 0) sisaBayar = 0;
+
+            $('#sisa_bayar').text(formatRupiah(sisaBayar));
+            let bayarHtml='';
+            bayarHtml = `
+                <div class="row small fw-bold text-start">
+                    <div class="col-6">Total Payment :</div>
+                    <div class="col-6 text-end">${formatRupiah(totalPendapatan)}</div>
+                </div>
+                <div class="row small text-start mt-4">
+                    <div class="col-6">Sisa Payment :</div>
+                    <div class="col-6 text-end">${formatRupiah(sisaBayar)}</div>
+                </div>`;
+            $('#bayarLog').html(bayarHtml);
         });
 
     </script>
     <div id="loading">Menyiapkan dokumen print...</div>
 
-    <script>
+    <!-- <script>
     window.onload = function(){
         setTimeout(function(){
             document.getElementById('loading').style.display = 'none';
             window.print();
         }, 1500);
     }
-    </script>
+    </script> -->
 
   </body>
 </html>

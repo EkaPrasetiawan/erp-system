@@ -1,4 +1,7 @@
 <?php
+
+use LDAP\Result;
+
 require 'koneksi.php';
 date_default_timezone_set("Asia/Jakarta");
 
@@ -220,6 +223,7 @@ function getFasilitasWK($konek, $date, $client_id) {
             AND rm.client_id != '{$safe_client_id}'
             AND rd.del_status = 0
             AND rd.fasilitas_name IS NOT NULL
+            AND rd.fasilitas_name !='Tiket Masuk'
     ";
 
     // 2. Query utama: Ambil semua fasilitas yang namanya TIDAK ada dalam daftar yang sudah terpakai.
@@ -253,7 +257,7 @@ function getViewBudgeting ($konek, $client_id){
     }
 
     $viewBudgeting = [];
-    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id' AND del_status = 0");
+    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id' AND del_status = 0 AND point = 1");
     if($result){
         while ($row = $result->fetch_assoc()){
             $viewBudgeting[] = $row;
@@ -263,6 +267,25 @@ function getViewBudgeting ($konek, $client_id){
     }
     return $viewBudgeting;
 }
+
+function viewPayment ($konek, $client_id){
+    $sfp_client_id = mysqli_real_escape_string($konek, $client_id);
+
+    if(empty($sfp_client_id)){
+        return[];
+    }
+    $viewPaymentR1 = [];
+    $result = $konek->query("SELECT * FROM rombongan_payment WHERE rombongan_id = '$sfp_client_id'");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $viewPaymentR1[] = $row;
+        }
+    } else {
+        error_log("error: ".$konek->error);
+    }
+    return $viewPaymentR1;
+}
+
 function getRombonganOk ($konek, $client_id){
     $rombonganOk = [];
     $result = $konek->query("SELECT date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, down_payment, clear_payment, dp_uploaded_at, cp_uploaded_at, client_id

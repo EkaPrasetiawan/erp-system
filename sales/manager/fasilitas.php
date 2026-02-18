@@ -85,8 +85,8 @@ $fasilitas = getAllFasilitas($konek);
                                         <select class="form-select" id="kategori" name="kategori" required>
                                             <option value="">---pilih kategori---</option>
                                             <option value="Operasional">Operasional</option>
-                                            <!-- <option value="Event">Event</option>
-                                            <option value="Food and Beverages">Food and Beverages</option> -->
+                                            <option value="Tiket Masuk">Tiket Masuk</option>
+                                            <!-- <option value="Food and Beverages">Food and Beverages</option> -->
                                         </select>
                                     </div>
                                 </div>
@@ -134,8 +134,8 @@ $fasilitas = getAllFasilitas($konek);
                                         <select class="form-select" id="up_kategori" name="kategori" required>
                                             <option value="">---pilih kategori---</option>
                                             <option value="Operasional">Operasional</option>
-                                            <!-- <option value="Event">Event</option>
-                                            <option value="Food and Beverages">Food and Beverages</option> -->
+                                            <option value="Tiket Masuk">Tiket Masuk</option>
+                                            <!-- <option value="Food and Beverages">Food and Beverages</option> -->
                                         </select>
                                     </div>
                                 </div>
