@@ -169,7 +169,7 @@ $allRom = viewRombongan($konek) ?? [];
                 /* ---------- tentukan target action ---------- */
                 const actionMap = {
                     btnBs: 'rombongan-reques.php',
-                    btnFb: 'rombongan-requesFinal.php'
+                    btnFb: 'rombongan-requesP-fin.php'
                 };
 
                 const targetClass = btn.classList.contains('btnBs') ? 'btnBs' : 'btnFb';

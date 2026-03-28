@@ -228,14 +228,14 @@ $kodeVen = getKodeVen($konek);
                 e.preventDefault();
 
                 const formData = $(this).serialize()+'&aksi=tambah_vendor';
-                console.log("data di kirim : ", formData);
+                // console.log("data di kirim : ", formData);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
                     method : 'POST',
                     data : formData,
                     success : function(res){
-                        console.log("respon server ; ", res);
+                        // console.log("respon server ; ", res);
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -278,7 +278,7 @@ $kodeVen = getKodeVen($konek);
                                 if (result.isConfirmed) {
                                     location.reload(); // Refresh halaman
                                 }
-                                });
+                            });
                         }
                     },
 
@@ -341,7 +341,7 @@ $kodeVen = getKodeVen($konek);
                                     location.reload();
                                 }
                             });
-                        }else{
+                        } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Gagal',

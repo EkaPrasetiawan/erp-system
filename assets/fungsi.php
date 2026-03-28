@@ -268,6 +268,25 @@ function getViewBudgeting ($konek, $client_id){
     return $viewBudgeting;
 }
 
+function getViewBudgetingP ($konek, $client_id){
+    $sf_client_id = mysqli_real_escape_string($konek, $client_id);
+    
+    if(empty($sf_client_id)){
+        return[];
+    }
+
+    $viewBudgeting = [];
+    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id' AND del_status = 0 AND point = 0");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $viewBudgeting[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
+    }
+    return $viewBudgeting;
+}
+
 function viewPayment ($konek, $client_id){
     $sfp_client_id = mysqli_real_escape_string($konek, $client_id);
 
@@ -1709,6 +1728,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pemakai = sanitize_text($_POST['nPeng']);
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer Halimah';
+        $pairToken = uniqid('CnC_');
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $namaFasilitas);
@@ -1726,15 +1746,44 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan)
-                                VALUES(?,?,?,?,?,?,?)");
-        $stmt->bind_param("sssssss", $fsHead, $idClient, $namaFasilitas, $tanggal, $sales, $clientName, $pemakai);
-        if($stmt->execute()){
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach ([1,0] as $point){
+                $stmt->bind_param("sssssssis", $fsHead, $idClient, $namaFasilitas, $tanggal, $sales, $clientName, $pemakai, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "group_fasilitas" => $fsHead,
+                "fasilitas_id"    => $idClient,
+                "fasilitas_name"  => $namaFasilitas,
+                "using_date"      => $tanggal,
+                "employee_name"   => $sales,
+                "client_name"     => $clientName,
+                "catatan"         => $pemakai
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],
+                212,
+                "add CnC",
+                "rombongan_detail",
+                $idClient,
+                '',
+                json_encode($newData)
+            );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
             exit;
-        } else {
-            error_log("gagal: " . $stmt->error);
-            echo json_encode(['status' => 'error']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message' =>$e->getMessage()
+            ]);
             exit;
         }
         $stmt->close();
@@ -1757,6 +1806,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'error']);
             exit;
         }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
         if(
             $cek['fasilitas_name'] === $fasilitas &&
             $cek['catatan'] === $pengguna
@@ -1764,54 +1817,660 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['sttus' => 'nochange']);
             exit;
         }
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE data_id = ?");
-        $stmt_update->bind_param("ssi", $fasilitas, $pengguna, $idCnC);
-        if($stmt_update->execute()){
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("sss", $fasilitas, $pengguna, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "fasilitas_name"  => $fasilitas,
+                "catatan"         => $pengguna,
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "update CnC",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idCnC,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message' =>$e->getMessage()
+            ]);
+            exit();
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+}
+
+//input data fasilitas ke rombongan detail Final
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
+
+    if($_POST['aksi'] === 'getView_fasilitasP'){
+        // $fasil = sanitize_text($_POST['fasilitas_id']);
+        $fasil = $_POST['fasilitas_id'] ??'';
+
+        if(!empty($fasil)){
+            $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec, catatan
+            FROM rombongan_detail WHERE fasilitas_id = ? and del_status = 0 and point = 0");
+
+            $stmt->bind_param("s", $fasil);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $viewData_detail = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $viewData_detail[] = $row;
+                }
+            }
+            $stmt->close();
+            header('Content-Type: application/json');
+            echo json_encode($viewData_detail);
+            exit;
+        }
+    }
+
+    //tambah data fsilitas ke rombongan
+    if($_POST['aksi'] === 'tambah_fasilitasWKP'){
+        $idClient = sanitize_text($_POST['cId']);
+        $nameClient = sanitize_text($_POST['cName']);
+        $headFs = sanitize_text($_POST['kategori']);
+        $fasilitas = sanitize_text($_POST['fasilitas']);
+        $qty = sanitize_text($_POST['qty']);
+        $harga = sanitize_text($_POST['hargaWk']);
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+        $pairToken = uniqid('FK_');
+
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $idClient, $fasilitas);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Fasilitas "' . $fasilitas . '" sudah ada di daftar rombongan ini!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try {
+            foreach ([1,0] as $point) {
+                $stmt->bind_param("sssiisssis", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+                if (!$stmt->execute()) {
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "group_fasilitas"   => $headFs,
+                "fasilitas_id"     => $idClient,
+                "fasilitas_name"   => $fasilitas,
+                "qty"              => $qty,
+                "price"            => $harga,
+                "using_date"       => $tanggal_input,
+                "employee_name"    => $sales,
+                "client_name"      => $nameClient,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Insert (point 1 & 0)"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "add fasilitas WK",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                '',                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
             exit;
-        } else {
-            error_log("update data error: ".$stmt_update->error);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+        ]);
+        exit;
+        }
+        $stmt->close();
+        exit;
+    }
+
+    //update data fasilitas ke rombongan
+    if($_POST['aksi'] === 'update_fasilitasWKP'){
+        $kode = sanitize_text($_POST['idf']);
+        $headFs = sanitize_text($_POST['up_kategori']);
+        $fasilitas = sanitize_text($_POST['up_fsl']);
+        $qty = sanitize_text($_POST['up_qty']);
+        $harga = sanitize_text($_POST['up_hargaWk']);
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+
+        $stmt_cek = $konek->prepare("SELECT group_fasilitas, fasilitas_id, fasilitas_name, qty, price, pair_token, price_vend
+            FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $kode);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
             echo json_encode(['status' => 'error']);
+            exit;
+        }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
+        if(
+            $cek['group_fasilitas'] === $headFs &&
+            $cek['fasilitas_name'] === $fasilitas &&
+            $cek['qty'] === $qty &&
+            $cek['price'] === $harga
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET group_fasilitas = ?, fasilitas_name = ?, qty = ?, price = ?, using_date = ?, employee_name = ? WHERE data_id = ? AND point = 0");
+        $konek->begin_transaction();
+        try {
+            $stmt_update->bind_param("ssiisss", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $kode);
+            if (!$stmt_update->execute()) {
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "group_fasilitas"   => $headFs,
+                "fasilitas_name"    => $fasilitas,
+                "qty"               => $qty,
+                "price"             => $harga,
+                "using_date"        => $tanggal_input,
+                "employee_name"     => $sales,
+                "mode"              => "Update pair_token: $pairToken but by data_id and point=0"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "update fasilitas WK",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $kode,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            error_log("Update FAIL: ".$e->getMessage());
+
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+            ]);
             exit;
         }
         $stmt_update->close();
         exit;
     }
 
-    function getAvailableFacilities($konek, $rombongan_id) {
-        $sql = "
-            SELECT f.facility_name
-            FROM facility f
-            WHERE f.fasilitas_id NOT IN (
-                SELECT rd.fasilitas_name
-                FROM rombongan_detail rd
-                JOIN rombongan_master rm 
-                    ON rd.fasilitas_id = rm.client_id
-                WHERE rm.date_plan = (
-                    SELECT date_plan
-                    FROM rombongan_master 
-                    WHERE client_id = ?
-                )
-            )
-        ";
+    //tambah fasilitas vendor ke rombongan
+    if($_POST['aksi'] === 'tambah_fasilitasVendP'){
+        $idClient = sanitize_text($_POST['cId']);
+        $nameClient = sanitize_text($_POST['cName']);
+        $vendorName = sanitize_text($_POST['vendorHead']);
+        $VenFasilitas = sanitize_text($_POST['namaFasilitas']);
+        $qty = sanitize_text($_POST['qty']);
+        $hargaJual = sanitize_text($_POST['harga']);
+        $hargaVend = sanitize_text($_POST['hargaVend']);
+        $vendor = 'vendor';
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+        $pairToken = uniqid('FV_');
 
-        $stmt = $konek->prepare($sql);
-        if (!$stmt) {
-            die('Prepare failed: ' . $konek->error);
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE client_id = ? AND fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("sss", $vendorName, $idClient, $VenFasilitas);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Fasilitas ' . $VenFasilitas . ' dari vendor ' . $vendorName . ' sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
         }
-        $stmt->bind_param("i", $rombongan_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $checkStmt->close();
 
-        $facilities = [];
-        while ($row = $result->fetch_assoc()) {
-            $facilities[] = $row;
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach([1,0] as $point){
+                $stmt->bind_param("ssssiiisssis", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "client_id"         => $vendorName,
+                "group_fasilitas"   => $vendor,
+                "fasilitas_id"     => $idClient,
+                "fasilitas_name"   => $VenFasilitas,
+                "qty"              => $qty,
+                "price"            => $hargaJual,
+                "price_vend"       => $hargaVend,
+                "using_date"       => $tanggal_input,
+                "employee_name"    => $sales,
+                "client_name"      => $nameClient,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Insert (point 1 & 0)"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "add fasilitas Vendor",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                '',                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+            exit;
+        } catch (Exception $e){
+            $konek->rollback();
+            error_log("INSERT Fail: ".$e->getMessage());
+
+        echo json_encode([
+            'status' => 'error',
+            'message'=>$e->getMessage()
+        ]);
+        exit;
         }
-
         $stmt->close();
-        return $facilities;
+        exit;
     }
 
+    if($_POST['aksi'] === 'update_fasilitasVendP'){
+        $idFas = sanitize_text($_POST['idFv']);
+        $vendor = sanitize_text($_POST['up_vendorHead']);
+        $fasilitas = sanitize_text($_POST['up_namaFasilitas']);
+        $jumlah = sanitize_text(($_POST['up_qtyV']));
+        $hargaJual = sanitize_text(($_POST['up_harga']));
+        $hargaVend = sanitize_text($_POST['up_hargaVend']);
+        $tanggal_input = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+
+        $stmt_cek = $konek->prepare("SELECT client_id, fasilitas_name, qty, price, pair_token, price_vend
+                                    FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $idFas);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
+        if(
+            $cek['client_id'] === $vendor &&
+            $cek['fasilitas_name'] === $fasilitas &&
+            $cek['qty'] === $jumlah &&
+            $cek['price'] === $hargaJual &&
+            $cek['price_vend'] === $hargaVend
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        } 
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET client_id = ?, fasilitas_name = ?, qty = ?, price = ?, price_vend =?, using_date = ?, employee_name = ? WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("ssiiisss", $vendor, $fasilitas, $jumlah, $hargaJual, $hargaVend, $tanggal_input, $sales, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "client_id"         => $vendorName,
+                "fasilitas_name"   => $VenFasilitas,
+                "qty"              => $qty,
+                "price"            => $hargaJual,
+                "price_vend"       => $hargaVend,
+                "using_date"       => $tanggal_input,
+                "employee_name"    => $sales,
+                "pair_token"       => $pairToken,
+                "mode"              => "Dobel Update (point 1 & 0)"
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "Update fasilitas Vendor",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message' =>$e->getMessage()
+            ]);
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+    //FnB
+    if($_POST['aksi'] === 'tambahFnBP'){
+        $idClient = sanitize_text($_POST['cId']);
+        $clientName = sanitize_text($_POST['cName']);
+        $vendorFnB = sanitize_text($_POST['fnbVendor']);
+        $menu = sanitize_text($_POST['fnbHead']);
+        $jumlah = sanitize_text($_POST['jumlah']);
+        $harga = sanitize_text($_POST['hargaFnB']);
+        $detail = sanitize_text($_POST['ket']);
+        $vendor = 'food and beverages';
+        $tanggal = date("Y-m-d H:i:s");
+        $sales = 'Noer halimah';
+        $pairToken = uniqid('FnB_');
+
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $idClient, $menu);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Menu ' . $menu . ' sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach ([1,0] as $point){
+                $stmt->bind_param("ssssiissssis", $vendorFnB, $vendor, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "client_id"       => $vendorFnB,
+                "group_fasilitas" => $vendor,
+                "fasilitas_id"    => $idClient,
+                "fasilitas_name"  => $menu,
+                "qty"             => $jumlah,
+                "price"           => $harga,
+                "using_date"      => $tanggal,
+                "employee_name"   => $sales,
+                "spec"            => $detail,
+                "client_name"     => $clientName
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "add FnB",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idClient,         // ID data (null karena insert)
+                '',                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message'=>$e->getMessage()
+            ]);
+            exit;
+        }
+        $stmt->close();
+        exit;
+    }
+
+    if($_POST['aksi'] === 'updateFnBP'){
+        $id = sanitize_text($_POST['idFnB']);
+        $menu = sanitize_text($_POST['up_fnbHead']);
+        $jumlah = sanitize_text($_POST['up_jumlah']);
+        $harga = sanitize_text($_POST['up_hargaFnB']);
+        $keterangan = sanitize_text($_POST['up_ket']);
+
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec
+                                    FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $id);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
+        if(
+            $cek['fasilitas_name'] === $menu &&
+            $cek['qty'] === $jumlah &&
+            $cek['price'] === $harga &&
+            $cek['spec'] === $keterangan
+        ){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name =?, qty = ?, price = ?, spec = ?
+                                        WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("siiss", $menu, $jumlah, $harga, $keterangan, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "fasilitas_name"  => $menu,
+                "qty"             => $jumlah,
+                "price"           => $harga,
+                "spec"            => $keterangan
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "update FnB",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $id,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message'=>$e->getMessage()
+            ]);
+            exit;
+        }
+        $stmt_update->close();
+        exit;
+    }
+
+    //cabana and cabin
+    if($_POST['aksi'] === 'tambah_cabanaAndcabinP'){
+        $idClient = sanitize_text($_POST['cId']);
+        $clientName = sanitize_text($_POST['cName']);
+        $fsHead = 'cabana and cabin';
+        $namaFasilitas = sanitize_text($_POST['fcnc']);
+        $pemakai = sanitize_text($_POST['nPeng']);
+        $tanggal = date("Y-m-d H:i:s");
+        $sales = 'Noer Halimah';
+        $pairToken = uniqid('CnC_');
+
+        $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $idClient, $namaFasilitas);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            // Jika data sudah ada, kirim respon 'exists'
+            echo json_encode([
+                'status' => 'exists', 
+                'message' => 'Fasilitas ini sudah ada di daftar rombongan!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
+
+        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?)");
+        $konek->begin_transaction();
+        try{
+            foreach ([1,0] as $point){
+                $stmt->bind_param("sssssssis", $fsHead, $idClient, $namaFasilitas, $tanggal, $sales, $clientName, $pemakai, $point, $pairToken);
+                if(!$stmt->execute()){
+                    throw new Exception($stmt->error);
+                }
+            }
+            $newData = [
+                "group_fasilitas" => $fsHead,
+                "fasilitas_id"    => $idClient,
+                "fasilitas_name"  => $namaFasilitas,
+                "using_date"      => $tanggal,
+                "employee_name"   => $sales,
+                "client_name"     => $clientName,
+                "catatan"         => $pemakai
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],
+                212,
+                "add CnC",
+                "rombongan_detail",
+                $idClient,
+                '',
+                json_encode($newData)
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message' =>$e->getMessage()
+            ]);
+            exit;
+        }
+        $stmt->close();
+        exit;
+    }
+
+    if($_POST['aksi'] === 'update_cabanaAndcabinP'){
+        $idCnC = ($_POST['cncId']);
+        $pengguna = sanitize_text($_POST['up_nPeng']);
+        $fasilitas = sanitize_text($_POST['up_fcnc']);
+
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, catatan FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $idCnC);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+
+        $pairToken = $cek['pair_token'];
+        $oldData = json_encode($cek);
+
+        if(
+            $cek['fasilitas_name'] === $fasilitas &&
+            $cek['catatan'] === $pengguna
+        ){
+            echo json_encode(['sttus' => 'nochange']);
+            exit;
+        }
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE pair_token = ?");
+        $konek->begin_transaction();
+        try{
+            $stmt_update->bind_param("sss", $fasilitas, $pengguna, $pairToken);
+            if(!$stmt_update->execute()){
+                throw new Exception($stmt_update->error);
+            }
+            $newData = [
+                "fasilitas_name"  => $fasilitas,
+                "catatan"         => $pengguna,
+            ];
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],     // id user yang sedang login
+                212,
+                "update CnC",                    // jenis aksi
+                "rombongan_detail",               // nama tabel
+                $idCnC,         // ID data (null karena insert)
+                $oldData,                      // old_value (karena INSERT)
+                json_encode($newData)       // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status'=>'error',
+                'message' =>$e->getMessage()
+            ]);
+            exit();
+        }
+        $stmt_update->close();
+        exit;
+    }
 }
 
 // fungsi hapus
@@ -1896,6 +2555,40 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus_data_generik') {
         echo $result;
     }
     exit;
+}
+
+function getAvailableFacilities($konek, $rombongan_id) {
+    $sql = "
+        SELECT f.facility_name
+        FROM facility f
+        WHERE f.fasilitas_id NOT IN (
+            SELECT rd.fasilitas_name
+            FROM rombongan_detail rd
+            JOIN rombongan_master rm 
+                ON rd.fasilitas_id = rm.client_id
+            WHERE rm.date_plan = (
+                SELECT date_plan
+                FROM rombongan_master 
+                WHERE client_id = ?
+            )
+        )
+    ";
+
+    $stmt = $konek->prepare($sql);
+    if (!$stmt) {
+        die('Prepare failed: ' . $konek->error);
+    }
+    $stmt->bind_param("i", $rombongan_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $facilities = [];
+    while ($row = $result->fetch_assoc()) {
+        $facilities[] = $row;
+    }
+
+    $stmt->close();
+    return $facilities;
 }
 
 function logActivity($konek, $user_id, $action, $table_name, $record_id, $old_value = null, $new_value = null){

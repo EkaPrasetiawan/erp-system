@@ -9,7 +9,7 @@ $client_name = $_POST['client_name'] ?? '';
 // $client_name = isset($_POST['client_name']) ? trim($_POST['client_name']) : '';
 
 // Panggil fungsi-fungsi Anda. 
-$viewBudgeting = getViewBudgeting ($konek, $client_id);
+$viewBudgeting = getViewBudgetingP ($konek, $client_id);
 $rombonganOk = getRombonganOk ($konek, $client_id);
 $viewPay = viewPayment ($konek, $client_id);
  
@@ -97,7 +97,7 @@ $viewPay = viewPayment ($konek, $client_id);
   </head>
   <body>
     <div class="container text-center">
-      <h3>GROUP PACKAGE CONFIRMATION FORM</h3>
+      <h3>GROUP PACKAGE CONFIRMATION FORM Final</h3>
         <div class="row text-start">
             <div class="col-5">
               <div class="row">
