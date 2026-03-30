@@ -18,10 +18,34 @@
             <div class="sb-nav-link-icon"><i class="fa-solid fa-people-pulling"></i></div>
             Rombongan
         </a>
-        <a class="nav-link" href="rombongan-detail.php">
-            <div class="sb-nav-link-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            Rombongan-Detil
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#rombonganCorporate"
+            aria-expanded="false" aria-controls="collapseLayouts">
+        <div class="sb-nav-link-icon"><i class="fa-solid fa-building"></i></div>
+            Rombongan Corporate
+        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
         </a>
+        <div class="collapse" id="rombonganCorporate" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+            <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="rombongan-detail.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    Rombongan Detail
+                </a>
+            </nav>
+        </div>
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#rombonganSchool"
+            aria-expanded="false" aria-controls="collapseLayouts">
+        <div class="sb-nav-link-icon"><i class="fa-solid fa-school"></i></div>
+            Rombongan School
+        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+        </a>
+        <div class="collapse" id="rombonganSchool" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+            <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="rombongan-detail.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    Rombongan Detail
+                </a>
+            </nav>
+        </div>
         <a class="nav-link" href="frm-print.php">
             <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
             Print Form

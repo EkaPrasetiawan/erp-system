@@ -1795,7 +1795,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pengguna = sanitize_text($_POST['up_nPeng']);
         $fasilitas = sanitize_text($_POST['up_fcnc']);
 
-        $stmt_cek = $konek->prepare("SELECT fasilitas_name, catatan FROM rombongan_detail WHERE data_id = ?");
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, catatan, pair_token FROM rombongan_detail WHERE data_id = ?");
         $stmt_cek->bind_param("i", $idCnC);
         $stmt_cek->execute();
         $result_cek = $stmt_cek->get_result();
@@ -1893,6 +1893,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
         $pairToken = uniqid('FK_');
+        $point = 0;
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $fasilitas);
@@ -1910,15 +1911,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
+        try {
         $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name, point, pair_token)
                                 VALUES(?,?,?,?,?,?,?,?,?,?)");
-        $konek->begin_transaction();
-        try {
-            foreach ([1,0] as $point) {
-                $stmt->bind_param("sssiisssis", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient, $point, $pairToken);
-                if (!$stmt->execute()) {
-                    throw new Exception($stmt->error);
-                }
+            $konek->begin_transaction();
+            $stmt->bind_param("sssiisssis", $headFs, $idClient, $fasilitas, $qty, $harga, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
             }
             $newData = [
                 "group_fasilitas"   => $headFs,
@@ -1995,7 +1994,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $stmt_update = $konek->prepare("UPDATE rombongan_detail SET group_fasilitas = ?, fasilitas_name = ?, qty = ?, price = ?, using_date = ?, employee_name = ? WHERE data_id = ? AND point = 0");
         $konek->begin_transaction();
         try {
-            $stmt_update->bind_param("ssiisss", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $kode);
+            $stmt_update->bind_param("ssiissi", $headFs, $fasilitas, $qty, $harga, $tanggal_input, $sales, $kode);
             if (!$stmt_update->execute()) {
                 throw new Exception($stmt_update->error);
             }
@@ -2047,6 +2046,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_input = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
         $pairToken = uniqid('FV_');
+        $point = 0;
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE client_id = ? AND fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("sss", $vendorName, $idClient, $VenFasilitas);
@@ -2064,15 +2064,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name, point, pair_token)
-                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-        $konek->begin_transaction();
         try{
-            foreach([1,0] as $point){
-                $stmt->bind_param("ssssiiisssis", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient, $point, $pairToken);
-                if(!$stmt->execute()){
-                    throw new Exception($stmt->error);
-                }
+            $konek->begin_transaction();
+            $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, using_date, employee_name, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param("ssssiiisssis", $vendorName, $vendor, $idClient, $VenFasilitas, $qty, $hargaJual, $hargaVend, $tanggal_input, $sales, $nameClient, $point, $pairToken);
+            if(!$stmt->execute()){
+                throw new Exception($stmt->error);
             }
             $newData = [
                 "client_id"         => $vendorName,
@@ -2151,23 +2149,23 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'nochange']);
             exit;
         } 
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET client_id = ?, fasilitas_name = ?, qty = ?, price = ?, price_vend =?, using_date = ?, employee_name = ? WHERE pair_token = ?");
-        $konek->begin_transaction();
         try{
-            $stmt_update->bind_param("ssiiisss", $vendor, $fasilitas, $jumlah, $hargaJual, $hargaVend, $tanggal_input, $sales, $pairToken);
+            $konek->begin_transaction();
+            $stmt_update = $konek->prepare("UPDATE rombongan_detail SET client_id = ?, fasilitas_name = ?, qty = ?, price = ?, price_vend =?, using_date = ?, employee_name = ? WHERE data_id = ?");
+            $stmt_update->bind_param("ssiiissi", $vendor, $fasilitas, $jumlah, $hargaJual, $hargaVend, $tanggal_input, $sales, $idFas);
             if(!$stmt_update->execute()){
                 throw new Exception($stmt_update->error);
             }
             $newData = [
-                "client_id"         => $vendorName,
-                "fasilitas_name"   => $VenFasilitas,
-                "qty"              => $qty,
+                "client_id"         => $vendor,
+                "fasilitas_name"   => $fasilitas,
+                "qty"              => $jumlah,
                 "price"            => $hargaJual,
                 "price_vend"       => $hargaVend,
                 "using_date"       => $tanggal_input,
                 "employee_name"    => $sales,
                 "pair_token"       => $pairToken,
-                "mode"              => "Dobel Update (point 1 & 0)"
+                "mode"              => "Update final Budgeting"
             ];
             logActivity(
                 $konek,
@@ -2175,7 +2173,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 212,
                 "Update fasilitas Vendor",                    // jenis aksi
                 "rombongan_detail",               // nama tabel
-                $idClient,         // ID data (null karena insert)
+                $idFas,         // ID data (null karena insert)
                 $oldData,                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
@@ -2205,6 +2203,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer halimah';
         $pairToken = uniqid('FnB_');
+        $point = 0;
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $menu);
@@ -2222,15 +2221,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name, point, pair_token)
-                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-        $konek->begin_transaction();
         try{
-            foreach ([1,0] as $point){
-                $stmt->bind_param("ssssiissssis", $vendorFnB, $vendor, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName, $point, $pairToken);
-                if(!$stmt->execute()){
-                    throw new Exception($stmt->error);
-                }
+            $konek->begin_transaction();
+            $stmt = $konek->prepare("INSERT INTO rombongan_detail(client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, spec, client_name, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param("ssssiissssis", $vendorFnB, $vendor, $idClient, $menu, $jumlah, $harga, $tanggal, $sales, $detail, $clientName, $point, $pairToken);
+            if(!$stmt->execute()){
+                throw new Exception($stmt->error);
             }
             $newData = [
                 "client_id"       => $vendorFnB,
@@ -2276,7 +2273,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $harga = sanitize_text($_POST['up_hargaFnB']);
         $keterangan = sanitize_text($_POST['up_ket']);
 
-        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec, pair_token
                                     FROM rombongan_detail WHERE data_id = ?");
         $stmt_cek->bind_param("i", $id);
         $stmt_cek->execute();
@@ -2301,11 +2298,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'nochange']);
             exit;
         }
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name =?, qty = ?, price = ?, spec = ?
-                                        WHERE pair_token = ?");
-        $konek->begin_transaction();
         try{
-            $stmt_update->bind_param("siiss", $menu, $jumlah, $harga, $keterangan, $pairToken);
+            $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name =?, qty = ?, price = ?, spec = ?
+                                            WHERE data_id = ?");
+            $konek->begin_transaction();
+            $stmt_update->bind_param("siisi", $menu, $jumlah, $harga, $keterangan, $id);
             if(!$stmt_update->execute()){
                 throw new Exception($stmt_update->error);
             }
@@ -2349,6 +2346,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal = date("Y-m-d H:i:s");
         $sales = 'Noer Halimah';
         $pairToken = uniqid('CnC_');
+        $point = 0;
 
         $checkStmt = $konek->prepare("SELECT data_id FROM rombongan_detail WHERE fasilitas_id = ? AND fasilitas_name = ? AND del_status = 0");
         $checkStmt->bind_param("ss", $idClient, $namaFasilitas);
@@ -2366,15 +2364,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $checkStmt->close();
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan, point, pair_token)
-                                VALUES(?,?,?,?,?,?,?,?,?)");
-        $konek->begin_transaction();
         try{
-            foreach ([1,0] as $point){
-                $stmt->bind_param("sssssssis", $fsHead, $idClient, $namaFasilitas, $tanggal, $sales, $clientName, $pemakai, $point, $pairToken);
-                if(!$stmt->execute()){
-                    throw new Exception($stmt->error);
-                }
+            $stmt = $konek->prepare("INSERT INTO rombongan_detail(group_fasilitas, fasilitas_id, fasilitas_name, using_date, employee_name, client_name, catatan, point, pair_token)
+                                VALUES(?,?,?,?,?,?,?,?,?)");
+            $konek->begin_transaction();
+            $stmt->bind_param("sssssssis", $fsHead, $idClient, $namaFasilitas, $tanggal, $sales, $clientName, $pemakai, $point, $pairToken);
+            if(!$stmt->execute()){
+                throw new Exception($stmt->error);
             }
             $newData = [
                 "group_fasilitas" => $fsHead,
@@ -2426,8 +2422,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['status' => 'error']);
             exit;
         }
-
-        $pairToken = $cek['pair_token'];
         $oldData = json_encode($cek);
 
         if(
@@ -2437,10 +2431,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             echo json_encode(['sttus' => 'nochange']);
             exit;
         }
-        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE pair_token = ?");
         $konek->begin_transaction();
+        $stmt_update = $konek->prepare("UPDATE rombongan_detail SET fasilitas_name = ?, catatan = ? WHERE data_id = ?");
         try{
-            $stmt_update->bind_param("sss", $fasilitas, $pengguna, $pairToken);
+            $stmt_update->bind_param("ssi", $fasilitas, $pengguna, $idCnC);
             if(!$stmt_update->execute()){
                 throw new Exception($stmt_update->error);
             }

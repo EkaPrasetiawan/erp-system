@@ -685,8 +685,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 //hapus format sebelum dikirim
                 $('#qty').val(qtyDisplay.replace(/\./g, ''));
                 $('#hargaWk').val(hargaDisplay.replace(/\./g, ''));
-
-                const formData = $(this).serialize()+'&aksi=tambah_fasilitasWK';
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasWKP';
 
                 // restore tampilan format
                 $('#hargaWk').val(hargaDisplay);
@@ -1044,7 +1043,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 $('#harga').val(hargaDisplay.replace(/\./g, ''));
                 $('#hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
 
-                const formData = $(this).serialize()+'&aksi=tambah_fasilitasVend';
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasVendP';
 
                 $('#qty').val(qtyDisplay);
                 $('#harga').val(hargaDisplay);
@@ -1150,7 +1149,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 $('#up_harga').val(hargaDisplay.replace(/\./g, ''));
                 $('#up_hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
 
-                const formData = $(this).serialize()+'&aksi=update_fasilitasVend';
+                const formData = $(this).serialize()+'&aksi=update_fasilitasVendP';
 
                 // restore tampilan format
                 $('#up_qtyV').val(qtyDisplay);
@@ -1246,7 +1245,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 //hapus format sebelum dikirim
                 $('#jumlah').val(jumlahDisplay.replace(/\./g, ''));
                 $('#hargaFnB').val(hargafnbDisplay.replace(/\./g, ''));
-                const formData = $(this).serialize()+'&aksi=tambahFnB';
+                const formData = $(this).serialize()+'&aksi=tambahFnBP';
 
                 // restore tampilan format
                 $('#jumlah').val(jumlahDisplay);
@@ -1348,8 +1347,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                 //hapus format sebelum dikirim
                 $('#up_jumlah').val(jumlahDisplay.replace(/\./g, ''));
                 $('#up_hargaFnB').val(hargaFnBDisplay.replace(/\./g, ''));
-
-                const formData = $(this).serialize()+'&aksi=updateFnB';
+                const formData = $(this).serialize()+'&aksi=updateFnBP';
 
                 // restore tampilan format
                 $('#up_jumlah').val(jumlahDisplay);
@@ -1360,7 +1358,6 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     method: 'POST',
                     data: formData,
                     success: function(res){
-                        // console.log("server res: ", res);
                         let response = [];
                         try{
                             response = JSON.parse(res);
@@ -1412,7 +1409,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
 
             $('#cncAdd').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabin';
+                const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabinP';
                 console.log("data kirim: ", formData);
 
                 $.ajax({
@@ -1474,7 +1471,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
 
             $('#cncUpdate').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=update_cabanaAndcabin';
+                const formData = $(this).serialize()+'&aksi=update_cabanaAndcabinP';
                 console.log("data dikirim: ",formData);
 
                 $.ajax({
