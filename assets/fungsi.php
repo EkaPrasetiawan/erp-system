@@ -307,7 +307,7 @@ function viewPayment ($konek, $client_id){
 
 function getRombonganOk ($konek, $client_id){
     $rombonganOk = [];
-    $result = $konek->query("SELECT date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, down_payment, clear_payment, dp_uploaded_at, cp_uploaded_at, client_id
+    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, down_payment, clear_payment, dp_uploaded_at, cp_uploaded_at, client_id
                             FROM rombongan_master WHERE client_id = '$client_id' AND del_status = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
@@ -926,11 +926,75 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $detailMaster = getRombonganOk($konek, $client_id);
         $detailBudget = getViewBudgeting($konek, $client_id);
 
+        $qtyTiket = 0;
+        foreach ($detailBudget as $row) {
+            if (strtolower($row['fasilitas_name']) === 'tiket masuk') {
+                $qtyTiket += $row['qty'];
+            }
+        }
+
         echo json_encode([
             "status" => "success",
             "master" => $detailMaster[0] ?? null,
-            "budget" => $detailBudget
+            "budget" => $qtyTiket
         ]);
+        exit;
+    }
+
+    if($_POST['aksi'] === 'approveRombongan'){
+        $acc = sanitize_text($_POST['acc']);
+        $idRom = sanitize_text($_POST['cId']);
+        $idAppv = sanitize_text($_POST['idAppv']);
+
+        if($acc <> 1){
+            $acc = "UnApproved";
+        } else if($acc == 1){
+            $acc = "Approved";
+        }
+
+        $stmt_cek = $konek->prepare("SELECT oleh FROM rombongan_master WHERE data_id = ?");
+        $stmt_cek->bind_param("i", $idAppv);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $cek = $result_cek->fetch_assoc();
+
+        $oldData = json_encode($cek);
+
+        if(!$cek){
+            echo json_encode(['status' => 'error']);
+            exit;
+        }
+        if($cek['oleh'] === $acc){
+            echo json_encode(['status' => 'nochange']);
+            exit;
+        }
+        try {
+            $konek->begin_transaction();
+            $stmt_update = $konek->prepare("UPDATE rombongan_master SET oleh = ? WHERE data_id = ?");
+            $stmt_update->bind_param("si", $acc, $idAppv);
+            $stmt_update->execute();
+            $konek->commit();
+            logActivity(
+                $konek,
+                // $_SESSION['user_id'],      // siapa yg update
+                911,
+                "approve",                  // aksi
+                "rombongan_master",        // tabel
+                $idRom,                    // record ID
+                $oldData,                     // old_value
+                json_encode(['oleh'=>$acc])      // new_value
+            );
+            $konek->commit();
+            echo json_encode(['status' => 'success']);
+            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            echo json_encode([
+                'status' => 'error',
+                'message' => $e->getMessage()]);
+            exit;
+        }
+        $stmt_update->close();
         exit;
     }
 }

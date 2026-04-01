@@ -1418,7 +1418,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
             $('#cncAdd').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabin';
-                console.log("data kirim: ", formData);
+                // console.log("data kirim: ", formData);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',

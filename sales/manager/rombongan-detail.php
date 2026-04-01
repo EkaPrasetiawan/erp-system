@@ -69,35 +69,28 @@ $allRom = viewRombongan($konek) ?? [];
                     <div class="modal fade" id="approval" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                            <div class="modal-header">
+                            <div class="modal-header mb-3">
                                 <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation Form</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form id="approval" method="POST" autocomplete="off">
+                            <form id="approvalForm" method="POST" autocomplete="off">
                                 <div class="modal-body">
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="row text-start">
-                                            <input type="text" class="form-control" id="cId" name="cId">
-                                            <input type="text" class="form-control" id="cName" name="cName">
-                                                <div class=" border border-dark">
-                                                    <div class="row">
-                                                        <p class="fw-bold mt-2 mb-1">Detail Rombongan</p>
-                                                        <div id="detailInfo"></div>
-                                                        <!-- <div class="row text-end mt-2">
-                                                            <div class="col-7"></div>
-                                                            <div class="col-3"><strong>TOTAL PENDAPATAN :</strong></div>
-                                                            <div class="col-2"><strong id="total_pendapatan"></strong></div>
-                                                        </div> -->
-                                                    </div>
-                                                </div>
+                                            <input type="hidden" class="form-control" id="cId" name="cId">
+                                            <input type="hidden" class="form-control" id="idAppv" name="idAppv">
+                                            <div class="row">
+                                                <p class="fw-bold mt-2 mb-1">Informasi Rombongan</p>
+                                                <div id="detailInfo"></div>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                    <button type="submit" class="btn btn-primary">Acc</button>
                                 </div>
                             </form>
                             </div>
@@ -148,7 +141,8 @@ $allRom = viewRombongan($konek) ?? [];
                         <i class="fa-solid fa-newspaper"></i> Final Budget</a>
 
                         <a class="btn btn-success btnApproval" data-bs-toggle="modal" data-bs-target="#approval"
-                        data-client-id="${item.client_id}">
+                        data-client-id="${item.client_id}"
+                        data-client-appv="${item.data_id}">
                         <i class="fa-solid fa-signature"></i> ACC</a>
                     </div>
                 </td>
@@ -238,38 +232,52 @@ $allRom = viewRombongan($konek) ?? [];
                         const tgl_ren = tanggalDb.toLocaleDateString('id-ID', {
                             year: 'numeric', month: 'long', day: 'numeric'
                         });
+                        const idRom = document.getElementById("cId");
+                        const idAppv = document.getElementById("idAppv");
+                        idRom.value = clientId;
+                        idAppv.value = master.data_id;
 
                         // tampilkan master rombongan
                         let html = `
                             <div>Nama Rombongan: ${master.client_name}</div>
                             <div>Tanggal Kunjungan: ${tgl_ren}</div>
-                            <div>Jumlah Pax: ${formatNumber(master.jumlah_pax)} Orang</div>
-                            <div>Marketing: ${master.marketing}</div>
+                            <div>Jumlah Pax: ${formatNumber(list)} Orang</div>
+                            <div class=" mb-3">Marketing: ${master.marketing}</div>
                         `;
 
-                        let totalPendapatan = 0;
-
-                        // list.forEach(item => {
-                        //     const harga = Number(item.price || 0);
-                        //     const subtotal = harga * Number(item.qty || 0);
-                        //     totalPendapatan += harga;
-
-                        //     html += `
-                        //         <div class="d-flex justify-content-between border-bottom py-1">
-                        //             <span>${item.fasilitas_name} (${item.qty}x)</span>
-                        //             <span>Rp ${harga.toLocaleString()}</span>
-                        //             <span>=</span>
-                        //             <span>Rp ${subtotal.toLocaleString()}</span>
-                        //         </div>
-                        //     `;
-                        // });
-
+                        html += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"  id="acc" name="acc" value="1">
+                            <label class="form-check-label" for="Acc">
+                                Aproval Rombongan
+                            </label>
+                        </div>
+                        `;
                         document.getElementById("detailInfo").innerHTML = html;
-                        // document.getElementById("total_pendapatan").innerText = 
-                        //     "Rp " + totalPendapatan.toLocaleString();
                     }
                 });
             });
+
+            $('#approvalForm').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize()+'&aksi=approveRombongan';
+                $.ajax({
+                    url: "../../assets/fungsi.php",
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function (res) {
+                        if (res.status === "success") {
+                            Swal.fire('Success', res.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    }
+                });
+            });
+
             function formatNumber(v){
                 v = v.toString().replace(/\D/g,'');
                 return v.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
