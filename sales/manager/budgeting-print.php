@@ -1,17 +1,17 @@
 <?php
 require '../../assets/fungsi.php'; 
 
-// Ambil client_id dan client_name dari POST
-$client_id = $_POST['client_id'] ?? '';
+// Ambil rombongan_id dan client_name dari POST
+$rombongan_id = $_POST['rombongan_id'] ?? '';
 $client_name = $_POST['client_name'] ?? '';
 
 // $client_id = isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0;
 // $client_name = isset($_POST['client_name']) ? trim($_POST['client_name']) : '';
 
 // Panggil fungsi-fungsi Anda. 
-$viewBudgeting = getViewBudgeting ($konek, $client_id);
-$rombonganOk = getRombonganOk ($konek, $client_id);
-$viewPay = viewPayment ($konek, $client_id);
+$viewBudgeting = getViewBudgeting ($konek, $rombongan_id);
+$rombonganOk = getRombonganOk ($konek, $rombongan_id);
+$viewPay = viewPayment ($konek, $rombongan_id);
  
 ?>
 

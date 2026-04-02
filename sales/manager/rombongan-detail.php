@@ -122,26 +122,26 @@ $allRom = viewRombongan($konek) ?? [];
                 row.innerHTML =`
                 <td>${index + 1 }</td>
                 <td>${item.client_name}</td>
-                <td>${item.client_id}</td>
+                <td>${item.rombongan_id}</td>
                 <td>${item.marketing}</td>
                 <td>${plan}</td>
                 <td>${item.oleh}</td>
                 <td>
                     <div class="d-grid gap-1">
                         <a class="btn btn-info btnBs"
-                        data-client-id="${item.client_id}"
+                        data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> Budget Submission</a>
 
                         <a class="btn btn-primary btnFb"
-                        data-client-id="${item.client_id}"
+                        data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> Final Budget</a>
 
                         <a class="btn btn-success btnApproval" data-bs-toggle="modal" data-bs-target="#approval"
-                        data-client-id="${item.client_id}"
+                        data-rombongan-id="${item.rombongan_id}"
                         data-client-appv="${item.data_id}">
                         <i class="fa-solid fa-signature"></i> ACC</a>
                     </div>
@@ -171,14 +171,14 @@ $allRom = viewRombongan($konek) ?? [];
 
                 /* ---------- ambil dataset ---------- */
                 const data = {
-                    client_id:   btn.dataset.clientId,
+                    rombongan_id:   btn.dataset.rombonganId,
                     client_name: btn.dataset.clientName,
                     date_plan:   btn.dataset.clientDate
                 };
 
                 /* ---------- validasi ---------- */
-                if (!data.client_id) {
-                    console.warn('client_id kosong — submit dibatalkan');
+                if (!data.rombongan_id) {
+                    console.warn('rombongan_id kosong — submit dibatalkan');
                     return;
                 }
 
@@ -216,12 +216,13 @@ $allRom = viewRombongan($konek) ?? [];
                 const btn = e.target.closest(".btnApproval");
                 if (!btn) return;
 
-                const clientId = btn.dataset.clientId;
+                const rombonganId = btn.dataset.rombonganId;
+                const dtaId = btn.dataset.clientAppv;
 
                 $.ajax({
                     url: "../../assets/fungsi.php",
                     type: "POST",
-                    data: { aksi: "getDetailRombongan", client_id: clientId },
+                    data: { aksi: "getDetailRombongan", rombongan_id: rombonganId, data_id: dtaId },
                     dataType: "json",
                     success: function (res) {
                         if (res.status !== "success") return;
@@ -234,7 +235,7 @@ $allRom = viewRombongan($konek) ?? [];
                         });
                         const idRom = document.getElementById("cId");
                         const idAppv = document.getElementById("idAppv");
-                        idRom.value = clientId;
+                        idRom.value = rombonganId;
                         idAppv.value = master.data_id;
 
                         // tampilkan master rombongan
@@ -245,9 +246,14 @@ $allRom = viewRombongan($konek) ?? [];
                             <div class=" mb-3">Marketing: ${master.marketing}</div>
                         `;
 
+                        const status = (master.oleh ||"").toString().trim().toLowerCase();
+                        const isChecked = status === "approved" ? "checked" : "";
+                        console.log("Status:", status, "Is Checked:", isChecked);
+
                         html += `
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox"  id="acc" name="acc" value="1">
+                            <input type="hidden" name="acc" value="0">
+                            <input class="form-check-input" type="checkbox"  id="acc" name="acc" value="1" ${isChecked}>
                             <label class="form-check-label" for="Acc">
                                 Aproval Rombongan
                             </label>
@@ -271,6 +277,8 @@ $allRom = viewRombongan($konek) ?? [];
                             Swal.fire('Success', res.message, 'success').then(() => {
                                 location.reload();
                             });
+                        } else if (res.status === "nochange") {
+                            Swal.fire('No Change', res.message, 'info');
                         } else {
                             Swal.fire('Error', res.message, 'error');
                         }

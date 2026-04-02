@@ -152,13 +152,13 @@ function getKodeVen(mysqli $konek): string {
     return $prefix . $bulan . $nextId;
 }
 
-function getCnc($konek, $date, $client_id) {
+function getCnc($konek, $date, $rombongan_id) {
     // Amankan input tanggal
     $safe_date = mysqli_real_escape_string($konek, $date);
-    $safe_client_id = mysqli_real_escape_string($konek, $client_id);
+    $safe_rombongan_id = mysqli_real_escape_string($konek, $rombongan_id);
 
-    // Jika tanggal atau client_id kosong, kembalikan array kosong
-    if (empty($safe_date) || empty($safe_client_id)) {
+    // Jika tanggal atau rombongan_id kosong, kembalikan array kosong
+    if (empty($safe_date) || empty($safe_rombongan_id)) {
         return [];
     }
 
@@ -172,7 +172,7 @@ function getCnc($konek, $date, $client_id) {
             rombongan_master rm ON rd.fasilitas_id = rm.client_id
         WHERE
             rm.date_plan = '{$safe_date}'
-            AND rm.client_id != '{$safe_client_id}'
+            AND rm.rombongan_id != '{$safe_rombongan_id}'
             AND rd.del_status = 0
             AND rd.fasilitas_name IS NOT NULL
     ";
@@ -200,13 +200,13 @@ function getCnc($konek, $date, $client_id) {
     }
 }
 
-function getFasilitasWK($konek, $date, $client_id) {
+function getFasilitasWK($konek, $date, $rombongan_id) {
     // Amankan input tanggal
     $safe_date = mysqli_real_escape_string($konek, $date);
-    $safe_client_id = mysqli_real_escape_string($konek, $client_id);
+    $safe_rombongan_id = mysqli_real_escape_string($konek, $rombongan_id);
 
-    // Jika tanggal atau client_id kosong, kembalikan array kosong
-    if (empty($safe_date) || empty($safe_client_id)) {
+    // Jika tanggal atau rombongan_id kosong, kembalikan array kosong
+    if (empty($safe_date) || empty($safe_rombongan_id)) {
         return [];
     }
 
@@ -220,7 +220,7 @@ function getFasilitasWK($konek, $date, $client_id) {
             rombongan_master rm ON rd.fasilitas_id = rm.client_id
         WHERE
             rm.date_plan = '{$safe_date}'
-            AND rm.client_id != '{$safe_client_id}'
+            AND rm.rombongan_id != '{$safe_rombongan_id}'
             AND rd.del_status = 0
             AND rd.fasilitas_name IS NOT NULL
             AND rd.fasilitas_name !='Tiket Masuk'
@@ -287,8 +287,8 @@ function getViewBudgetingP ($konek, $client_id){
     return $viewBudgeting;
 }
 
-function viewPayment ($konek, $client_id){
-    $sfp_client_id = mysqli_real_escape_string($konek, $client_id);
+function viewPayment ($konek, $rombongan_id){
+    $sfp_client_id = mysqli_real_escape_string($konek, $rombongan_id);
 
     if(empty($sfp_client_id)){
         return[];
@@ -305,10 +305,24 @@ function viewPayment ($konek, $client_id){
     return $viewPaymentR1;
 }
 
-function getRombonganOk ($konek, $client_id){
+function getRombonganOk ($konek, $rombongan_id){
     $rombonganOk = [];
-    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, phone, marketing, judul, jumlah_pax, hrg_tiket, down_payment, clear_payment, dp_uploaded_at, cp_uploaded_at, client_id
-                            FROM rombongan_master WHERE client_id = '$client_id' AND del_status = 0");
+    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, rombongan_id, phone, marketing, judul, jumlah_pax, hrg_tiket, oleh, clear_payment, dp_uploaded_at, cp_uploaded_at, rombongan_id
+                            FROM rombongan_master WHERE rombongan_id = '$rombongan_id' AND del_status = 0");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $rombonganOk[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
+    }
+    return $rombonganOk;
+}
+
+function getRombonganOkD ($konek, $rombongan_id, $data_id){
+    $rombonganOk = [];
+    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, rombongan_id, phone, marketing, judul, jumlah_pax, hrg_tiket, oleh, clear_payment, dp_uploaded_at, cp_uploaded_at, rombongan_id
+                            FROM rombongan_master WHERE rombongan_id = '$rombongan_id' AND data_id = '$data_id' AND del_status = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
             $rombonganOk[] = $row;
@@ -377,13 +391,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['ak
 }
 
 //bagian Rombongan
-//create coe
+//create code client
 function generateKodeClient($konek) {
     $result = $konek->query("SELECT MAX(urut_client) AS max_id FROM client");
     $row = $result->fetch_assoc();
     $lastId = (int)$row['max_id'];
 
-    $prefix = "WK";
+    $prefix = "CLI";
     $bulan  = date("m");
     $tahun  = date("y");
     $nextId = str_pad($lastId + 1, 3, "0", STR_PAD_LEFT);
@@ -392,6 +406,22 @@ function generateKodeClient($konek) {
 }
 
 $code = generateKodeClient($konek);
+
+//create code client
+function generateKodeRombongan($konek) {
+    $result = $konek->query("SELECT MAX(data_id) AS max_id FROM rombongan_master");
+    $row = $result->fetch_assoc();
+    $lastId = (int)$row['max_id'];
+
+    $prefix = "ROM";
+    $bulan  = date("m");
+    $tahun  = date("y");
+    $nextId = str_pad($lastId + 1, 3, "0", STR_PAD_LEFT);
+
+    return $prefix . $bulan . $tahun . $nextId;
+}
+
+$cdr = generateKodeRombongan($konek);
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
@@ -469,32 +499,32 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
     if($_POST['aksi'] === 'tambah_dataRombongan'){
-        $idRom = sanitize_text($_POST['id_rom']);
+        $kdRom = sanitize_text($_POST['kdRom']);
+        $idClient = sanitize_text($_POST['id_cli']);
         $nama = sanitize_text($_POST['instansi']);
         $pic = sanitize_text($_POST['pic']);
         $noTlp = sanitize_text($_POST['noTlp']);
         $tanggal_plan = sanitize_text($_POST['tgl_dtng']);
         $gate = sanitize_text($_POST['gate']);
-        $jumlah = sanitize_text($_POST['pax']);
-        $nominal = sanitize_text($_POST['harga']);
+        // $jumlah = sanitize_text($_POST['pax']);
+        // $nominal = sanitize_text($_POST['harga']);
         $judul = sanitize_text($_POST['judul']);
         $tgl_input = date("Y-m-d H:i:s");
         $sales = 'Noer Halimah';
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, date_input, date_plan, client_pic, phone, jumlah_pax, marketing, gate_in, hrg_tiket, judul)
-                                VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssssssissis", $idRom, $nama, $tgl_input, $tanggal_plan, $pic, $noTlp, $jumlah, $sales, $gate, $nominal, $judul);
+        $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, rombongan_id, date_input, date_plan, client_pic, phone, marketing, gate_in, judul)
+                                VALUES(?,?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("ssssssssss", $idClient, $nama, $kdRom, $tgl_input, $tanggal_plan, $pic, $noTlp, $sales, $gate, $judul);
         if($stmt->execute()){
             $newData = [
-                "client_id"   => $idRom,
+                "client_id"   => $idClient,
                 "client_name" => $nama,
+                "rombongan_id" => $kdRom,
                 "client_pic"  => $pic,
                 "phone"       => $noTlp,
-                "jumlah_pax"  => $jumlah,
                 "marketing"   => $sales,
                 "date_plan"   => $tanggal_plan,
                 "gate_in"     => $gate,
-                "hrg_tiket"   => $nominal,
                 "judul"       => $judul
             ];
 
@@ -504,7 +534,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 211,
                 "add",                    // jenis aksi
                 "rombongan_master",       // nama tabel
-                $idRom,                   // ID data
+                $kdRom,                   // ID data
                 '',                     // old_value (karena INSERT)
                 json_encode($newData)     // new_value
             );
@@ -523,11 +553,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $pic = sanitize_text($_POST['upPic']);
         $tanggal = sanitize_text($_POST['upTgl_dtng']);
         $gate = sanitize_text($_POST['up_gate']);
-        $jumlah = sanitize_text($_POST['up_pax']);
-        $price = sanitize_text($_POST['upHarga']);
+        // $jumlah = sanitize_text($_POST['up_pax']);
+        // $price = sanitize_text($_POST['upHarga']);
         $judul = sanitize_text($_POST['up_judul']);
 
-        $stmt_cek = $konek->prepare("SELECT client_id, date_plan, jumlah_pax, gate_in, hrg_tiket, judul FROM rombongan_master WHERE client_id = ?");
+        $stmt_cek = $konek->prepare("SELECT rombongan_id, date_plan, gate_in, judul FROM rombongan_master WHERE rombongan_id = ?");
         $stmt_cek->bind_param("s", $idRom);
         $stmt_cek->execute();
         $result_cek = $stmt_cek->get_result();
@@ -543,12 +573,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $changes = [];
         if($oldData['date_plan'] != $tanggal)
             $changes['date_plan'] = ['old'=>$oldData['date_plan'], 'new'=>$tanggal];
-        if($oldData['jumlah_pax'] != $jumlah)
-            $changes['jumlah_pax'] = ['old'=>$oldData['jumlah_pax'], 'new'=>$jumlah];
         if($oldData['gate_in'] != $gate)
             $changes['gate_in'] = ['old'=>$oldData['gate_in'], 'new'=>$gate];
-        if($oldData['hrg_tiket'] != $price)
-            $changes['hrg_tiket'] = ['old'=>$oldData['hrg_tiket'], 'new'=>$price];
         if($oldData['judul'] != $judul)
             $changes['judul'] = ['old'=>$oldData['judul'], 'new'=>$judul];
         if(empty($changes)){
@@ -556,8 +582,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
             exit;
         }
 
-        $stmt_update = $konek->prepare("UPDATE rombongan_master SET date_plan = ?, jumlah_pax = ?, gate_in = ?, hrg_tiket = ?, judul = ? WHERE client_id = ?");
-        $stmt_update->bind_param("sissss", $tanggal, $jumlah, $gate, $price, $judul, $idRom);
+        $stmt_update = $konek->prepare("UPDATE rombongan_master SET date_plan = ?, gate_in = ?, judul = ? WHERE rombongan_id = ?");
+        $stmt_update->bind_param("ssss", $tanggal, $gate, $judul, $idRom);
         if($stmt_update->execute()){
             logActivity(
                 $konek,
@@ -922,10 +948,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
     //akhir update payment rombongan
 
     if (isset($_POST['aksi']) && $_POST['aksi'] === 'getDetailRombongan') {
-        $client_id = mysqli_real_escape_string($konek, $_POST['client_id']);
-        $detailMaster = getRombonganOk($konek, $client_id);
-        $detailBudget = getViewBudgeting($konek, $client_id);
-
+        $rombongan_id = mysqli_real_escape_string($konek, $_POST['rombongan_id']);
+        $data_id = mysqli_real_escape_string($konek, $_POST['data_id']);
+        $detailMaster = getRombonganOkD($konek, $rombongan_id, $data_id);
+        $detailBudget = getViewBudgeting($konek, $rombongan_id);
         $qtyTiket = 0;
         foreach ($detailBudget as $row) {
             if (strtolower($row['fasilitas_name']) === 'tiket masuk') {
@@ -960,14 +986,18 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
         $oldData = json_encode($cek);
 
+        if($cek['oleh'] === $acc){
+            echo json_encode([
+                'status' => 'nochange',
+                'message' => "Tidak ada perubahan data."]);
+            exit;
+        }
+
         if(!$cek){
             echo json_encode(['status' => 'error']);
             exit;
         }
-        if($cek['oleh'] === $acc){
-            echo json_encode(['status' => 'nochange']);
-            exit;
-        }
+
         try {
             $konek->begin_transaction();
             $stmt_update = $konek->prepare("UPDATE rombongan_master SET oleh = ? WHERE data_id = ?");
@@ -1603,9 +1633,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 throw new Exception($stmt_update->error);
             }
             $newData = [
-                "client_id"         => $vendorName,
-                "fasilitas_name"   => $VenFasilitas,
-                "qty"              => $qty,
+                "client_id"         => $vendor,
+                "fasilitas_name"   => $fasilitas,
+                "qty"              => $jumlah,
                 "price"            => $hargaJual,
                 "price_vend"       => $hargaVend,
                 "using_date"       => $tanggal_input,
@@ -1619,7 +1649,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 212,
                 "Update fasilitas Vendor",                    // jenis aksi
                 "rombongan_detail",               // nama tabel
-                $idClient,         // ID data (null karena insert)
+                $idFas,         // ID data (null karena insert)
                 $oldData,                      // old_value (karena INSERT)
                 json_encode($newData)       // new_value
             );
@@ -1720,7 +1750,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $harga = sanitize_text($_POST['up_hargaFnB']);
         $keterangan = sanitize_text($_POST['up_ket']);
 
-        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec
+        $stmt_cek = $konek->prepare("SELECT fasilitas_name, qty, price, spec, pair_token
                                     FROM rombongan_detail WHERE data_id = ?");
         $stmt_cek->bind_param("i", $id);
         $stmt_cek->execute();

@@ -88,10 +88,16 @@ $allrombongan = viewRombongan($konek);
                             <div class="card-body">
                                 <input type="hidden" class="form-control" id="noTlp" name="noTlp">
                                 <div class="mb-3 row">
-                                    <label for="id_rom" class="col-sm-4 col-form-label">ID Rombongan</label>
+                                    <label for="kdRom" class="col-sm-4 col-form-label">Kode Rombongan</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="id_rom" name="id_rom" required>
-                                            <option value="">---id rombongan---</option>
+                                        <input type="text" class="form-control" id="kdRom" name="kdRom" value="<?= $cdr; ?>" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="id_cli" class="col-sm-4 col-form-label">Client ID</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="id_cli" name="id_cli" required>
+                                            <option value="">---pilih client---</option>
                                         </select>
                                     </div>
                                 </div>
@@ -119,7 +125,7 @@ $allrombongan = viewRombongan($konek);
                                         <input type="text" class="form-control" id="gate" name="gate" required>
                                     </div>
                                 </div>
-                                <div class="mb-3 row">
+                                <!-- <div class="mb-3 row">
                                     <label for="pax" class="col-sm-4 col-form-label">Jumlah</label>
                                     <div class="col-sm-8">
                                         <input type="tel" class="form-control" id="pax" name="pax"
@@ -132,7 +138,7 @@ $allrombongan = viewRombongan($konek);
                                         <input type="tel" class="form-control" id="harga" name="harga"
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="mb-3 row">
                                     <label for="judul" class="col-sm-4 col-form-label">Judul</label>
                                     <div class="col-sm-8">
@@ -193,7 +199,7 @@ $allrombongan = viewRombongan($konek);
                                         <input type="text" class="form-control" id="up_gate" name="up_gate" required>
                                     </div>
                                 </div>
-                                <div class="mb-3 row">
+                                <!-- <div class="mb-3 row">
                                     <label for="up_pax" class="col-sm-4 col-form-label">Jumlah</label>
                                     <div class="col-sm-8">
                                         <input type="tel" class="form-control" id="up_pax" name="up_pax"
@@ -206,7 +212,7 @@ $allrombongan = viewRombongan($konek);
                                         <input type="tel" class="form-control" id="upHarga" name="upHarga"
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="mb-3 row">
                                     <label for="up_judul" class="col-sm-4 col-form-label">Judul</label>
                                     <div class="col-sm-8">
@@ -242,7 +248,7 @@ $allrombongan = viewRombongan($konek);
                 const kunjungan = tanggalDb.toLocaleDateString('id-ID', opsi);
                 row.innerHTML =`
                 <td>${index+1}</td>
-                <td>${item.client_id}</td>
+                <td>${item.rombongan_id}</td>
                 <td>${item.client_name}</td>
                 <td>${item.marketing}</td>
                 <td>${item.client_pic}</td>
@@ -250,18 +256,16 @@ $allrombongan = viewRombongan($konek);
                 <td>
                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
                         <button class="btn btn-success btnUpdateRombongan" data-bs-toggle="modal" data-bs-target="#updateDataRombongan"
-                            data-id="${item.client_id}"
+                            data-id="${item.rombongan_id}"
                             data-instansi="${item.client_name}"
                             data-pic="${item.client_pic}"
                             data-tanggal="${item.date_plan}"
                             data-gate="${item.gate_in}"
-                            data-jumlah="${item.jumlah_pax}"
-                            data-harga="${item.hrg_tiket}"
                             data-judul="${item.judul}"
                             ><i class="fa-solid fa-file-pen"></i>
                         </button>
                         <button class="btn btn-warning btnPayment"
-                            data-client-id="${item.client_id}"
+                            data-rombongan-id="${item.rombongan_id}"
                             data-nama-id="${item.client_name}"
                         ><i class="fa-solid fa-hand-holding-dollar"></i>
                         </button>
@@ -272,7 +276,7 @@ $allrombongan = viewRombongan($konek);
             });
 
             const viewClient = <?= json_encode($allClient) ?>;
-            const selectId = document.getElementById("id_rom");
+            const selectId = document.getElementById("id_cli");
             const modelEl = document.getElementById('tambahDataRombongan');
             const namaRombongan = document.getElementById('instansi');
             const picRombongan = document.getElementById('pic');
@@ -310,31 +314,29 @@ $allrombongan = viewRombongan($konek);
             });
         </script>
         <script>
-            $('#harga, #pax').on('input', function () {
-                setFormattedInput(this);
-            });
+            // $('#harga, #pax').on('input', function () {
+            //     setFormattedInput(this);
+            // });
             $('#addRombongan').on('submit', function(e) {
                 e.preventDefault();
                                 // simpan tampilan
-                let hargaDisplay = $('#harga').val();
-                let paxDisplay   = $('#pax').val();
+                // let hargaDisplay = $('#harga').val();
+                // let paxDisplay   = $('#pax').val();
 
-                // ubah ke angka murni
-                $('#harga').val(hargaDisplay.replace(/\./g, ''));
-                $('#pax').val(paxDisplay.replace(/\./g, ''));
+                // // ubah ke angka murni
+                // $('#harga').val(hargaDisplay.replace(/\./g, ''));
+                // $('#pax').val(paxDisplay.replace(/\./g, ''));
 
                 const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
-                console.log("data kirim ", formData);
                 // restore tampilan format
-                $('#harga').val(hargaDisplay);
-                $('#pax').val(paxDisplay);
+                // $('#harga').val(hargaDisplay);
+                // $('#pax').val(paxDisplay);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
-                        console.log("respon : ", res);
                         let response = {};
                         try {
                             response = JSON.parse(res);
@@ -401,8 +403,6 @@ $allrombongan = viewRombongan($konek);
                     const pic = button.getAttribute('data-pic');
                     const tanggal = button.getAttribute('data-tanggal');
                     const gate = button.getAttribute('data-gate');
-                    const jumlah = button.getAttribute('data-jumlah');
-                    const harga = button.getAttribute('data-harga');
                     const judul = button.getAttribute('data-judul');
 
                     const formaTanggal = tanggal ? tanggal.substring(0, 10) : '';
@@ -412,32 +412,30 @@ $allrombongan = viewRombongan($konek);
                     document.getElementById('upPic').value = pic;
                     document.getElementById('upTgl_dtng').value = formaTanggal;
                     document.getElementById('up_gate').value = gate;
-                    document.getElementById('up_pax').value = formatNumber(jumlah);
-                    document.getElementById('upHarga').value = formatNumber(harga);
                     document.getElementById('up_judul').value = judul;
                 }
             });
         </script>
         <script>
-            $('#upHarga, #up_pax').on('input', function () {
-                setFormattedInput(this);
-            });
+            // $('#upHarga, #up_pax').on('input', function () {
+            //     setFormattedInput(this);
+            // });
             $('#updateRombongan').on('submit', function(e){
                 e.preventDefault();
 
-                // simpan tampilan
-                let hargaDisplay = $('#upHarga').val();
-                let paxDisplay   = $('#up_pax').val();
+                // // simpan tampilan
+                // let hargaDisplay = $('#upHarga').val();
+                // let paxDisplay   = $('#up_pax').val();
 
-                // ubah ke angka murni
-                $('#upHarga').val(hargaDisplay.replace(/\./g, ''));
-                $('#up_pax').val(paxDisplay.replace(/\./g, ''));
+                // // ubah ke angka murni
+                // $('#upHarga').val(hargaDisplay.replace(/\./g, ''));
+                // $('#up_pax').val(paxDisplay.replace(/\./g, ''));
 
                 const formData = $(this).serialize() + '&aksi=update_dataRombongan';
         
-                // restore tampilan format
-                $('#upHarga').val(hargaDisplay);
-                $('#up_pax').val(paxDisplay);
+                // // restore tampilan format
+                // $('#upHarga').val(hargaDisplay);
+                // $('#up_pax').val(paxDisplay);
                 
                 $.ajax({
                     url : '../../assets/fungsi.php',
@@ -503,7 +501,7 @@ $allrombongan = viewRombongan($konek);
                 if(clickedElement){
                     e.preventDefault();
 
-                    const rombonganId = clickedElement.dataset.clientId;
+                    const rombonganId = clickedElement.dataset.rombonganId;
                     const rombonganName = clickedElement.dataset.namaId;
 
                     const form = document.createElement('form');
@@ -512,7 +510,7 @@ $allrombongan = viewRombongan($konek);
 
                     const inputID = document.createElement('input');
                     inputID.type = 'hidden';
-                    inputID.name = 'client_id';
+                    inputID.name = 'rombongan_id';
                     inputID.value = rombonganId;
 
                     const inputName = document.createElement('input');
@@ -528,7 +526,7 @@ $allrombongan = viewRombongan($konek);
             });
 
         </script>
-        <script>
+        <!-- <script>
             function formatNumber(value) {
                 value = value.replace(/\D/g, '');
                 return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -558,6 +556,6 @@ $allrombongan = viewRombongan($konek);
                     setFormattedInput(this);
                 });
             });
-        </script>
+        </script> -->
     </body>
 </html>

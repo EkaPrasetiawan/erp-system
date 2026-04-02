@@ -2,16 +2,16 @@
 
 require '../../assets/fungsi.php';
 
-$client_id = '';
+$rombongan_id = '';
 $client_name='';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $client_id = $_POST['client_id'] ?? '';
+    $rombongan_id = $_POST['rombongan_id'] ?? '';
     $client_name = $_POST['client_name'] ?? '';
 }
 
-$viewPay = viewPayemnt($konek, $client_id);
-$datarombongan = getRombonganOk($konek, $client_id);
+$viewPay = viewPayemnt($konek, $rombongan_id);
+$datarombongan = getRombonganOk($konek, $rombongan_id);
 
 ?>
 
@@ -57,7 +57,7 @@ $datarombongan = getRombonganOk($konek, $client_id);
                         </ol>
                         <div class="btn"> 
                             <button type="button" class="btn btn-primary "
-                            data-id="<?= $client_id ?>" data-bs-toggle="modal" data-bs-target="#addPayment">
+                            data-id="<?= $rombongan_id ?>" data-bs-toggle="modal" data-bs-target="#addPayment">
                             <i class="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
@@ -315,7 +315,7 @@ $datarombongan = getRombonganOk($konek, $client_id);
             DATA SOURCE DARI PHP
             ===================================================== */
             const paymentView = <?= json_encode($viewPay); ?>;
-            const viewClient  = <?= json_encode($datarombongan); ?>;
+            const viewRombongan  = <?= json_encode($datarombongan); ?>;
 
 
             /* =====================================================
@@ -398,12 +398,11 @@ $datarombongan = getRombonganOk($konek, $client_id);
                     if(addFileInput) addFileInput.value = "";
 
                     const id = btnAdd.dataset.id;
-                    const data = viewClient.find(x => x.client_id === id);
-
+                    const data = viewRombongan.find(x => x.rombongan_id === id);
                     if (data) {
-                        idPay.value = data.client_id;
+                        idPay.value = data.rombongan_id;
                         instansi.value = data.client_name;
-                        picPay.value = data.client_pic;
+                        picPay.value = data.client_pic; 
                     }
                 }
 
