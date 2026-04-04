@@ -118,6 +118,9 @@ $allRom = viewRombongan($konek) ?? [];
                 const tanggalDb = new Date(item.date_plan);
                 const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
                 const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
+
+                const isDisabled = item.oleh === "UnApproved" ? 'disabled' : '';
+                const btnClass = item.oleh === "unApproved" ? 'btn-secondary' : 'btn-primary';
                 
                 row.innerHTML =`
                 <td>${index + 1 }</td>
@@ -134,7 +137,7 @@ $allRom = viewRombongan($konek) ?? [];
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> Budget Submission</a>
 
-                        <a class="btn btn-primary btnFb"
+                        <a class="btn ${btnClass} btnFb ${isDisabled}"
                         data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
@@ -148,6 +151,16 @@ $allRom = viewRombongan($konek) ?? [];
                 </td>
                 `;
                 tbody.appendChild(row);
+            });
+            document.addEventListener('click', function(e){
+                const btn = e.target.closest('.btnFb');
+
+                if(btn && btn.classList.contains('disabled')){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("Data belum di-approve!");
+                    return false;
+                }
             });
 
         </script>

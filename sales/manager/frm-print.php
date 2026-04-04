@@ -46,7 +46,6 @@ $allRom = viewRombongan($konek) ?? [];
                                             <th>Kode Registrasi</th>
                                             <th>Sales</th>
                                             <th>Tnggal Kunjungan</th>
-                                            <th>Satatus</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -81,22 +80,16 @@ $allRom = viewRombongan($konek) ?? [];
                 row.innerHTML =`
                 <td>${index + 1 }</td>
                 <td>${item.client_name}</td>
-                <td>${item.client_id}</td>
+                <td>${item.rombongan_id}</td>
                 <td>${item.marketing}</td>
                 <td>${plan}</td>
-                <td>${item.oleh}</td>
                 <td>
                     <div class="d-grid gap-1">
                         <a class="btn btn-primary btnDetail"
-                        data-client-id="${item.client_id}"
+                        data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> Kesepakatan</a>
-                        <a class="btn btn-success btnPrint"
-                        data-client-id="${item.client_id}"
-                        data-client-name="${item.client_name}"
-                        data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> Budgeting</a>
                     </div>
                 </td>
                 `;
@@ -113,18 +106,18 @@ $allRom = viewRombongan($konek) ?? [];
                 if (clickedElement) {
                     e.preventDefault();
 
-                    const clientId = clickedElement.dataset.clientId;
+                    const rombonganId = clickedElement.dataset.rombonganId;
                     const clientName = clickedElement.dataset.clientName;
                     const clientDate = clickedElement.dataset.clientDate;
 
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = 'rombongan-reques.php';
+                    form.action = 'frm-kesepakatan.php';
 
                     const inputId = document.createElement('input');
                     inputId.type = 'hidden';
-                    inputId.name = 'client_id';
-                    inputId.value = clientId;
+                    inputId.name = 'rombongan_id';
+                    inputId.value = rombonganId;
 
                     const inputName = document.createElement('input');
                     inputName.type = 'hidden';

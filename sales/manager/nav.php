@@ -32,6 +32,14 @@
                 </a>
             </nav>
         </div>
+        <div class="collapse" id="rombonganCorporate" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+            <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="frm-print.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></i></div>
+                    Print Form
+                </a>
+            </nav>
+        </div>
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#rombonganSchool"
             aria-expanded="false" aria-controls="collapseLayouts">
         <div class="sb-nav-link-icon"><i class="fa-solid fa-school"></i></div>
@@ -46,26 +54,6 @@
                 </a>
             </nav>
         </div>
-        <a class="nav-link" href="frm-print.php">
-            <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
-            Print Form
-        </a>
-        <!-- <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
-            aria-expanded="false" aria-controls="collapseLayouts">
-        <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
-            Print
-        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-        </a>
-        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-            <nav class="sb-sidenav-menu-nested nav">
-                <a class="nav-link" href="frm-kesepakatan.php">
-                    <div class="sb-nav-link-icon"><i class="fa-regular fa-file-lines"></i></div>
-                    Form Kesepakatan</a>
-                <a class="nav-link" href="frm-budgeting.php">
-                    <div class="sb-nav-link-icon"><i class="fa-regular fa-file-lines"></i></div>
-                    Form Budgeting</a>
-            </nav>
-        </div> -->
         <div class="sb-sidenav-menu-heading">Fasiliti</div>
         <a class="nav-link" href="fasilitas.php">
             <div class="sb-nav-link-icon"><i class="fas fa-city"></i></div>

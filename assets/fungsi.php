@@ -248,6 +248,54 @@ function getFasilitasWK($konek, $date, $rombongan_id) {
         return [];
     }
 }
+function getFasilitasWKP($konek, $date, $rombongan_id) {
+    // Amankan input tanggal
+    $safe_date = mysqli_real_escape_string($konek, $date);
+    $safe_rombongan_id = mysqli_real_escape_string($konek, $rombongan_id);
+
+    // Jika tanggal atau rombongan_id kosong, kembalikan array kosong
+    if (empty($safe_date) || empty($safe_rombongan_id)) {
+        return [];
+    }
+
+    // 1. Subquery: Cari NAMA fasilitas yang sudah terpakai.
+    $query_booked_names = "
+        SELECT
+            DISTINCT rd.fasilitas_name
+        FROM
+            rombongan_detail rd
+        JOIN
+            rombongan_master rm ON rd.fasilitas_id = rm.client_id
+        WHERE
+            rm.date_plan = '{$safe_date}'
+            AND rm.rombongan_id != '{$safe_rombongan_id}'
+            AND rd.del_status = 0
+            AND rd.fasilitas_name IS NOT NULL
+            AND rd.fasilitas_name !='Tiket Masuk'
+    ";
+
+    // 2. Query utama: Ambil semua fasilitas yang namanya TIDAK ada dalam daftar yang sudah terpakai.
+    $query_available = "
+        SELECT
+            ms.*
+        FROM
+            markom_service ms
+        WHERE
+            ms.group_detail NOT IN ({$query_booked_names})
+        ORDER BY
+            ms.group_detail
+    ";
+
+    $result = mysqli_query($konek, $query_available);
+
+    if ($result) {
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } else {
+        // Jika gagal, kembalikan array kosong dan catat error untuk debugging
+        error_log("Query Gagal getAvailableFasilitasForDate: " . mysqli_error($konek));
+        return [];
+    }
+}
 
 function getViewBudgeting ($konek, $client_id){
     $sf_client_id = mysqli_real_escape_string($konek, $client_id);
@@ -268,15 +316,15 @@ function getViewBudgeting ($konek, $client_id){
     return $viewBudgeting;
 }
 
-function getViewBudgetingP ($konek, $client_id){
-    $sf_client_id = mysqli_real_escape_string($konek, $client_id);
+function getViewBudgetingP ($konek, $rombongan_id){
+    $sf_rombongan_id = mysqli_real_escape_string($konek, $rombongan_id);
     
-    if(empty($sf_client_id)){
+    if(empty($sf_rombongan_id)){
         return[];
     }
 
     $viewBudgeting = [];
-    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_client_id' AND del_status = 0 AND point = 0");
+    $result = $konek->query("SELECT * FROM rombongan_detail WHERE fasilitas_id = '$sf_rombongan_id' AND del_status = 0 AND point = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
             $viewBudgeting[] = $row;
@@ -1026,6 +1074,33 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         }
         $stmt_update->close();
         exit;
+    }
+
+    if ($_POST['aksi'] === 'update_status') {
+        $id = $_POST['id'];
+        $status = $_POST['status'];
+    
+        // mapping ke angka
+        $statusMap = [
+            "open" => 0,
+            "on process" => 1,
+            "done" => 2
+        ];
+        $statusAngka = $statusMap[$status] ?? 0;
+        $stmt = $konek->prepare("UPDATE rombongan_master SET status=? WHERE rombongan_id=?");
+        $stmt->bind_param("is", $statusAngka, $id);
+    
+        if ($stmt->execute()) {
+            echo json_encode([
+                "success" => true,
+                "message" => "Status berhasil diupdate"
+            ]);
+        } else {
+            echo json_encode([
+                "success" => false,
+                "message" => "Gagal update"
+            ]);
+        }
     }
 }
 

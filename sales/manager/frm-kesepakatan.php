@@ -93,170 +93,59 @@ $viewPay = viewPayment ($konek, $rombongan_id);
     </style>
   </head>
   <body>
-    <div class="container text-center">
-      <h3>GROUP PACKAGE CONFIRMATION FORM</h3>
+    <div class="container text-center border border-dark py-3">
+        <div class="row align-items-center">
+            <div class="col-3 text-start">
+                <img src="../../assets/img/logo1.png" alt="Logo" style="height:80px;">
+            </div>
+            <div class="col-6 text-center">
+                <h3 class="m-0">FORMULIR KESEPAKATAN</h3>
+            </div>
+            <div class="col-3"></div>
+        </div>
         <div class="row text-start">
-            <div class="col-5">
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">Date Of Visit/Day</label>
-                  <div class="col-sm col-form-label">
-                    <span id="tgl_plan"></span>
-                  </div>
+            <div class="col-12">
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Nama Perusahaan / Sekolah</div>
+                <div class="col-8">: <span id="tgl_plan"></span></div>
               </div>
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">Name Of Group</label>
-                  <div class="col-sm col-form-label">
-                    <span id="instansi"></span>
-                  </div>
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Rencana Kedatangan</div>
+                <div class="col-8">: <span>sjhfskb</span></div>
               </div>
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">Contact Person</label>
-                  <div class="col-sm col-form-label">
-                    <span id="pic"></span>
-                  </div>
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Alamat</div>
+                <div class="col-8">: <span>sjhfskb</span></div>
               </div>
-            </div>
-            <div class="col-5">
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">Telphone</label>
-                  <div class="col-sm col-form-label">
-                    <span id="tlp"></span>
-                  </div>
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Phone</div>
+                <div class="col-8">: <span>sjhfskb</span></div>
               </div>
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">Faxcimile</label>
-                  <div class="col-sm col-form-label">
-                    <span id="">: -</span>
-                  </div>
+              <p class="fw-bold mb-1 mt-2">PENANGGUNG JAWAB</p>
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Nama</div>
+                <div class="col-8">: <span>sjhfskb</span></div>
               </div>
-              <div class="row">
-                  <label for="" class="col-sm col-form-label">PIC</label>
-                  <div class="col-sm col-form-label">
-                    <span id="sales"></span>
-                  </div>
+              <div class="row mb-1">
+                <div class="col-4 fw-semibold">Posisi</div>
+                <div class="col-2">: <span>sjhfskb</span></div>
+                <div class="col fw-semibold text-end">HP</div>
+                <div class="col-4">: <span>sjhfskb</span></div>
               </div>
-            </div>
-            <div class="col-2 text-end">
-                <p class="fw-bold">Estimated Cost</p>
-                <div class="small">
-                    ID Client: <span id="idCl" class="fw-bold"></span>
-                </div>
-                <div class="small">
-                    Tgl Input: <span id="tgl_in" class="fw-bold"></span>
-                </div>
-                <div class="small">
-                    Tema: <span id="tema" class="fw-bold"></span>
-                </div>
-                <div class="small">
-                    Pax: <span id="jumlah" class="fw-bold"></span>
-                </div>
             </div>
         </div>
 
         <!-- bagian pendapatan dan pengeluaran -->
-        <div class="row border border-dark">
+        <div class="row">
             <div class="col-12">
+                <p class="fw-bold mb-1 mt-3 text-start">PEMESANAN TIKE/PAKET</p>
                 <div class="row text-start">
-                    <div class="col-10 border border-dark">
-                        <div class="row">
-                            <p class="fw-bold mt-2 mb-1">1. PENDAPATAN</p>
-                            <div id="detail_pendapatan"></div>
-                            <div class="row text-end mt-2">
-                                <div class="col-7"></div>
-                                <div class="col-3"><strong>TOTAL PENDAPATAN :</strong></div>
-                                <div class="col-2"><strong id="total_pendapatan"></strong></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <p class="fw-bold mt-2 mb-1">2. BIAYA</p>
-                            <div id="detail_pengeluaran"></div> 
-                            <div id="box_total_biaya" class="row">
-                                <div class="col-7"></div>
-                                <div class="col-3"><strong>TOTAL BIAYA :</strong></div>
-                                <div class="col-2 text-end">
-                                    <strong id="total_pengeluaran"></strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row text-end mt-2 mb-3">
-                            <div class="col-8 text-start"><strong>3. PROFIT</strong></div>
-                            <div class="col-2"></div>
-                            <div class="col-2"><strong id="gross_profit"></strong></div>
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <div class="row">
-                            <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
-                        </div>
-                        <div class="row">
-                            <!-- <div class="col text-start"><strong id="vendor_nameHead"></div> -->
-                            <p id="vendor_nameHead"></p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-
         <div class="row">
             <div class="col-12">
                 <div class="row text-start">
-                    <div class="col-10 border border-dark">
-                        <div class="row">
-                            <p class="fw-bold mt-2 mb-1">PAYMENT</p>
-                        </div>
-                        <div class="row">
-                            <div class="row text-end" id="sisa_payment"></div>
-                        </div>
-                    </div>
-                    <div class="col-2 small text-start border border-dark">
-                        <div class="mt-4" style="white-space:nowrap;
-                        font-size:clamp(8px, 0.8vw, 10px);" id="bayarLog">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-2 border border-dark">Dibuat Oleh,</div>
-                    <div class="col-8 border border-dark">Diperiksa</div>
-                    <div class="col-2 border border-dark"></div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-2 border border-dark">Sales</div>
-                    <div class="col-2 border border-dark">Asst Sales Manager</div>
-                    <div class="col-2 border border-dark">Purchasing</div>
-                    <div class="col-4 border border-dark">ACC & FAT</div>
-                    <div class="col-2 border border-dark">Director</div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="row" style="height:160px">
-                    <div class="col-2 border border-dark"></div>
-                    <div class="col-2 border border-dark"></div>
-                    <div class="col-2 border border-dark"></div>
-                    <div class="col-2 border border-dark"></div>
-                    <div class="col-2 border border-dark"></div>
-                    <div class="col-2 border border-dark"></div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-2 border border-dark">Dedi</div>
-                    <div class="col-2 border border-dark">Septian Adi</div>
-                    <div class="col-2 border border-dark">Rahman J Subita</div>
-                    <div class="col-2 border border-dark">Nanda</div>
-                    <div class="col-2 border border-dark">Nur Walidi</div>
-                    <div class="col-2 border border-dark">S. Widi Karyaningsih</div>
                 </div>
             </div>
         </div>
@@ -654,7 +543,6 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         });
 
     </script>
-    <div id="loading">Menyiapkan dokumen print...</div>
 
     <!-- <script>
     window.onload = function(){

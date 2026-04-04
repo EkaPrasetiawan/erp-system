@@ -59,6 +59,7 @@ $allrombongan = viewRombongan($konek);
                                             <th>SALES</th>
                                             <th>PIC</th>
                                             <th>RENCANA KEDATANGAN</th>
+                                            <th>STATUS</th>
                                             <th>AKSI</th>
                                         </tr>
                                     </thead>
@@ -238,7 +239,21 @@ $allrombongan = viewRombongan($konek);
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
             const viewRombogan = <?= json_encode($allrombongan); ?>;
+            const originalData = [...viewRombogan];
             const tbody = document.getElementById("dtClient");
+            const story = {
+                0: "open",
+                1: "on process",
+                2: "done"
+            };
+            const statusClass = {
+                "open": "badge bg-success",
+                "on process": "badge bg-warning text-dark",
+                "done": "badge bg-secondary"
+            };
+            viewRombogan.forEach(item => {
+                item.status = story[item.status] || "unknown";
+            });
             viewRombogan.forEach((item, index)=>{
                 const row = document.createElement("tr");
 
@@ -253,6 +268,13 @@ $allrombongan = viewRombongan($konek);
                 <td>${item.marketing}</td>
                 <td>${item.client_pic}</td>
                 <td>${kunjungan}</td>
+                <td class="text-center align-middle">
+                    <select onchange="updateStatus(this, '${item.rombongan_id}')" class="${statusClass[item.status]} form-select-lg form-select-sm">
+                        <option value="open" ${item.status === "open" ? "selected" : ""}>Open</option>
+                        <option value="on process" ${item.status === "on process" ? "selected" : ""}>On Process</option>
+                        <option value="done" ${item.status === "done" ? "selected" : ""}>Done</option>
+                    </select>
+                </td>
                 <td>
                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
                         <button class="btn btn-success btnUpdateRombongan" data-bs-toggle="modal" data-bs-target="#updateDataRombongan"
@@ -274,6 +296,12 @@ $allrombongan = viewRombongan($konek);
                 `;
                 tbody.appendChild(row);
             });
+
+            setTimeout(() => {
+                document.querySelectorAll("select").forEach(el => {
+                    updateSelectColor(el, el.value);
+                });
+            }, 0);
 
             const viewClient = <?= json_encode($allClient) ?>;
             const selectId = document.getElementById("id_cli");
@@ -314,23 +342,10 @@ $allrombongan = viewRombongan($konek);
             });
         </script>
         <script>
-            // $('#harga, #pax').on('input', function () {
-            //     setFormattedInput(this);
-            // });
+
             $('#addRombongan').on('submit', function(e) {
                 e.preventDefault();
-                                // simpan tampilan
-                // let hargaDisplay = $('#harga').val();
-                // let paxDisplay   = $('#pax').val();
-
-                // // ubah ke angka murni
-                // $('#harga').val(hargaDisplay.replace(/\./g, ''));
-                // $('#pax').val(paxDisplay.replace(/\./g, ''));
-
                 const formData = $(this).serialize()+'&aksi=tambah_dataRombongan';
-                // restore tampilan format
-                // $('#harga').val(hargaDisplay);
-                // $('#pax').val(paxDisplay);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
@@ -525,37 +540,68 @@ $allrombongan = viewRombongan($konek);
                 }
             });
 
+            function updateStatus(el, id) {
+                const status = el.value;
+                el.disabled = true;
+                console.log("Updating status for ID:", id, "to", status);
+                $.ajax({
+                    url: '../../assets/fungsi.php',
+                    method: 'POST',
+                    data: {
+                        aksi: 'update_status',
+                        id: id,
+                        status: status
+                    },
+                    success: function(res) {
+                        console.log("Response from server:", res);
+                        let response = {};
+
+                        try {
+                            response = JSON.parse(res);
+                        } catch (e) {
+                            console.error("Response bukan JSON:", res);
+                            return;
+                        }
+                        if (response.success) {
+                            // update warna select langsung
+                            updateSelectColor(el, status);
+                            // update data di array juga (opsional)
+                            const item = originalData.find(i => i.rombongan_id == id);
+                            if (item) {
+                                item.status = status;
+                            }
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Status Updated',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        } else {
+                            alert("Gagal update");
+                        }
+                        el.disabled = false;
+                    },
+
+                    error: function(err) {
+                        console.error("AJAX Error:", err);
+                        el.disabled = false;
+                    }
+                });
+            }
+
+            function updateSelectColor(el, status) {
+                const statusClass = {
+                    "open": "bg-success",
+                    "on process": "bg-warning",
+                    "done": "bg-secondary"
+                };
+                // reset class dulu
+                el.className = "form-select form-select-sm";
+                // tambah warna baru
+                el.classList.add(statusClass[status]);
+            }
         </script>
-        <!-- <script>
-            function formatNumber(value) {
-                value = value.replace(/\D/g, '');
-                return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            }
-
-            function setFormattedInput(el) {
-                let cursorPos = el.selectionStart;
-                let beforeLen = el.value.length;
-
-                let formatted = formatNumber(el.value);
-                el.value = formatted;
-
-                let afterLen = formatted.length;
-                el.selectionEnd = cursorPos + (afterLen - beforeLen);
-            }
-
-            // tambah
-            ['#pax', '#harga'].forEach(id => {
-                $(document).on('input', id, function() {
-                    setFormattedInput(this);
-                });
-            });
-
-            // update
-            ['#up_pax', '#upHarga'].forEach(id => {
-                $(document).on('input', id, function() {
-                    setFormattedInput(this);
-                });
-            });
-        </script> -->
     </body>
 </html>

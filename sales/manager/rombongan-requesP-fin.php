@@ -2,20 +2,20 @@
 
 require '../../assets/fungsi.php';
 
-$client_id = '';
+$rombongan_id = '';
 $client_name = '';
 $client_date = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $client_id = $_POST['client_id'] ??'';
+    $rombongan_id = $_POST['rombongan_id'] ??'';
     $client_name = $_POST['client_name'] ??'';
     $client_date = $_POST['date_plan'] ??'';
 }
 
-$dataFs = getFasilitasWK($konek, $client_date, $client_id);
+$dataFs = getFasilitasWKP($konek, $client_date, $rombongan_id);
 // $headFs = getKategoriFst($konek);
 $vendorFs = getViewVendor($konek);
-$viewCnC = getCnc($konek, $client_date, $client_id);
+$viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
 
 ?>
@@ -61,7 +61,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                 <div class="mb-3 row">
                                     <label for="" class="col-sm-2 col-form-label">ID Rombongan</label>
                                     <div class="col-sm-4">
-                                    <input type="text" class="form-control" value="<?= $client_id ?>" id="" name="" readonly>
+                                    <input type="text" class="form-control" value="<?= $rombongan_id ?>" id="" name="" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -71,7 +71,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                                     </div>
                                 </div>
                                 <form action="budgeting-printP-fin.php" method="POST" target="_blank">
-                                    <input type="hidden" name="client_id" value="<?= $client_id ?>">
+                                    <input type="hidden" name="rombongan_id" value="<?= $rombongan_id ?>">
                                     <input type="hidden" name="client_name" value="<?= $client_name ?>">
                                     <input type="hidden" name="date_plan" value="<?= $date_plan ?>">
                                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -202,7 +202,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $rombongan_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
                                     <label for="kategori" class="col-sm-4 col-form-label">Kategori</label>
@@ -314,7 +314,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $rombongan_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
                                     <label for="vendorHead" class="col-sm-4 col-form-label">Nama vendor</label>
@@ -439,7 +439,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $rombongan_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
                                     <label for="fnbVendor" class="col-sm-4 col-form-label">Vendor</label>
@@ -564,7 +564,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" class="form-control" value="<?= $client_id ?>" id="cId" name="cId">
+                                <input type="hidden" class="form-control" value="<?= $rombongan_id ?>" id="cId" name="cId">
                                 <input type="hidden" class="form-control" value="<?= $client_name ?>" id="cName" name="cName">
                                 <div class="mb-3 row">
                                     <label for="nPeng" class="col-sm-4 col-form-label">Nama Pengguna</label>
@@ -729,7 +729,7 @@ $viewCnC = getCnc($konek, $client_date, $client_id);
         </script>
         <script>
             $(document).ready(function(){
-                const fasilitasId = '<?= $client_id ?>';
+                const fasilitasId = '<?= $rombongan_id ?>';
 
                 if(fasilitasId){
                     $.ajax({
