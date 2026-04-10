@@ -218,6 +218,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="fasilitas" name="fasilitas" required>
                                             <option value="">---pilih fasilitas---</option>
                                         </select>
+                                        <input type="hidden" class ="form-control mt-2" id="satuan" name="satuan">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -274,6 +275,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="up_fsl" name="up_fsl" required>
                                             <option value="">---pilih fasilitas---</option>
                                         </select>
+                                        <input type="hidden" class ="form-control mt-2" id="up_satuan" name="up_satuan">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -330,6 +332,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="namaFasilitas" name="namaFasilitas" required>
                                             <option value="">---pilih fasilitas---</option>
                                         </select>
+                                        <input type="hidden" class="form-control mt-2" id="satuanV" name="satuanV" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -392,6 +395,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="up_namaFasilitas" name="up_namaFasilitas" required>
                                             <option value="">---pilih fasilitas---</option>
                                         </select>
+                                        <input type="hidden" class="form-control mt-2" id="up_satuanV" name="up_satuanV" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -455,6 +459,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="fnbHead" name="fnbHead" required>
                                             <option value="">---pilih menu---</option>
                                         </select>
+                                        <input type="text" class="form-control" id="satuanFnB" name="satuanFnB" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -517,6 +522,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="up_fnbHead" name="up_fnbHead" required>
                                             <option value="">---pilih menu---</option>
                                         </select>
+                                        <input type="text" class="form-control" id="up_satuanFnB" name="up_satuanFnB" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -671,6 +677,19 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     });
                 }
             });
+
+            const inputSatuan = document.getElementById('satuan');
+            selectFs.addEventListener('change', function(){
+                const selectedFS = this.value;
+                if(selectedFS){
+                    const data = viewFs.find(item => item.group_detail === selectedFS);
+                    if(data){
+                        inputSatuan.value = data.unit;
+                    }
+                } else {
+                    inputSatuan.value = '';
+                }
+            });
         </script>
         <script>
             $('#qty, #hargaWk').on('input', function () {
@@ -774,6 +793,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                             data-qty="${item.qty}"
                                                             data-price="${item.price}"
                                                             data-priceVend="${item.price_vend}"
+                                                            data-unit="${item.unit}"
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
@@ -802,6 +822,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                             data-qtyFnB="${item.qty}"
                                                             data-harga="${item.price}"
                                                             data-ket="${item.spec}"
+                                                            data-unit"${item.unit}"
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
@@ -850,6 +871,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                             data-head="${item.group_fasilitas}"
                                                             data-fsl="${item.fasilitas_name}"
                                                             data-qty="${item.qty}"
+                                                            data-unit="${item.unit}"
                                                             data-price="${item.price}"
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
@@ -878,6 +900,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
         <script>
             const upKategori = document.getElementById("up_kategori");
             const upFasilitas = document.getElementById("up_fsl");
+            const inputUpSatuan = document.getElementById("up_satuan");
 
             function populatedUpFasilitas(headFs, selectFs = null) {
                 upFasilitas.innerHTML = '<option value="">---pilih fasilitas---</option>';
@@ -894,6 +917,19 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     if (selectFs) {
                         upFasilitas.value = selectFs;
                     }
+                }
+            }
+
+            function setSatuan(selectedFs, selectedHead) {
+                const data = viewFs.find(item => 
+                    item.group_detail === selectedFs &&
+                    item.group_head === selectedHead
+                );
+
+                if(data){
+                    inputUpSatuan.value = data.unit;
+                } else {
+                    inputUpSatuan.value = '';
                 }
             }
 
@@ -922,13 +958,22 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     upKategori.value = head;
                     // Memanggil fungsi dengan variabel 'head' dan 'namaFs'
                     populatedUpFasilitas(head, namaFs);
+                    setSatuan(namaFs, head);
                 }
             });
 
             upKategori.addEventListener('change', function() {
                 // Memanggil fungsi dengan nilai 'this.value'
                 populatedUpFasilitas(this.value);
+                inputUpSatuan.value = '';
             });
+
+            upFasilitas.addEventListener('change', function(){
+                const selectedFs = this.value;
+                const selectedHead = upKategori.value;
+
+                setSatuan(selectedFs, selectedHead);
+            })
         </script>
         <script>
             $('#up_qty, #up_hargaWk').on('input', function () {
@@ -1026,6 +1071,19 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     });
                 }
             });
+
+            const inputSatuanV = document.getElementById('satuanV');
+            nameFast.addEventListener('change', function(){
+                const selectedV = this.value;
+                if(selectedV){
+                    const data = viewFsvend.find(item => item.vendor_detail === selectedV);
+                    if(data){
+                        inputSatuanV.value = data.unit;
+                    }
+                } else {
+                    inputSatuanV.value = '';
+                }
+            });
         </script>
         <script>
             $('#qty, #harga, #hargaVend').on('input', function () {
@@ -1087,6 +1145,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             //update
             const upVendorHed = document.getElementById("up_vendorHead");
             const upNamaFasilits = document.getElementById("up_namaFasilitas");
+            const upSatuanV = document.getElementById("up_satuanV")
 
             function updateFasilitasVend(headVendor, nameFast = null){
                 upNamaFasilits.innerHTML = '<option value="">---pilih fasilits---</option>';
@@ -1104,6 +1163,19 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     }
                 }
             }
+
+            function setSatuanV(selectedFast, selectedHead){
+                const data = viewFsvend.find(item =>
+                    item.vendor_detail === selectedFast &&
+                    item.vendor_name === selectedHead
+                );
+                if (data){
+                    upSatuanV.value = data.unit;
+                } else {
+                    upSatuanV.value = '';
+                }
+            }
+
             document.addEventListener('click', function(e){
                 if(e.target.classList.contains('btnUpdateFsVend') || e.target.closest('.btnUpdateFsVend')){
                     const button = e.target.closest('.btnUpdateFsVend');
@@ -1128,10 +1200,18 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     });
                     upVendorHed.value = vendor;
                     updateFasilitasVend(vendor, fasilitas);
+                    setSatuanV(fasilitas, vendor);
                 }
             });
             upVendorHed.addEventListener('change', function(){
                 updateFasilitasVend(this.value);
+                upSatuanV.value = '';
+            });
+
+            upNamaFasilits.addEventListener('change', function(){
+                const selectedFast = this.value;
+                const selectedHead = upVendorHed.value;
+                setSatuanV(selectedFast, selectedHead);
             });
 
             $('up_qtyV, #up_harga, #up_hargaVend').on('input', function () {
@@ -1232,6 +1312,19 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             });
 
+            const inputSatuanFnB = document.getElementById('satuanFnB');
+            selectFnB.addEventListener('change', function(){
+                const selectedMenu = this.value;
+                if(selectedMenu){
+                    const data = fnBOnly.find(item => item.vendor_detail === selectedMenu);
+                    if(data){
+                        inputSatuanFnB.value = data.unit;
+                    }
+                } else {
+                    inputSatuanFnB.value = '';
+                }
+            });
+
             //tambah
             $('#jumlah, #hargaFnB').on('input', function () {
                 setFormattedInput(this);
@@ -1287,6 +1380,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             //update
             const upFnbVendor = document.getElementById("up_fnbVendor");
             const upFnB = document.getElementById("up_fnbHead");
+            const upSatuanFnB = document.getElementById("up_satuanFnB");
 
             function updateMenuFnB(fnbVendorHead, selectFnB = null){
                 upFnB.innerHTML = '<option value="">---pilih menu---</option>';
@@ -1302,6 +1396,18 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     if(selectFnB){
                         upFnB.value = selectFnB;
                     }
+                }
+            }
+
+            function setSatuanFnB(selectedMenu, selectedVendor){
+                const data = fnBOnly.find(item =>
+                    item.vendor_detail === selectedMenu &&
+                    item.vendor_name === selectedVendor
+                );
+                if (data){
+                    upSatuanFnB.value = data.unit;
+                } else {
+                    upSatuanFnB.value = '';
                 }
             }
 
@@ -1329,11 +1435,20 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     });
                     upFnbVendor.value = vendor;
                     updateMenuFnB(vendor, menu);
+                    setSatuanFnB(menu, vendor);
                 }
             });
             upFnbVendor.addEventListener('change', function(){
                 updateMenuFnB(this.value);
+                setSatuanFnB.value = '';
             });
+
+            upFnB.addEventListener('change', function(){
+                const selectedMenu = this.value;
+                const selectedVendor = upFnbVendor.value;
+
+                setSatuanFnB(selectedMenu, selectedVendor);
+            })
 
             $('#up_jumlah, #up_hargaFnB').on('input', function(e){
                 setFormattedInput(this);

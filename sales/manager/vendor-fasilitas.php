@@ -53,6 +53,7 @@ $viewVendor = getViewVendor($konek);
                                             <th>Kategori</th>
                                             <th>Vendor</th>
                                             <th>Fasilitas</th>
+                                            <th>Satuan</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -102,6 +103,12 @@ $viewVendor = getViewVendor($konek);
                                         <input type="text" class="form-control" id="fasilitasName" name="fasilitasName" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="unit" name="unit" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -149,6 +156,12 @@ $viewVendor = getViewVendor($konek);
                                         <input type="text" class="form-control" id="up_fasilitasName" name="up_fasilitasName" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="up_unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_unit" name="up_unit" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -178,12 +191,14 @@ $viewVendor = getViewVendor($konek);
                 <td>${item.vendor_head}</td>
                 <td>${item.vendor_name}</td>
                 <td>${item.vendor_detail}</td>
+                <td>${item.unit}</td>
                 <td>
                     <button class="btn btn-warning btnUpdateVend" data-bs-toggle="modal" data-bs-target="#updateFasilitas"
                     data-id="${item.id_vendor}"
                     data-vend="${item.vendor_head}"
                     data-name="${item.vendor_name}"
                     data-detail="${item.vendor_detail}"
+                    data-unit="${item.unit}"
                     >
                     <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -319,9 +334,11 @@ $viewVendor = getViewVendor($konek);
                     const vend = button.getAttribute('data-vend');
                     const name = button.getAttribute('data-name');
                     const detail = button.getAttribute('data-detail');
+                    const unit = button.getAttribute('data-unit');
 
                     document.getElementById('up_id').value = id_vendor;
                     document.getElementById('up_fasilitasName').value = detail;
+                    document.getElementById('up_unit').value = unit;
 
                     upSelectHead.innerHTML = '<option value="">---pilih kategori---</option>';
                     headVend.forEach((item) => {

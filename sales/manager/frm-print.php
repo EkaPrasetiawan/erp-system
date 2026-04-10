@@ -89,7 +89,13 @@ $allRom = viewRombongan($konek) ?? [];
                         data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> Kesepakatan</a>
+                        <i class="fa-solid fa-newspaper"></i> FK Awal</a>
+
+                        <a class="btn btn-success btnDetail2"
+                        data-rombongan-id="${item.rombongan_id}"
+                        data-client-name="${item.client_name}"
+                        data-client-date="${item.date_plan}">
+                        <i class="fa-solid fa-newspaper"></i> FK Final</a>
                     </div>
                 </td>
                 `;
@@ -101,42 +107,87 @@ $allRom = viewRombongan($konek) ?? [];
             //even delegation
             document.body.addEventListener('click', function(e) {
                 // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
-                const clickedElement = e.target.closest('.btnDetail');
+                // const clickedElement = e.target.closest('.btnDetail');
 
-                if (clickedElement) {
-                    e.preventDefault();
+                const btn = e.target.closest('.btnDetail, .btnDetail2');
+                if(!btn) return;
+                e.preventDefault();
 
-                    const rombonganId = clickedElement.dataset.rombonganId;
-                    const clientName = clickedElement.dataset.clientName;
-                    const clientDate = clickedElement.dataset.clientDate;
+                const actionMap = {
+                    btnDetail: 'frm-kesepakatan.php',
+                    btnDetail2: 'frm-kesepakatan-final.php'
+                };
 
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = 'frm-kesepakatan.php';
+                const targetClass = btn.classList.contains('btnDetail') ? 'btnDetail' : 'btnDetail2';
+                const actionUrl = actionMap[targetClass];
 
-                    const inputId = document.createElement('input');
-                    inputId.type = 'hidden';
-                    inputId.name = 'rombongan_id';
-                    inputId.value = rombonganId;
+                const data = {
+                    rombongan_id: btn.dataset.rombonganId,
+                    client_name: btn.dataset.clientName,
+                    client_date: btn.dataset.clientDate
+                };
 
-                    const inputName = document.createElement('input');
-                    inputName.type = 'hidden';
-                    inputName.name = 'client_name';
-                    inputName.value = clientName;
-
-                    const inputDate = document.createElement('input');
-                    inputDate.type = 'hidden';
-                    inputDate.name = 'date_plan';
-                    inputDate.value = clientDate;
-
-                    form.appendChild(inputId);
-                    form.appendChild(inputName);
-                    form.appendChild(inputDate);
-
-                    document.body.appendChild(form);
-                    form.submit();
+                if (!data.rombongan_id){
+                    console.error("Data Kosong");
+                    return;
                 }
+
+                postRedirect(actionUrl, data);
+
+                // if (clickedElement) {
+                //     e.preventDefault();
+
+                //     const rombonganId = clickedElement.dataset.rombonganId;
+                //     const clientName = clickedElement.dataset.clientName;
+                //     const clientDate = clickedElement.dataset.clientDate;
+
+                //     const form = document.createElement('form');
+                //     form.method = 'POST';
+                //     form.action = 'frm-kesepakatan.php';
+                //     form.target = '_blank';
+
+                //     const inputId = document.createElement('input');
+                //     inputId.type = 'hidden';
+                //     inputId.name = 'rombongan_id';
+                //     inputId.value = rombonganId;
+
+                //     const inputName = document.createElement('input');
+                //     inputName.type = 'hidden';
+                //     inputName.name = 'client_name';
+                //     inputName.value = clientName;
+
+                //     const inputDate = document.createElement('input');
+                //     inputDate.type = 'hidden';
+                //     inputDate.name = 'date_plan';
+                //     inputDate.value = clientDate;
+
+                //     form.appendChild(inputId);
+                //     form.appendChild(inputName);
+                //     form.appendChild(inputDate);
+
+                //     document.body.appendChild(form);
+                //     form.submit();
+                // }
             });
+
+            function postRedirect(action, data) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = action;
+                form.target = '_blank';
+
+                Object.entries(data).forEach(([name, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+
+            }
         </script>
         <script>
             //even delegation

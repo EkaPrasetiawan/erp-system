@@ -52,6 +52,7 @@ $fasilitas = getAllFasilitas($konek);
                                             <th>Kategori</th>
                                             <th>Fasilitas</th>
                                             <th>Jumlah</th>
+                                            <th>Satuan</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -103,6 +104,12 @@ $fasilitas = getAllFasilitas($konek);
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="unit" name="unit" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,6 +159,12 @@ $fasilitas = getAllFasilitas($konek);
                                         inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="up_unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_unit" name="up_unit" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -181,12 +194,14 @@ $fasilitas = getAllFasilitas($konek);
                 <td>${item.group_head}</td>
                 <td>${item.group_detail}</td>
                 <td>${item.stok}</td>
+                <td>${item.unit}</td>
                 <td>
                     <button class="btn btn-warning btnUpdateFs" data-bs-toggle="modal" data-bs-target="#updateFasilitas"
                     data-id="${item.id_markom}"
                     data-kategori="${item.group_head}"
                     data-nama="${item.group_detail}"
                     data-qty="${item.stok}"
+                    data-unit="${item.unit}"
                     >
                     <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -220,7 +235,7 @@ $fasilitas = getAllFasilitas($konek);
                         if (response.status === "success") {
                         Swal.fire({
                         icon: 'success',
-                        title: 'Validasi Berhasil',
+                        title: 'Berhasil',
                         text: 'Data Fasilitas berhasil ditambahkan.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
@@ -269,11 +284,13 @@ $fasilitas = getAllFasilitas($konek);
                     const kategori = button.getAttribute('data-kategori');
                     const nama = button.getAttribute('data-nama');
                     const qty = button.getAttribute('data-qty');
+                    const unit = button.getAttribute('data-unit');
 
                     document.getElementById('up_id').value = id_markom;
                     document.getElementById('up_kategori').value = kategori;
                     document.getElementById('up_fasilitas').value = nama;
                     document.getElementById('qty').value = qty;
+                    document.getElementById('up_unit').value = unit;
                 }
             });
         </script>
@@ -281,14 +298,12 @@ $fasilitas = getAllFasilitas($konek);
             $('#updateFs').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=update_fasilitas';
-                console.log("data dikirim: ",formData);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
-                        console.log("data diterima;", res);
                         let response =[];
                         try {
                         response = JSON.parse(res);
@@ -304,7 +319,7 @@ $fasilitas = getAllFasilitas($konek);
                         if (response.status === "success") {
                         Swal.fire({
                         icon: 'success',
-                        title: 'Validasi Berhasil',
+                        title: 'Berhasil',
                         text: 'Data Fasilitas berhasil Diperbaharui.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi

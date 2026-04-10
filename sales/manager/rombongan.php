@@ -146,6 +146,12 @@ $allrombongan = viewRombongan($konek);
                                         <input type="tel" class="form-control" id="judul" name="judul" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="alamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <div class="col-sm-8">
+                                        <textarea name="alamat" id="alamat" class="form-control" readonly></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -220,6 +226,12 @@ $allrombongan = viewRombongan($konek);
                                         <input type="text" class="form-control" id="up_judul" name="up_judul" required>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="upAlamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <div class="col-sm-8">
+                                        <textarea name="upAlamat" id="upAlamat" class="form-control" readonly></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -244,12 +256,14 @@ $allrombongan = viewRombongan($konek);
             const story = {
                 0: "open",
                 1: "on process",
-                2: "done"
+                2: "done",
+                3: "batal"
             };
             const statusClass = {
                 "open": "badge bg-success",
                 "on process": "badge bg-warning text-dark",
-                "done": "badge bg-secondary"
+                "done": "badge bg-secondary",
+                "batal": "badge bg-danger"
             };
             viewRombogan.forEach(item => {
                 item.status = story[item.status] || "unknown";
@@ -273,6 +287,7 @@ $allrombongan = viewRombongan($konek);
                         <option value="open" ${item.status === "open" ? "selected" : ""}>Open</option>
                         <option value="on process" ${item.status === "on process" ? "selected" : ""}>On Process</option>
                         <option value="done" ${item.status === "done" ? "selected" : ""}>Done</option>
+                        <option value="batal" ${item.status === "batal" ? "selected" : ""}>Batal</option>
                     </select>
                 </td>
                 <td>
@@ -284,6 +299,7 @@ $allrombongan = viewRombongan($konek);
                             data-tanggal="${item.date_plan}"
                             data-gate="${item.gate_in}"
                             data-judul="${item.judul}"
+                            data-alamat="${item.address}"
                             ><i class="fa-solid fa-file-pen"></i>
                         </button>
                         <button class="btn btn-warning btnPayment"
@@ -338,6 +354,19 @@ $allrombongan = viewRombongan($konek);
                     namaRombongan.value = '';
                     picRombongan.value = '';
                     telephone.value = '';
+                }
+            });
+
+            const inputAlamat = document.getElementById('alamat');
+            selectId.addEventListener('change', function(){
+                const selectedID = this.value;
+                if(selectedID){
+                    const data = viewClient.find(item=> item.client_id === selectedID);
+                    if(data){
+                        inputAlamat.value = data.address;
+                    }
+                } else {
+                    inputAlamat.value = '';
                 }
             });
         </script>
@@ -419,6 +448,7 @@ $allrombongan = viewRombongan($konek);
                     const tanggal = button.getAttribute('data-tanggal');
                     const gate = button.getAttribute('data-gate');
                     const judul = button.getAttribute('data-judul');
+                    const alamat = button.getAttribute('data-alamat');
 
                     const formaTanggal = tanggal ? tanggal.substring(0, 10) : '';
 
@@ -428,6 +458,7 @@ $allrombongan = viewRombongan($konek);
                     document.getElementById('upTgl_dtng').value = formaTanggal;
                     document.getElementById('up_gate').value = gate;
                     document.getElementById('up_judul').value = judul;
+                    document.getElementById('upAlamat').value = alamat;
                 }
             });
         </script>
@@ -595,7 +626,8 @@ $allrombongan = viewRombongan($konek);
                 const statusClass = {
                     "open": "bg-success",
                     "on process": "bg-warning",
-                    "done": "bg-secondary"
+                    "done": "bg-secondary",
+                    "batal": "bg-danger"
                 };
                 // reset class dulu
                 el.className = "form-select form-select-sm";

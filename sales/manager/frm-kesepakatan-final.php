@@ -6,7 +6,7 @@ $rombongan_id = $_POST['rombongan_id'] ?? '';
 $client_name = $_POST['client_name'] ?? '';
 
 // Panggil fungsi-fungsi Anda. 
-$viewBudgeting = getViewBudgetingFK ($konek, $rombongan_id);
+$viewBudgeting = getViewBudgetingFK2 ($konek, $rombongan_id);
 $rombonganOk = getRombonganOk ($konek, $rombongan_id);
 $viewPay = viewPayment ($konek, $rombongan_id);
  
@@ -136,7 +136,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         </div>
         <div class="row">
             <div class="col-12">
-                <p class="fw-bold mb-1 mt-3 text-start bg-light">PEMESANAN TIKE/PAKET</p>
+                <p class="fw-bold mb-1 mt-1 text-start bg-light">PEMESANAN TIKE/PAKET</p>
                 <div class="row text-start">
                     <div class="col">
                         <div class="tabel" id="tampil_tiket"></div>
@@ -146,7 +146,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         </div>
         <div class="row">
             <div class="col-12">
-                <p class="fw-bold mb-1 mt-3 text-start bg-light">PEMESANAN TAMBAHAN</p>
+                <p class="fw-bold mb-1 mt-1 text-start bg-light">PEMESANAN TAMBAHAN</p>
                 <div class="row text-start">
                     <div class="col">
                         <div class="tabel" id="tampilTambahan"></div>
@@ -156,7 +156,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         </div>
         <div class="row">
             <div class="col-12">
-                <p class="fw-bold mb-1 mt-3 text-start bg-light">CARA PEMBAYARAN</p>
+                <p class="fw-bold mb-1 text-start bg-light">CARA PEMBAYARAN</p>
                 <div class="row text-start">
                     <div class="col">
                         <div class="tabel" id="tampilPayment"></div>
@@ -166,7 +166,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         </div>
         <div class="row">
             <div class="col-12">
-                <p class="fw-bold mb-1 mt-3 text-start bg-light">CATATAN</p>
+                <p class="fw-bold mb-1 text-start bg-light">CATATAN</p>
                 <div class="p-3 rounded text-start">
                     <ol class="mb-0 ps-3">
                         <li class="mb-1">
