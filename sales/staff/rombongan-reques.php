@@ -31,6 +31,8 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
+
+
 require '../../assets/fungsi.php';
 
 $rombongan_id = '';
@@ -43,8 +45,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $client_date = $_POST['date_plan'] ??'';
 }
 
-$dataFs = getFasilitasWKP($konek, $client_date, $rombongan_id);
-// $headFs = getKategoriFst($konek);
+$dataFs = getFasilitasWK($konek, $client_date, $rombongan_id);
 $vendorFs = getViewVendor($konek);
 $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
@@ -59,7 +60,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Budgeting-detail</title>
+        <title>ERP_System</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
@@ -83,7 +84,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         <div class="row mt-3 mb-3">
                             <a class="nav-link" href="rombongan-detail.php">
                                 <div class="sb-nav-link-icon text-lg fw-bold"><i class="fa-solid fa-arrow-left"></i>
-                                    Rombongan Detils Final
+                                    Rombongan Detils
                                 </div>
                             </a>
                         </div>
@@ -101,7 +102,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                     <input type="text" class="form-control" value="<?= $client_name ?>" id="" name="" readonly>
                                     </div>
                                 </div>
-                                <form action="budgeting-printP-fin.php" method="POST" target="_blank">
+                                <form action="budgeting-print.php" method="POST" target="_blank">
                                     <input type="hidden" name="rombongan_id" value="<?= $rombongan_id ?>">
                                     <input type="hidden" name="client_name" value="<?= $client_name ?>">
                                     <input type="hidden" name="date_plan" value="<?= $date_plan ?? '' ?>">
@@ -490,7 +491,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="fnbHead" name="fnbHead" required>
                                             <option value="">---pilih menu---</option>
                                         </select>
-                                        <input type="text" class="form-control" id="satuanFnB" name="satuanFnB" readonly>
+                                        <input type="hidden" class="form-control" id="satuanFnB" name="satuanFnB" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -553,7 +554,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                         <select class="form-select" id="up_fnbHead" name="up_fnbHead" required>
                                             <option value="">---pilih menu---</option>
                                         </select>
-                                        <input type="text" class="form-control" id="up_satuanFnB" name="up_satuanFnB" readonly>
+                                        <input type="hidden" class="form-control" id="up_satuanFnB" name="up_satuanFnB" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -709,13 +710,16 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             });
 
-            const inputSatuan = document.getElementById('satuan');
+            const inputSatuan = document.getElementById("satuan");
             selectFs.addEventListener('change', function(){
-                const selectedFS = this.value;
-                if(selectedFS){
-                    const data = viewFs.find(item => item.group_detail === selectedFS);
+                const selectedFs = this.value;
+
+                if(selectedFs){
+                    // cari data sesuai fasilitas yang dipilih
+                    const data = viewFs.find(item => item.group_detail === selectedFs);
+
                     if(data){
-                        inputSatuan.value = data.unit;
+                        inputSatuan.value = data.unit; // sesuaikan dengan nama field di DB
                     }
                 } else {
                     inputSatuan.value = '';
@@ -735,7 +739,8 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 //hapus format sebelum dikirim
                 $('#qty').val(qtyDisplay.replace(/\./g, ''));
                 $('#hargaWk').val(hargaDisplay.replace(/\./g, ''));
-                const formData = $(this).serialize()+'&aksi=tambah_fasilitasWKP';
+
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasWK';
 
                 // restore tampilan format
                 $('#hargaWk').val(hargaDisplay);
@@ -787,7 +792,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         method: 'POST',
                         dataType: 'json',
                         data:{
-                            aksi: 'getView_fasilitasP',
+                            aksi: 'getView_fasilitas',
                             fasilitas_id: fasilitasId
                         },
                         success: function(res){
@@ -853,7 +858,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                             data-qtyFnB="${item.qty}"
                                                             data-harga="${item.price}"
                                                             data-ket="${item.spec}"
-                                                            data-unit"${item.unit}"
+                                                            data-unit="${item.unit}"
                                                             >
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
@@ -979,6 +984,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     document.getElementById('up_qty').value = formatNumber(qty);
                     document.getElementById('up_hargaWk').value = formatNumber(harga);
 
+
                     upKategori.innerHTML = '<option value="">---pilih kategori---</option>';
                     headFs.forEach((item) => {
                         const option = document.createElement("option");
@@ -1004,7 +1010,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 const selectedHead = upKategori.value;
 
                 setSatuan(selectedFs, selectedHead);
-            })
+            });
         </script>
         <script>
             $('#up_qty, #up_hargaWk').on('input', function () {
@@ -1020,7 +1026,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_qty').val(qtyDisplay.replace(/\./g, ''));
                 $('#up_hargaWk').val(hargaDisplay.replace(/\./g, ''));
 
-                const formData = $(this).serialize()+'&aksi=update_fasilitasWKP';
+                const formData = $(this).serialize()+'&aksi=update_fasilitasWK';
 
                 // restore tampilan format
                 $('#up_qty').val(qtyDisplay);
@@ -1103,13 +1109,16 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             });
 
-            const inputSatuanV = document.getElementById('satuanV');
+            const inputSatuanV = document.getElementById("satuanV");
             nameFast.addEventListener('change', function(){
                 const selectedV = this.value;
+
                 if(selectedV){
+                    // cari data sesuai fasilitas yang dipilih
                     const data = viewFsvend.find(item => item.vendor_detail === selectedV);
+
                     if(data){
-                        inputSatuanV.value = data.unit;
+                        inputSatuanV.value = data.unit; // sesuaikan dengan nama field di DB
                     }
                 } else {
                     inputSatuanV.value = '';
@@ -1132,7 +1141,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#harga').val(hargaDisplay.replace(/\./g, ''));
                 $('#hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
 
-                const formData = $(this).serialize()+'&aksi=tambah_fasilitasVendP';
+                const formData = $(this).serialize()+'&aksi=tambah_fasilitasVend';
 
                 $('#qty').val(qtyDisplay);
                 $('#harga').val(hargaDisplay);
@@ -1176,7 +1185,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             //update
             const upVendorHed = document.getElementById("up_vendorHead");
             const upNamaFasilits = document.getElementById("up_namaFasilitas");
-            const upSatuanV = document.getElementById("up_satuanV")
+            const upSatuanV = document.getElementById("up_satuanV");
 
             function updateFasilitasVend(headVendor, nameFast = null){
                 upNamaFasilits.innerHTML = '<option value="">---pilih fasilits---</option>';
@@ -1195,12 +1204,13 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             }
 
-            function setSatuanV(selectedFast, selectedHead){
-                const data = viewFsvend.find(item =>
+            function setSatuanV(selectedFast, selectedHead) {
+                const data = viewFsvend.find(item => 
                     item.vendor_detail === selectedFast &&
                     item.vendor_name === selectedHead
                 );
-                if (data){
+
+                if(data){
                     upSatuanV.value = data.unit;
                 } else {
                     upSatuanV.value = '';
@@ -1216,6 +1226,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     const qty = button.getAttribute('data-qty');
                     const harga = button.getAttribute('data-price');
                     const hargaJual = button.getAttribute('data-priceVend');
+                    console.log("data idFV: ", idFv);
 
                     document.getElementById('idFv').value = idFv;
                     document.getElementById('up_qtyV').value = formatNumber(qty);
@@ -1242,6 +1253,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             upNamaFasilits.addEventListener('change', function(){
                 const selectedFast = this.value;
                 const selectedHead = upVendorHed.value;
+
                 setSatuanV(selectedFast, selectedHead);
             });
 
@@ -1260,7 +1272,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_harga').val(hargaDisplay.replace(/\./g, ''));
                 $('#up_hargaVend').val(hargaVendDisplay.replace(/\./g, ''));
 
-                const formData = $(this).serialize()+'&aksi=update_fasilitasVendP';
+                const formData = $(this).serialize()+'&aksi=update_fasilitasVend';
 
                 // restore tampilan format
                 $('#up_qtyV').val(qtyDisplay);
@@ -1343,13 +1355,16 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             });
 
-            const inputSatuanFnB = document.getElementById('satuanFnB');
+            const inputSatuanFnB = document.getElementById("satuanFnB");
             selectFnB.addEventListener('change', function(){
                 const selectedMenu = this.value;
+
                 if(selectedMenu){
+                    //cari data sesuai menu yang dipilih
                     const data = fnBOnly.find(item => item.vendor_detail === selectedMenu);
+
                     if(data){
-                        inputSatuanFnB.value = data.unit;
+                        inputSatuanFnB.value = data.unit; // sesuaikan dengan nama field di DB
                     }
                 } else {
                     inputSatuanFnB.value = '';
@@ -1369,7 +1384,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 //hapus format sebelum dikirim
                 $('#jumlah').val(jumlahDisplay.replace(/\./g, ''));
                 $('#hargaFnB').val(hargafnbDisplay.replace(/\./g, ''));
-                const formData = $(this).serialize()+'&aksi=tambahFnBP';
+                const formData = $(this).serialize()+'&aksi=tambahFnB';
 
                 // restore tampilan format
                 $('#jumlah').val(jumlahDisplay);
@@ -1430,12 +1445,13 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }
             }
 
-            function setSatuanFnB(selectedMenu, selectedVendor){
-                const data = fnBOnly.find(item =>
+            function setSatuanFnB(selectedMenu, selectedVendor) {
+                const data = fnBOnly.find(item => 
                     item.vendor_detail === selectedMenu &&
                     item.vendor_name === selectedVendor
                 );
-                if (data){
+
+                if(data){
                     upSatuanFnB.value = data.unit;
                 } else {
                     upSatuanFnB.value = '';
@@ -1471,7 +1487,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             });
             upFnbVendor.addEventListener('change', function(){
                 updateMenuFnB(this.value);
-                setSatuanFnB.value = '';
+                upSatuanFnB.value = '';
             });
 
             upFnB.addEventListener('change', function(){
@@ -1479,7 +1495,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 const selectedVendor = upFnbVendor.value;
 
                 setSatuanFnB(selectedMenu, selectedVendor);
-            })
+            });
 
             $('#up_jumlah, #up_hargaFnB').on('input', function(e){
                 setFormattedInput(this);
@@ -1493,7 +1509,9 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 //hapus format sebelum dikirim
                 $('#up_jumlah').val(jumlahDisplay.replace(/\./g, ''));
                 $('#up_hargaFnB').val(hargaFnBDisplay.replace(/\./g, ''));
-                const formData = $(this).serialize()+'&aksi=updateFnBP';
+
+                const formData = $(this).serialize()+'&aksi=updateFnB';
+                console.log(formData);
 
                 // restore tampilan format
                 $('#up_jumlah').val(jumlahDisplay);
@@ -1504,6 +1522,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     method: 'POST',
                     data: formData,
                     success: function(res){
+                        console.log("server res: ", res);
                         let response = [];
                         try{
                             response = JSON.parse(res);
@@ -1555,8 +1574,8 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
             $('#cncAdd').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabinP';
-                console.log("data kirim: ", formData);
+                const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabin';
+                // console.log("data kirim: ", formData);
 
                 $.ajax({
                     url: '../../assets/fungsi.php',
@@ -1617,7 +1636,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
             $('#cncUpdate').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=update_cabanaAndcabinP';
+                const formData = $(this).serialize()+'&aksi=update_cabanaAndcabin';
                 console.log("data dikirim: ",formData);
 
                 $.ajax({

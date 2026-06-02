@@ -4455,6 +4455,9 @@ fieldset:disabled .btn {
   background-clip: border-box;
   border: var(--bs-card-border-width) solid var(--bs-card-border-color);
   border-radius: var(--bs-card-border-radius);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.2),
+    0 8px 30px rgba(0, 0, 0, 0.3);
 }
 .card > hr {
   margin-right: 0;
@@ -11751,4 +11754,18 @@ body {
   pointer-events: none;
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* .body-bgs {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../assets/img/octopus.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+} */
+
+.body-bgs {
+  background-color: red;
 }

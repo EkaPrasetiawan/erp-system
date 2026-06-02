@@ -33,7 +33,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 
 
 require '../../assets/fungsi.php';
-$fasilitas = getAllFasilitas($konek);
+$allRom = getAllClient($konek);
 
 ?>
 
@@ -45,12 +45,12 @@ $fasilitas = getAllFasilitas($konek);
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Fasilitas</title>
+        <title>ERP_System</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="sb-nav-fixed">
@@ -66,29 +66,34 @@ $fasilitas = getAllFasilitas($konek);
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Fasilitas</h1>
+                        <h1 class="mt-4">Client</h1>
                         <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">Water Kingdom</li>
+                            <li class="breadcrumb-item active"></li>
                         </ol>
                         <div class="btn"> 
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahFasilitas">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahDataClient">
                             <i class="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
                         <div class="card mb-4">
+                            <!-- <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                DataTable Example
+                            </div> -->
                             <div class="card-body">
                                 <table id="datatablesSimple">
                                     <thead>
                                         <tr>
                                             <th>NO</th>
-                                            <th>Kategori</th>
-                                            <th>Fasilitas</th>
-                                            <th>Jumlah</th>
-                                            <th>Satuan</th>
-                                            <th>Aksi</th>
+                                            <th>ID</th>
+                                            <th>INSTANSI</th>
+                                            <th>SALES</th>
+                                            <th>PIC</th>
+                                            <th>TELEPHONE</th>
+                                            <th>AKSI</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="dtFasilitas">
+                                    <tbody id="dtClient">
                                     </tbody>
                                 </table>
                             </div>
@@ -100,46 +105,47 @@ $fasilitas = getAllFasilitas($konek);
                 </footer>
             </div>
         </div>
-        //modal Tambah data fasilitas
-        <div class="modal fade" id="tambahFasilitas" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        //modal Tambah data Rombogan
+        <div class="modal fade" id="tambahDataClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Fasilitas</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Client</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="tambahFs" method="POST" autocomplete="off">
+                <form id="tambahClient" method="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
                                 <div class="mb-3 row">
-                                    <label for="kategori" class="col-sm-4 col-form-label">Kategori</label>
+                                    <label for="Kode" class="col-sm-4 col-form-label">Kode</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="kategori" name="kategori" required>
-                                            <option value="">---pilih kategori---</option>
-                                            <option value="Operasional">Operasional</option>
-                                            <option value="Tiket Masuk">Tiket Masuk</option>
-                                            <!-- <option value="Food and Beverages">Food and Beverages</option> -->
-                                        </select>
+                                        <input type="text" class="form-control" id="kode" name="kode" value="<?= $code ?? ''; ?>" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="fasilitas" class="col-sm-4 col-form-label">Nama Fasilitas</label>
+                                    <label for="instansi" class="col-sm-4 col-form-label">Nama Instansi</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="fasilitas" name="fasilitas" required>
+                                        <input type="text" class="form-control" id="instansi" name="instansi" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="jumlah" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <label for="pic" class="col-sm-4 col-form-label">Nama PIC</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="jumlah" name="jumlah"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                                        <input type="text" class="form-control" id="pic" name="pic" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <label for="noTlp" class="col-sm-4 col-form-label">Nomor Telephone</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="unit" name="unit" required>
+                                        <input type="tel" class="form-control" id="noTlp" name="noTlp"
+                                        pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="alamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" name="alamat" id="alamat" required></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -153,48 +159,48 @@ $fasilitas = getAllFasilitas($konek);
                 </div>
             </div>
         </div>
-        //akhir modal tambah data fsilitaas
-        //modal Update data fasilitas
-        <div class="modal fade" id="updateFasilitas" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <!-- akhir modal tambah data Client -->
+        <!-- modal Update data Client -->
+        <div class="modal fade" id="updateDataClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update data Client</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="updateFs" method="POST" autocomplete="off">
+                <form id="updateClient" action="POST" autocomplete="off">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
                                 <div class="mb-3 row">
-                                    <input type="hidden" id="up_id" name="up_id" class="col-form-label">
-                                    <label for="up_kategori" class="col-sm-4 col-form-label">Kategori</label>
+                                    <label for="up_kode" class="col-sm-4 col-form-label">Kode</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" id="up_kategori" name="kategori" required>
-                                            <option value="">---pilih kategori---</option>
-                                            <option value="Operasional">Operasional</option>
-                                            <option value="Tiket Masuk">Tiket Masuk</option>
-                                            <!-- <option value="Food and Beverages">Food and Beverages</option> -->
-                                        </select>
+                                        <input type="text" class="form-control" id="up_kode" name="kode" value="<?= $code ?? ''; ?>" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_fasilitas" class="col-sm-4 col-form-label">Nama Fasilitas</label>
+                                    <label for="up_instansi" class="col-sm-4 col-form-label">Nama Instansi</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_fasilitas" name="fasilitas" required>
+                                        <input type="text" class="form-control" id="up_instansi" name="instansi" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="qty" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <label for="up_pic" class="col-sm-4 col-form-label">Nama PIC</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="qty" name="qty"
-                                        inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                                        <input type="text" class="form-control" id="up_pic" name="pic" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label for="up_unit" class="col-sm-4 col-form-label">Satuan</label>
+                                    <label for="up_noTlp" class="col-sm-4 col-form-label">Nomor Telephone</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_unit" name="up_unit" required>
+                                        <input type="tel" class="form-control" id="up_noTlp" name="noTlp"
+                                        pattern="[0-9]{10,13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_alamat" class="col-sm-4 col-form-label">Alamat</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" name="alamat" id="up_alamat" required></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -202,13 +208,13 @@ $fasilitas = getAllFasilitas($konek);
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
                     </div>
                 </form>
                 </div>
             </div>
         </div>
-        //akhir modal Update Fasilits
+        <!-- akhir modal Update data Client -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -216,26 +222,25 @@ $fasilitas = getAllFasilitas($konek);
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
-            const viewfasilitas = <?= json_encode($fasilitas); ?>;
-            const tbody = document.getElementById("dtFasilitas");
-
-            viewfasilitas.forEach((item, index)=>{
+            const viewRombogan = <?= json_encode($allRom); ?>;
+            const tbody = document.getElementById("dtClient");
+            viewRombogan.forEach((item, index)=>{
                 const row = document.createElement("tr");
                 row.innerHTML =`
-                <td>${index + 1}</td>
-                <td>${item.group_head}</td>
-                <td>${item.group_detail}</td>
-                <td>${item.stok}</td>
-                <td>${item.unit}</td>
+                <td>${index+1}</td>
+                <td>${item.client_id}</td>
+                <td>${item.client_name}</td>
+                <td>${item.marketing_name}</td>
+                <td>${item.pic}</td>
+                <td>${item.phone}</td>
                 <td>
-                    <button class="btn btn-warning btnUpdateFs" data-bs-toggle="modal" data-bs-target="#updateFasilitas"
-                    data-id="${item.id_markom}"
-                    data-kategori="${item.group_head}"
-                    data-nama="${item.group_detail}"
-                    data-qty="${item.stok}"
-                    data-unit="${item.unit}"
-                    >
-                    <i class="fa-solid fa-file-pen"></i> edit
+                    <button class="btn btn-success btnUpdateClient" data-bs-toggle="modal" data-bs-target="#updateDataClient"
+                        data-id="${item.client_id}"
+                        data-instansi="${item.client_name}"
+                        data-pic="${item.pic}"
+                        data-noTlp="${item.phone}"
+                        data-alamat="${item.address}"
+                        ><i class="fa-solid fa-file-pen"></i> Edit
                     </button>
                 </td>
                 `;
@@ -243,32 +248,34 @@ $fasilitas = getAllFasilitas($konek);
             });
         </script>
         <script>
-            $('#tambahFs').on('submit', function(e){
+            $('#tambahClient').on('submit', function(e) {
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=tambah_fasilitas';
+                const formData = $(this).serialize()+'&aksi=tambah_dataClient';
+                console.log("data kirim ", formData);
 
                 $.ajax({
                     url : '../../assets/fungsi.php',
                     method : 'POST',
                     data : formData,
-                    success : function(res){
+                    success: function(res){
+                        console.log("respon : ", res);
                         let response = {};
                         try {
-                        response = JSON.parse(res);
+                            response = JSON.parse(res);
                         } catch (e) {
-                        console.error("Respon bukan JSON:", res);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Format Respon Salah',
-                            text: 'Server tidak mengembalikan data JSON.'
-                        });
-                        return;
+                            console.error("Respon bukan JSON:", res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format Respon Salah',
+                                text: 'Server tidak mengembalikan data JSON.'
+                            });
+                            return;
                         }
                         if (response.status === "success") {
                         Swal.fire({
                         icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data Fasilitas berhasil ditambahkan.',
+                        title: 'Berhasil ditambahkan',
+                        text: 'Data Client berhasil ditambahkan.',
                         // timer: 2000,
                         showConfirmButton: true, // Tampilkan tombol konfirmasi
                         confirmButtonText: 'Oke', // Teks tombol konfirmasi
@@ -284,7 +291,7 @@ $fasilitas = getAllFasilitas($konek);
                             Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: 'Gagal menambahkan data Fsilitas!!!',
+                            text: 'Gagal menambahkan data Client!!!',
                             showConfirmButton: true, // Tampilkan tombol konfirmasi
                             confirmButtonText: 'Oke', // Teks tombol konfirmasi
                             allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
@@ -295,7 +302,7 @@ $fasilitas = getAllFasilitas($konek);
                                     location.reload(); // Refresh halaman
                                 }
                                 });
-                        }
+                        }    
                     },
                     error: function(xhr, status, error) {
                         console.log("AJAX Error:", error);
@@ -304,71 +311,72 @@ $fasilitas = getAllFasilitas($konek);
                             title: 'Error AJAX',
                             text: error
                         });
-                    } 
+                    }
                 });
+
             });
         </script>
         <script>
-            document.addEventListener('click', function(e){
-                if(e.target.classList.contains('btnUpdateFs') || e.target.closest('.btnUpdateFs')){
-                    const button = e.target.closest('.btnUpdateFs');
-                    const id_markom = button.getAttribute('data-id');
-                    const kategori = button.getAttribute('data-kategori');
-                    const nama = button.getAttribute('data-nama');
-                    const qty = button.getAttribute('data-qty');
-                    const unit = button.getAttribute('data-unit');
+            document.addEventListener('click',function(e){
+                if(e.target.classList.contains('btnUpdateClient') || e.target.closest('.btnUpdateClient')){
+                    const button = e.target.closest('.btnUpdateClient');
+                    const id = button.getAttribute('data-id');
+                    const instansi = button.getAttribute('data-instansi');
+                    const pic = button.getAttribute('data-pic');
+                    const noTlp = button.getAttribute('data-noTlp');
+                    const alamat = button.getAttribute('data-alamat');
 
-                    document.getElementById('up_id').value = id_markom;
-                    document.getElementById('up_kategori').value = kategori;
-                    document.getElementById('up_fasilitas').value = nama;
-                    document.getElementById('qty').value = qty;
-                    document.getElementById('up_unit').value = unit;
+                    document.getElementById('up_kode').value = id;
+                    document.getElementById('up_instansi').value = instansi;
+                    document.getElementById('up_pic').value = pic;
+                    document.getElementById('up_noTlp').value = noTlp;
+                    document.getElementById('up_alamat').value = alamat;
                 }
             });
         </script>
         <script>
-            $('#updateFs').on('submit', function(e){
+            $('#updateClient').on('submit', function(e){
                 e.preventDefault();
-                const formData = $(this).serialize()+'&aksi=update_fasilitas';
 
+                const formData = $(this).serialize() + '&aksi=update_dataClient';
+                console.log("data dikirim :",formData);
+                
                 $.ajax({
-                    url: '../../assets/fungsi.php',
-                    method: 'POST',
-                    data: formData,
+                    url : '../../assets/fungsi.php',
+                    method : 'POST',
+                    data : formData,
                     success: function(res){
-                        let response =[];
+                        console.log("respon dari server update: ", res);
+                        let response = {};
                         try {
-                        response = JSON.parse(res);
+                            response = JSON.parse(res);
                         } catch (e) {
-                        console.error("Respon bukan JSON:", res);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Format Respon Salah',
-                            text: 'Server tidak mengembalikan data JSON.'
-                        });
-                        return;
+                            console.error("Respon bukan JSON:", res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format Respon Salah',
+                                text: 'Server tidak mengembalikan data JSON.'
+                            });
+                            return;
                         }
-                        if (response.status === "success") {
-                        Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data Fasilitas berhasil Diperbaharui.',
-                        // timer: 2000,
-                        showConfirmButton: true, // Tampilkan tombol konfirmasi
-                        confirmButtonText: 'Oke', // Teks tombol konfirmasi
-                        allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
-                        allowEscapeKey: false // Tidak bisa menutup dengan tombol Escape
-                        }).then((result) => {
-                            // Jika tombol "Oke" diklik
-                            if (result.isConfirmed) {
-                                location.reload(); // Refresh halaman
-                            }
-                        });
-                        }else {
+                        if(response.status === "success"){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Update Berhsil',
+                                text: 'Data Berhasil Diperbaharui',
+                                showConfirmButton: true,
+                                confirmButtonText: 'oke',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                            }).then((result)=>{
+                                if(result.isConfirmed){
+                                    location.reload();
+                                }
+                            });
+                        }else{
                             Swal.fire({
                             icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal Memperbahrui data Fsilitas!!!',
+                            text: 'Tidak ada perubahan data Client!!!',
                             showConfirmButton: true, // Tampilkan tombol konfirmasi
                             confirmButtonText: 'Oke', // Teks tombol konfirmasi
                             allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
@@ -378,19 +386,20 @@ $fasilitas = getAllFasilitas($konek);
                                 if (result.isConfirmed) {
                                     location.reload(); // Refresh halaman
                                 }
-                                });
+                            });
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error AJAX',
-                            text: error
-                        });
-                    } 
+                    console.log("AJAX Error:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error AJAX',
+                        text: error
+                    });
+                    }
                 });
             });
         </script>
+
     </body>
 </html>

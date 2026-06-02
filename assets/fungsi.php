@@ -1,7 +1,5 @@
 <?php
 
-use LDAP\Result;
-
 require 'koneksi.php';
 date_default_timezone_set("Asia/Jakarta");
 
@@ -395,7 +393,7 @@ function viewPayment ($konek, $rombongan_id){
 
 function getRombonganOk ($konek, $rombongan_id){
     $rombonganOk = [];
-    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, address, rombongan_id, phone, marketing, judul, jumlah_pax, hrg_tiket, oleh, clear_payment, dp_uploaded_at, cp_uploaded_at, rombongan_id
+    $result = $konek->query("SELECT data_id, date_input, date_plan, client_name, client_pic, address, rombongan_id, phone, marketing, judul, jumlah_pax, hrg_tiket, oleh, clear_payment, dp_uploaded_at, cp_uploaded_at, rombongan_id, category
                             FROM rombongan_master WHERE rombongan_id = '$rombongan_id' AND del_status = 0");
     if($result){
         while ($row = $result->fetch_assoc()){
@@ -595,27 +593,68 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $tanggal_plan = sanitize_text($_POST['tgl_dtng']);
         $gate = sanitize_text($_POST['gate']);
         $alamat = sanitize_text($_POST['alamat']);
-        // $jumlah = sanitize_text($_POST['pax']);
-        // $nominal = sanitize_text($_POST['harga']);
+        $jumlah = sanitize_text($_POST['pax']);
+        $nominal = sanitize_text($_POST['harga']);
         $judul = sanitize_text($_POST['judul']);
+        $jenis = sanitize_text($_POST['jenis']);
         $tgl_input = date("Y-m-d H:i:s");
         $sales = 'Noer Halimah';
 
-        $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, rombongan_id, date_input, date_plan, client_pic, phone, address,marketing, gate_in, judul)
-                                VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("sssssssssss", $idClient, $nama, $kdRom, $tgl_input, $tanggal_plan, $pic, $noTlp, $alamat, $sales, $gate, $judul);
-        if($stmt->execute()){
+        $htm = ($jenis === 'htm_only') ? 1 : 0;
+
+        try{
+            $konek->begin_transaction();
+            $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, rombongan_id, date_input, date_plan, client_pic, phone, address, jumlah_pax, marketing, gate_in, hrg_tiket, category, htm_only, judul)
+                                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param("ssssssssissisis", $idClient, $nama, $kdRom, $tgl_input, $tanggal_plan, $pic, $noTlp, $alamat, $jumlah, $sales, $gate, $nominal, $jenis, $htm, $judul);
+            if(!$stmt->execute()){
+                throw  new Exception($stmt->error);
+            }
+
+            $stmt->close();
+
+            // ====== INSERT DETAIL (KHUSUS HTM ONLY) ======
+            if($jenis === 'htm_only' && $htm == 1){
+
+                $pair_token = 'FK_' . strtoupper(uniqid());
+                $using_date = date("Y-m-d H:i:s");
+
+                $group      = 'Tiket Masuk';
+                $fasilitas  = 'Tiket masuk';
+                $unit       = 'PAX';
+
+                $stmtDetail = $konek->prepare("
+                    INSERT INTO rombongan_detail
+                    (group_fasilitas, fasilitas_id, fasilitas_name, qty, price, using_date, employee_name, client_name, point, pair_token, unit)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+
+                if(!$stmtDetail){
+                    throw new Exception($konek->error);
+                }
+
+                $stmtDetail->bind_param("sssissssiss", $group, $kdRom, $fasilitas, $jumlah, $nominal, $using_date, $sales, $nama, $point, $pair_token, $unit);
+
+                // loop 2 baris (point 1 & 0)
+                foreach ([1, 0] as $point) {
+                    if(!$stmtDetail->execute()){
+                        throw new Exception($stmtDetail->error);
+                    }
+                }
+                $stmtDetail->close();
+            }
             $newData = [
-                "client_id"   => $idClient,
-                "client_name" => $nama,
-                "rombongan_id" => $kdRom,
-                "client_pic"  => $pic,
-                "phone"       => $noTlp,
-                "marketing"   => $sales,
-                "date_plan"   => $tanggal_plan,
-                "gate_in"     => $gate,
-                "alamat"       => $alamat,
-                "judul"       => $judul
+                "client_id"     => $idClient,
+                "client_name"   => $nama,
+                "rombongan_id"  => $kdRom,
+                "client_pic"    => $pic,
+                "phone"         => $noTlp,
+                "marketing"     => $sales,
+                "date_plan"     => $tanggal_plan,
+                "gate_in"       => $gate,
+                "alamat"        => $alamat,
+                "category"      => $jenis,
+                "judul"         => $judul
             ];
 
             logActivity(
@@ -628,10 +667,17 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 '',                     // old_value (karena INSERT)
                 json_encode($newData)     // new_value
             );
+            $konek->commit();
             echo json_encode(['status' => 'success']);
-        } else {
-            error_log("Error Systen: ".$stmt->error);
-            echo json_encode(['status' => 'error']);
+            exit;
+        } catch (Exception $e) {
+            $konek->rollback();
+            error_log("Error Systen: ".$e->getMessage());
+            echo json_encode([
+                'status' => 'error',
+                'message' =>$e->getMessage()
+            ]);
+            exit;
         }
         $stmt->close();
         exit;
@@ -2430,8 +2476,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 'message' =>$e->getMessage()
             ]);
         }
-        $stmt_update->close();
-        exit;
+        if(isset($stmt_update)){
+            $stmt_update->close();
+            exit;
+        }
     }
 
     //FnB

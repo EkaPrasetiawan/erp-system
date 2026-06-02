@@ -37,8 +37,11 @@ require '../../assets/fungsi.php';
 $rombongan_id = $_POST['rombongan_id'] ?? '';
 $client_name = $_POST['client_name'] ?? '';
 
+// $client_id = isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0;
+// $client_name = isset($_POST['client_name']) ? trim($_POST['client_name']) : '';
+
 // Panggil fungsi-fungsi Anda. 
-$viewBudgeting = getViewBudgetingP ($konek, $rombongan_id);
+$viewBudgeting = getViewBudgeting ($konek, $rombongan_id);
 $rombonganOk = getRombonganOk ($konek, $rombongan_id);
 $viewPay = viewPayment ($konek, $rombongan_id);
  
@@ -49,7 +52,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Print Group Package Confirmation</title>
+    <title>ERP_System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
 
@@ -171,7 +174,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             <div class="col-2 text-end">
                 <p class="fw-bold">Estimated Cost</p>
                 <div class="small">
-                    ID Client: <span id="idCl" class="fw-bold"></span>
+                    <span id="idCl" class="fw-bold"></span>
                 </div>
                 <div class="small">
                     Tgl Input: <span id="tgl_in" class="fw-bold"></span>
@@ -553,7 +556,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 $('#tlp').text(': ' + (dataRombongan.phone || '-'));
                 $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
 
-                $('#idCl').text(dataRombongan.client_id || '-'); 
+                $('#idCl').text(dataRombongan.category || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
                 $('#tema').text(dataRombongan.judul || '-'); 
                 $('#jumlah').text(jumlahTiketMasuk > 0 ? jumlahTiketMasuk + ' pax' : '-'); 
