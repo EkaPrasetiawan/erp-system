@@ -33,7 +33,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul3.php';
 
 $rombongan_id = '';
 $client_name='';
@@ -570,7 +570,7 @@ $datarombongan = getRombonganOk($konek, $rombongan_id);
             function ajaxSubmit(formData){
 
                 $.ajax({
-                    url:'../../assets/fungsi.php',
+                    url:'../../assets/modul3.php',
                     method:'POST',
                     data:formData,
                     contentType:false,

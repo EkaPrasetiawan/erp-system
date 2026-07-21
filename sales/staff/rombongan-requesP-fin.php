@@ -31,7 +31,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php';
+require '../../assets/modul3.php';
 
 $rombongan_id = '';
 $client_name = '';
@@ -44,7 +44,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 }
 
 $dataFs = getFasilitasWKP($konek, $client_date, $rombongan_id);
-// $headFs = getKategoriFst($konek);
 $vendorFs = getViewVendor($konek);
 $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
@@ -742,7 +741,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#qty').val(qtyDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -783,7 +782,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
                 if(fasilitasId){
                     $.ajax({
-                        url: '../../assets/fungsi.php',
+                        url: '../../assets/modul3.php',
                         method: 'POST',
                         dataType: 'json',
                         data:{
@@ -1027,7 +1026,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaWk').val(hargaDisplay);
                 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1139,7 +1138,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1268,7 +1267,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1376,7 +1375,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaFnB').val(hargafnbDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1500,7 +1499,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaFnB').val(hargaFnBDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1559,7 +1558,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 console.log("data kirim: ", formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1621,7 +1620,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 console.log("data dikirim: ",formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul3.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1669,7 +1668,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul3.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1710,7 +1709,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul3.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1751,7 +1750,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul3.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1792,7 +1791,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul3.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',

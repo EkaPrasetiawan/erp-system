@@ -31,8 +31,8 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php';
-$allRom = viewRombongan($konek) ?? [];
+require '../../assets/modul3.php';
+$allRom = viewRombongan2($konek) ?? [];
 
 ?>
 
@@ -49,7 +49,7 @@ $allRom = viewRombongan($konek) ?? [];
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -64,7 +64,7 @@ $allRom = viewRombongan($konek) ?? [];
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Home</h1>
+                        <h1 class="mt-4">Dashboard</h1>
                         <!-- <ol class="breadcrumb mb-4">
                             <li class="breadcrumb-item active">Home</li>
                         </ol> -->
@@ -87,9 +87,11 @@ $allRom = viewRombongan($konek) ?? [];
                                 <div class="card mb-4">
                                     <div class="card-header">
                                         <i class="fas fa-chart-bar me-1"></i>
-                                        Data Rombongan Persales
+                                        Rasio Progres
                                     </div>
-                                    <div class="card-body"><canvas id="mySalesName" width="100%" height="40"></canvas></div>
+                                    <div class="card-body d-flex justify-content-center align-items-center" style="height: 280px;">
+                                        <canvas id="myStatusChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -105,9 +107,10 @@ $allRom = viewRombongan($konek) ?? [];
                                             <th>No</th>
                                             <th>Rombongan</th>
                                             <th>Sales</th>
-                                            <th>Tnggal Kunjungan</th>
+                                            <th>Tanggal Kunjungan</th>
                                             <th>Type</th>
-                                            <th>Satatus</th>
+                                            <th>Status</th>
+                                            <th>Validasi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dtRombonganAll">
@@ -131,40 +134,82 @@ $allRom = viewRombongan($konek) ?? [];
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
-            const viewBudget = <?= json_encode($allRom); ?>;
-            const tbody = document.getElementById('dtRombonganAll');
+            const allRomData = <?= json_encode($allRom, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
-            viewBudget.forEach((item, index) => {
-                const row = document.createElement('tr');
-                const tanggalDb = new Date(item.date_plan);
-                const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
-                const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
-                
-                row.innerHTML =`
-                <td>${index + 1 }</td>
-                <td>${item.client_name}</td>
-                <td>${item.marketing}</td>
-                <td>${plan}</td>
-                <td>${item.judul}</td>
-                <td>${item.oleh}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        </script>
-        <script>
-            const allRom = <?= json_encode($allRom); ?>;
+            // Helper Sanitasi Teks (Pencegahan XSS)
+            function escapeHtml(text) {
+                if (!text) return '';
+                return String(text)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Mapping angka database ke Teks Label
+            const statusLabels = {
+                0: 'Open',
+                1: 'On Process',
+                2: 'Done',
+                3: 'Batal'
+            };
+
+            // Mapping angka ke Warna Badge Bootstrap (Statis / Read-Only)
+            const statusBadges = {
+                0: 'bg-success',          // Hijau
+                1: 'bg-warning text-dark', // Kuning
+                2: 'bg-secondary',        // Abu-abu
+                3: 'bg-danger'            // Merah
+            };
+
+            const tbody = document.getElementById('dtRombonganAll');
+            if (tbody) {
+                allRomData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    const tanggalDb = new Date(item.date_plan);
+                    const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const plan = !isNaN(tanggalDb.getTime()) 
+                        ? tanggalDb.toLocaleDateString('id-ID', opsi) 
+                        : '-';
+
+                    // Konversi status angka DB ke Teks & Warna
+                    const stAngka    = parseInt(item.status);
+                    const labelTeks  = statusLabels[stAngka] || 'Open';
+                    const badgeClass = statusBadges[stAngka] || 'bg-secondary';
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(item.client_name)}</td>
+                        <td>${escapeHtml(item.marketing || '-')}</td>
+                        <td>${plan}</td>
+                        <td>${escapeHtml(item.judul || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${labelTeks}</span></td>
+                        <td>${escapeHtml(item.oleh || '-')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
             const yearSelect = document.getElementById("yearSelect");
             // Ambil semua tahun unik dari date_plan
-            const years = [
-            ...new Set(allRom.map((item) => new Date(item.date_plan).getFullYear())),
-            ].sort();
+            const validYears = allRomData
+                .map((item) => {
+                    if (!item.date_plan) return null;
+                    const d = new Date(item.date_plan);
+                    return !isNaN(d.getTime()) ? d.getFullYear() : null;
+                })
+                .filter((year) => year !== null);
 
-            // Isi dropdown tahun
+            const years = [...new Set(validYears)].sort((a, b) => a - b);
+            if (years.length === 0) years.push(new Date().getFullYear());
+
+            // Isi Opsi Dropdown Tahun
             years.forEach((year) => {
-            const opt = document.createElement("option");
-            opt.value = year;
-            opt.textContent = year;
-            yearSelect.appendChild(opt);
+                const opt = document.createElement("option");
+                opt.value = year;
+                opt.textContent = year;
+                yearSelect.appendChild(opt);
             });
 
             // Tentukan tahun default (tahun sekarang atau terakhir di data)
@@ -175,100 +220,130 @@ $allRom = viewRombongan($konek) ?? [];
 
             // Urutan nama bulan tetap
             const monthOrder = [
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember",
             ];
 
             // Variabel global untuk menyimpan chart agar bisa di-destroy nanti
             let chartPerBulan = null;
-            let chartPerSales = null;
+            let chartStatus   = null;
 
             // Fungsi render semua grafik berdasarkan tahun
-            function renderCharts(year) {
-            const filtered = allRom.filter(
-                (item) => new Date(item.date_plan).getFullYear() === parseInt(year)
-            );
-
-            // =============== Grafik 1: Rombongan Per Bulan ====================
-            const monthlyCount = {};
-            filtered.forEach((item) => {
-                const month = new Date(item.date_plan).toLocaleString("id-ID", {
-                month: "long",
+            function renderCharts(selectedYear) {
+                const yearInt = parseInt(selectedYear);
+                
+                // Filter data berdasarkan tahun yang dipilih
+                const filtered = allRomData.filter((item) => {
+                    if (!item.date_plan) return false;
+                    const d = new Date(item.date_plan);
+                    return !isNaN(d.getTime()) && d.getFullYear() === yearInt;
                 });
-                monthlyCount[month] = (monthlyCount[month] || 0) + 1;
-            });
 
-            const labelsMonth = monthOrder.filter((m) =>
-                Object.keys(monthlyCount).includes(m)
-            );
-            const valuesMonth = labelsMonth.map((m) => monthlyCount[m] || 0);
+                // ==================== Grafik 1: Rombongan Per Bulan ====================
+                const monthlyCount = {};
+                filtered.forEach((item) => {
+                    const d = new Date(item.date_plan);
+                    const month = d.toLocaleString("id-ID", { month: "long" });
+                    monthlyCount[month] = (monthlyCount[month] || 0) + 1;
+                });
 
-            if (chartPerBulan) chartPerBulan.destroy();
-            const ctxMonth = document.getElementById("mySalesMount").getContext("2d");
-            chartPerBulan = new Chart(ctxMonth, {
-                type: "bar",
-                data: {
-                labels: labelsMonth,
-                datasets: [
-                    {
-                    label: `Jumlah Rombongan per Bulan (${year})`,
-                    backgroundColor: "rgba(2,117,216,0.7)",
-                    borderColor: "rgba(2,117,216,1)",
-                    data: valuesMonth,
+                // Selalu petakan 12 bulan penuh agar skala sumbu X konsisten
+                const valuesMonth = monthOrder.map((m) => monthlyCount[m] || 0);
+
+                if (chartPerBulan) {
+                    chartPerBulan.destroy();
+                }
+
+                const ctxMonth = document.getElementById("mySalesMount").getContext("2d");
+                chartPerBulan = new Chart(ctxMonth, {
+                    type: "bar",
+                    data: {
+                        labels: monthOrder,
+                        datasets: [
+                            {
+                                label: `Jumlah Rombongan per Bulan (${selectedYear})`,
+                                backgroundColor: "rgba(2,117,216,0.7)",
+                                borderColor: "rgba(2,117,216,1)",
+                                borderWidth: 1,
+                                data: valuesMonth,
+                            },
+                        ],
                     },
-                ],
-                },
-                options: {
-                scales: {
-                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
-                },
-                plugins: { legend: { display: true } },
-                },
-            });
-
-            // =============== Grafik 2: Rombongan Per Sales ====================
-            const salesCount = {};
-            filtered.forEach((item) => {
-                const sales = item.marketing || "Tidak Ada Sales";
-                salesCount[sales] = (salesCount[sales] || 0) + 1;
-            });
-
-            const labelsSales = Object.keys(salesCount);
-            const valuesSales = Object.values(salesCount);
-            const colors = labelsSales.map((_, i) => `hsl(${(i * 60) % 360}, 70%, 50%)`);
-
-            if (chartPerSales) chartPerSales.destroy();
-            const ctxSales = document.getElementById("mySalesName").getContext("2d");
-            chartPerSales = new Chart(ctxSales, {
-                type: "bar",
-                data: {
-                labels: labelsSales,
-                datasets: [
-                    {
-                    label: `Jumlah Rombongan per Sales (${year})`,
-                    backgroundColor: colors,
-                    // borderColor: colors,
-                    data: valuesSales,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                min: 0, 
+                                ticks: { stepSize: 1 } 
+                            },
+                        },
+                        plugins: { 
+                            legend: { display: true } 
+                        },
                     },
-                ],
-                },
-                options: {
-                scales: {
-                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
-                },
-                plugins: { legend: { display: false } },
-                },
-            });
+                });
+
+                // ==================== Grafik 2: Rasio Progres / Status ====================
+                const statusCount = {
+                    'Open': 0,
+                    'On Process': 0,
+                    'Done': 0,
+                    'Batal': 0
+                };
+
+                filtered.forEach((item) => {
+                    const stAngka = parseInt(item.status);
+                    const labelTeks = statusLabels[stAngka] || 'Open';
+                    statusCount[labelTeks]++;
+                });
+
+                const labelsStatus = Object.keys(statusCount);
+                const valuesStatus = Object.values(statusCount);
+
+                // Skema Warna Sesuai Permintaan
+                const bgColors = [
+                    'rgba(40, 167, 69, 0.8)',   // Hijau (Open)
+                    'rgba(255, 193, 7, 0.8)',   // Kuning (On Process)
+                    'rgba(88, 92, 95, 0.8)',    // Abu-abu/Biru Gelap (Done)
+                    'rgba(220, 53, 69, 0.8)'    // Merah (Batal)
+                ];
+
+                if (chartStatus) {
+                    chartStatus.destroy();
+                }
+
+                const ctxStatus = document.getElementById("myStatusChart").getContext("2d");
+                chartStatus = new Chart(ctxStatus, {
+                    type: "doughnut",
+                    data: {
+                        labels: labelsStatus,
+                        datasets: [{
+                            data: valuesStatus,
+                            backgroundColor: bgColors,
+                            borderColor: [
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(88, 92, 95, 1)',
+                                'rgba(220, 53, 69, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels:{
+                                    boxWidth: 12,
+                                    padding: 10
+                                }
+                            }
+                        }
+                    }
+                });
             }
 
             // Render pertama kali

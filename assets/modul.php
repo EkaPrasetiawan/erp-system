@@ -27,6 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
                 $_SESSION['name'] = $row['name'];
                 $_SESSION['level'] = $row['grade'];
                 $_SESSION['jabatan'] = $row['jabatan'];
+                $_SESSION['bagian'] = $row['departemen'];
                 
                 // Tentukan redirect berdasarkan level
                 $redirect = 'index.php'; // default fallback jika level tidak dikenali

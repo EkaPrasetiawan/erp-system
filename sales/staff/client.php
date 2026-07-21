@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul3.php';
 $allRom = getAllClient($konek);
 
 ?>
@@ -254,7 +254,7 @@ $allRom = getAllClient($konek);
                 console.log("data kirim ", formData);
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul3.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){

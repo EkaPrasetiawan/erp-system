@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul3.php';
 $allRom = viewRombongan($konek) ?? [];
 
 

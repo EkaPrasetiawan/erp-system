@@ -286,7 +286,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         <div class="row">
             <div class="col-12">
                 <div class="row">
-                    <div class="col-2 border border-dark">Dedi</div>
+                    <div class="col-2 border border-dark"><span id="sales2"></span></div>
                     <div class="col-2 border border-dark">Septian Adi</div>
                     <div class="col-2 border border-dark">Rahman J Subita</div>
                     <div class="col-2 border border-dark">Nanda</div>
@@ -555,6 +555,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 $('#pic').text(': ' + (dataRombongan.client_pic || '-'));
                 $('#tlp').text(': ' + (dataRombongan.phone || '-'));
                 $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
+                $('#sales2').text(dataRombongan.marketing || '-'); 
 
                 $('#idCl').text(dataRombongan.category || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 

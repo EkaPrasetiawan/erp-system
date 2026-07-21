@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul3.php';
 
 
 $allRom = viewRombongan($konek) ?? [];
@@ -174,11 +174,6 @@ $allRom = viewRombongan($konek) ?? [];
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> Final Budget</a>
-
-                        <a class="btn btn-success btnApproval" data-bs-toggle="modal" data-bs-target="#approval"
-                        data-rombongan-id="${item.rombongan_id}"
-                        data-client-appv="${item.data_id}">
-                        <i class="fa-solid fa-signature"></i> ACC</a>
                     </div>
                 </td>
                 `;
