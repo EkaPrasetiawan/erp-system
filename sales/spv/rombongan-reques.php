@@ -33,7 +33,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 
 $rombongan_id = '';
 $client_name = '';

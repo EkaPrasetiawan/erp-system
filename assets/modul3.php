@@ -367,7 +367,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $noTlp = sanitize_text($_POST['noTlp']);
         $alamat = sanitize_text($_POST['alamat']);
         $tanggal = date("Y-m-d H:i:s");
-        $marketing_id = '03-004';
+        $marketing_id = $_SESSION['Employee_ID'];
         $marketing_name = $_SESSION['name'];
         $remark = $_SESSION['bagian'];
 
@@ -450,14 +450,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $jenis = sanitize_text($_POST['jenis']);
         $tgl_input = date("Y-m-d H:i:s");
         $sales = $_SESSION['name'];
+        $bagian = $_SESSION['bagian'];
 
         $htm = ($jenis === 'htm_only') ? 1 : 0;
 
         try{
             $konek->begin_transaction();
-            $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, rombongan_id, date_input, date_plan, client_pic, phone, address, jumlah_pax, marketing, gate_in, hrg_tiket, category, htm_only, judul)
-                                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            $stmt->bind_param("ssssssssissisis", $idClient, $nama, $kdRom, $tgl_input, $tanggal_plan, $pic, $noTlp, $alamat, $jumlah, $sales, $gate, $nominal, $jenis, $htm, $judul);
+            $stmt = $konek->prepare("INSERT INTO rombongan_master(client_id, client_name, rombongan_id, date_input, date_plan, client_pic, phone, address, jumlah_pax, marketing, gate_in, jenis, hrg_tiket, category, htm_only, judul)
+                                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param("ssssssssisssisis", $idClient, $nama, $kdRom, $tgl_input, $tanggal_plan, $pic, $noTlp, $alamat, $jumlah, $sales, $gate, $bagian, $nominal, $jenis, $htm, $judul);
             if(!$stmt->execute()){
                 throw  new Exception($stmt->error);
             }
@@ -505,7 +506,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 "gate_in"       => $gate,
                 "alamat"        => $alamat,
                 "category"      => $jenis,
-                "judul"         => $judul
+                "judul"         => $judul,
+                "jenis"         => $bagian
             ];
 
             logActivity(

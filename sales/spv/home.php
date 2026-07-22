@@ -31,7 +31,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 $allRom = viewRombongan($konek) ?? [];
 
 ?>
@@ -105,9 +105,10 @@ $allRom = viewRombongan($konek) ?? [];
                                             <th>No</th>
                                             <th>Rombongan</th>
                                             <th>Sales</th>
-                                            <th>Tnggal Kunjungan</th>
+                                            <th>Tanggal Kunjungan</th>
                                             <th>Type</th>
-                                            <th>Satatus</th>
+                                            <th>Status</th>
+                                            <th>Validasi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dtRombonganAll">
@@ -131,32 +132,66 @@ $allRom = viewRombongan($konek) ?? [];
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
-            const viewBudget = <?= json_encode($allRom); ?>;
+            const allRomData = <?= json_encode($allRom, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+            // Helper Sanitasi Teks (Pencegahan XSS)
+            function escapeHtml(text) {
+                if (!text) return '';
+                return String(text)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Mapping angka database ke Teks Label
+            const statusLabels = {
+                0: 'Open',
+                1: 'On Process',
+                2: 'Done',
+                3: 'Batal'
+            };
+
+            const statusBadges = {
+                0: 'bg-success',          // Hijau
+                1: 'bg-warning text-dark', // Kuning
+                2: 'bg-secondary',        // Abu-abu
+                3: 'bg-danger'            // Merah
+            };
+
             const tbody = document.getElementById('dtRombonganAll');
 
-            viewBudget.forEach((item, index) => {
-                const row = document.createElement('tr');
-                const tanggalDb = new Date(item.date_plan);
-                const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
-                const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
-                
-                row.innerHTML =`
-                <td>${index + 1 }</td>
-                <td>${item.client_name}</td>
-                <td>${item.marketing}</td>
-                <td>${plan}</td>
-                <td>${item.judul}</td>
-                <td>${item.oleh}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        </script>
-        <script>
-            const allRom = <?= json_encode($allRom); ?>;
+            if (tbody) {
+                allRomData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    const tanggalDb = new Date(item.date_plan);
+                    const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const plan = !isNaN(tanggalDb.getTime()) 
+                        ? tanggalDb.toLocaleDateString('id-ID', opsi) 
+                        : '-';
+
+                    // Konversi status angka DB ke Teks & Warna
+                    const stAngka    = parseInt(item.status);
+                    const labelTeks  = statusLabels[stAngka] || 'Open';
+                    const badgeClass = statusBadges[stAngka] || 'bg-secondary';
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(item.client_name)}</td>
+                        <td>${escapeHtml(item.marketing || '-')}</td>
+                        <td>${plan}</td>
+                        <td>${escapeHtml(item.judul || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${labelTeks}</span></td>
+                        <td>${escapeHtml(item.oleh || '-')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
             const yearSelect = document.getElementById("yearSelect");
             // Ambil semua tahun unik dari date_plan
             const years = [
-            ...new Set(allRom.map((item) => new Date(item.date_plan).getFullYear())),
+            ...new Set(allRomData.map((item) => new Date(item.date_plan).getFullYear())),
             ].sort();
 
             // Isi dropdown tahun
@@ -175,18 +210,8 @@ $allRom = viewRombongan($konek) ?? [];
 
             // Urutan nama bulan tetap
             const monthOrder = [
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember",
             ];
 
             // Variabel global untuk menyimpan chart agar bisa di-destroy nanti
@@ -195,7 +220,7 @@ $allRom = viewRombongan($konek) ?? [];
 
             // Fungsi render semua grafik berdasarkan tahun
             function renderCharts(year) {
-            const filtered = allRom.filter(
+            const filtered = allRomData.filter(
                 (item) => new Date(item.date_plan).getFullYear() === parseInt(year)
             );
 

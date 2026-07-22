@@ -32,10 +32,10 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 
 
-$allRom = viewRombongan($konek) ?? [];
+$allRom = viewRombongan2($konek) ?? [];
 
 
 ?>
@@ -265,7 +265,7 @@ $allRom = viewRombongan($konek) ?? [];
                 const dtaId = btn.dataset.clientAppv;
 
                 $.ajax({
-                    url: "../../assets/fungsi.php",
+                    url: "../../assets/modul2.php",
                     type: "POST",
                     data: { aksi: "getDetailRombongan", rombongan_id: rombonganId, data_id: dtaId },
                     dataType: "json",
@@ -313,7 +313,7 @@ $allRom = viewRombongan($konek) ?? [];
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=approveRombongan';
                 $.ajax({
-                    url: "../../assets/fungsi.php",
+                    url: "../../assets/modul2.php",
                     type: "POST",
                     data: formData,
                     dataType: "json",

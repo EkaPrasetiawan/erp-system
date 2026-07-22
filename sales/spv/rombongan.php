@@ -31,7 +31,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 $allClient = getAllClient($konek);
 $allrombongan = viewRombongan($konek);
 
@@ -271,7 +271,12 @@ $allrombongan = viewRombongan($konek);
                                 <div class="mb-3 row">
                                     <label for="up_jenis" class="col-sm-4 col-form-label">Jenis</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="up_jenis" name="up_jenis" required>
+                                        <select class="form-select" id="up_jenis" name="up_jenis" required>
+                                            <option value="">---Jenis Rombongan---</option>
+                                            <option value="htm_only">HTM ONLY</option>
+                                            <option value="paket">PACKAGE</option>
+                                            <option value="custom">CUSTOM</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
@@ -348,6 +353,7 @@ $allrombongan = viewRombongan($konek);
                             data-gate="${item.gate_in}"
                             data-harga="${item.hrg_tiket}"
                             data-pax="${item.jumlah_pax}"
+                            data-jenis="${item.category}"
                             data-judul="${item.judul}"
                             data-alamat="${item.address}"
                             ><i class="fa-solid fa-file-pen"></i>
@@ -442,7 +448,7 @@ $allrombongan = viewRombongan($konek);
                 $('#pax').val(paxDisplay);
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
@@ -512,6 +518,7 @@ $allrombongan = viewRombongan($konek);
                     const pic = button.getAttribute('data-pic');
                     const tanggal = button.getAttribute('data-tanggal');
                     const gate = button.getAttribute('data-gate');
+                    const jenis = button.getAttribute('data-jenis');
                     const judul = button.getAttribute('data-judul');
                     const harga = button.getAttribute('data-harga');
                     const pax = button.getAttribute('data-pax');
@@ -524,6 +531,7 @@ $allrombongan = viewRombongan($konek);
                     document.getElementById('upPic').value = pic;
                     document.getElementById('upTgl_dtng').value = formaTanggal;
                     document.getElementById('up_gate').value = gate;
+                    document.getElementById('up_jenis').value = jenis;
                     document.getElementById('up_judul').value = judul;
                     document.getElementById('upHarga').value = harga;
                     document.getElementById('up_pax').value = pax;
@@ -553,7 +561,7 @@ $allrombongan = viewRombongan($konek);
                 $('#up_pax').val(paxDisplay);
                 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
@@ -645,7 +653,7 @@ $allrombongan = viewRombongan($konek);
                 el.disabled = true;
                 console.log("Updating status for ID:", id, "to", status);
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: {
                         aksi: 'update_status',

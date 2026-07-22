@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 $allRom = getAllClient($konek);
 
 ?>
@@ -251,14 +251,12 @@ $allRom = getAllClient($konek);
             $('#tambahClient').on('submit', function(e) {
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=tambah_dataClient';
-                console.log("data kirim ", formData);
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
-                        console.log("respon : ", res);
                         let response = {};
                         try {
                             response = JSON.parse(res);
@@ -342,7 +340,7 @@ $allRom = getAllClient($konek);
                 console.log("data dikirim :",formData);
                 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
