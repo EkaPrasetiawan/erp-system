@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
     $password = $_POST['password'] ?? '';
 
     if ($username && $password) {
-        $stmt = $konek->prepare("SELECT * FROM employee_card WHERE alamat_email=?");
+        $stmt = $konek->prepare("SELECT * FROM employee_card WHERE alamat_email=? AND checked=1 AND inactive=0");
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();

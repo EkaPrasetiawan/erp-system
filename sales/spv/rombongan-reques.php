@@ -747,7 +747,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#qty').val(qtyDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -788,7 +788,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
                 if(fasilitasId){
                     $.ajax({
-                        url: '../../assets/fungsi.php',
+                        url: '../../assets/modul2.php',
                         method: 'POST',
                         dataType: 'json',
                         data:{
@@ -1033,7 +1033,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaWk').val(hargaDisplay);
                 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1063,7 +1063,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         }
                     },
                     error: function(xhr, status, error){
-                        swal.fire({
+                        Swal.fire({
                             icon: 'error',
                             title: 'error ajax',
                             text: error
@@ -1148,7 +1148,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1157,7 +1157,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                             response = JSON.parse(res);
                         } catch(e){
                             console.log("Eror Bukan Json: ", res);
-                            swal.fire({
+                            Swal.fire({
                                 icon: 'error',
                                 title: 'form respon salah',
                                 text: 'Terjadi masalah'
@@ -1280,7 +1280,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1289,7 +1289,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                             response = JSON.parse(res);
                         } catch (e) {
                             console.log("Respon Error: ", res);
-                            swal.fire({
+                            Swal.fire({
                                 icon: 'error',
                                 title: 'format respon salah'
                             });
@@ -1298,7 +1298,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         if(response.status = "success"){
                             location.reload();
                         } else {
-                            swal.fire({
+                            Swal.fire({
                                 icon: 'error',
                                 title: 'gagal',
                                 text: 'Gagal Memperbharui Data',
@@ -1391,7 +1391,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaFnB').val(hargafnbDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1415,7 +1415,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         }
                     },
                     error: function(xhr, status, error){
-                        swal.fire({
+                        Swal.fire({
                             icon: 'error',
                             title: 'Error Jaringan'
                         });
@@ -1518,7 +1518,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaFnB').val(hargaFnBDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1536,7 +1536,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         if(response.status === "success"){
                             location.reload();
                         } else {
-                            swal.fire({
+                            Swal.fire({
                                 icon: 'error',
                                 title: 'gagal',
                                 text: 'Gagal memperbaharui data',
@@ -1548,7 +1548,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         }
                     },
                     error: function(xhr, status, error){
-                        swal.fire({
+                        Swal.fire({
                             icon: 'error',
                             title: 'error ajax',
                             text: error
@@ -1578,7 +1578,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 // console.log("data kirim: ", formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1640,7 +1640,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 console.log("data dikirim: ",formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1688,7 +1688,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1729,7 +1729,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1770,7 +1770,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1811,7 +1811,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php', // Arahkan ke file fungsi
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1834,8 +1834,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     }
                 });
             });
-        </script>
-        <script>
+
             function formatNumber(value) {
                 value = value.replace(/\D/g, '');
                 return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');

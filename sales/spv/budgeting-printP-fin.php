@@ -31,7 +31,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php'; 
+require '../../assets/modul2.php'; 
 
 // Ambil rombongan_id dan client_name dari POST
 $rombongan_id = $_POST['rombongan_id'] ?? '';
@@ -283,7 +283,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         <div class="row">
             <div class="col-12">
                 <div class="row">
-                    <div class="col-2 border border-dark">Dedi</div>
+                    <div class="col-2 border border-dark"><span id="sales2"></span></div>
                     <div class="col-2 border border-dark">Septian Adi</div>
                     <div class="col-2 border border-dark">Rahman J Subita</div>
                     <div class="col-2 border border-dark">Nanda</div>
@@ -481,15 +481,15 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                     total += subtotal;
                     currentGroupSubtotal += subtotal;
 
-                    // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
-                    if (index === data.length - 1) {
-                        htmlContent += `
-                            <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
-                                <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
-                                <div class="col-2 text-end">=</div>
-                                <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
-                            </div>`;
-                    }
+                }
+                // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
+                if (index === data.length - 1) {
+                    htmlContent += `
+                        <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
+                            <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
+                            <div class="col-2 text-end">=</div>
+                            <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
+                        </div>`;
                 }
             });
     
@@ -552,6 +552,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 $('#pic').text(': ' + (dataRombongan.client_pic || '-'));
                 $('#tlp').text(': ' + (dataRombongan.phone || '-'));
                 $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
+                $('#sales2').text((dataRombongan.marketing || '-')); 
 
                 $('#idCl').text(dataRombongan.client_id || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
@@ -688,14 +689,14 @@ $viewPay = viewPayment ($konek, $rombongan_id);
     </script>
     <div id="loading">Menyiapkan dokumen print...</div>
 
-    <!-- <script>
+    <script>
     window.onload = function(){
         setTimeout(function(){
             document.getElementById('loading').style.display = 'none';
             window.print();
         }, 1500);
     }
-    </script> -->
+    </script>
 
   </body>
 </html>

@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 $vendor = getvendor($konek);
 $kodeVen = getKodeVen($konek);
 
@@ -51,7 +51,7 @@ $kodeVen = getKodeVen($konek);
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="sb-nav-fixed">
@@ -72,7 +72,7 @@ $kodeVen = getKodeVen($konek);
                             <li class="breadcrumb-item active">Tambah Vendor</li>
                         </ol>
                          <div class="btn"> 
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahFasilitasVen">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahVen">
                             <i class="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
@@ -103,12 +103,12 @@ $kodeVen = getKodeVen($konek);
             </div>
         </div>
 
-        //modal Tambah data fasilitas vendor
-        <div class="modal fade" id="tambahFasilitasVen" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        //modal Tambah data vendor
+        <div class="modal fade" id="tambahVen" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Fasilitas Vendor</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Data Vendor</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="vendorFs" method="POST" autocomplete="off">
@@ -161,13 +161,13 @@ $kodeVen = getKodeVen($konek);
                 </div>
             </div>
         </div>
-        //akhir modal tambah data fsilitaas vendor
+        //akhir modal tambah data vendor
         //modal Update data fasilitas vendor
-        <div class="modal fade" id="updateFasilitasVen" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="updateVen" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Fasilitas Vendor</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Data Vendor</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="updateFsv" method="POST" autocomplete="off">
@@ -214,7 +214,7 @@ $kodeVen = getKodeVen($konek);
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
                     </div>
                 </form>
                 </div>
@@ -241,12 +241,12 @@ $kodeVen = getKodeVen($konek);
                 <td>${item.noTlp}</td>               
                 <td>${item.kategori}</td>               
                 <td>
-                    <button class="btn btn-warning btnUpdateFsv" data-bs-toggle="modal" data-bs-target="#updateFasilitasVen"
+                    <button class="btn btn-warning btnUpdateFsv" data-bs-toggle="modal" data-bs-target="#updateVen"
                         data-kd="${item.kode_vendor}"
                         data-nama="${item.nama_vendor}"
                         data-pic="${item.pic}"
                         data-noTlp="${item.noTlp}"
-                        data-ket="${item.ket}"
+                        data-ket="${item.kategori}"
                         >
                         <i class="fa-solid fa-file-pen"></i> edit
                     </button>
@@ -263,7 +263,7 @@ $kodeVen = getKodeVen($konek);
                 // console.log("data di kirim : ", formData);
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success : function(res){
@@ -342,7 +342,7 @@ $kodeVen = getKodeVen($konek);
                 console.log("data dkirim", formData);
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success: function(res){
@@ -364,6 +364,20 @@ $kodeVen = getKodeVen($konek);
                                 icon: 'success',
                                 title: 'Update Berhasil',
                                 text: 'Data Berhasil Diperbaharui',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Oke',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if(result.isConfirmed){
+                                    location.reload();
+                                }
+                            });
+                        } else if(response.status === "nochange") {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Tidak Ada Perubahan',
+                                text: 'Data Tidak Ada Perubahan',
                                 showConfirmButton: true,
                                 confirmButtonText: 'Oke',
                                 allowOutsideClick: false,

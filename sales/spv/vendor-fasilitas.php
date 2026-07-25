@@ -32,7 +32,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
 }
 
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 $vendor = getvendor($konek);
 $viewVendor = getViewVendor($konek);
 
@@ -277,7 +277,7 @@ $viewVendor = getViewVendor($konek);
                 const formData = $(this).serialize()+'&aksi=tambah_fasilitasVendor';
 
                 $.ajax({
-                    url : '../../assets/fungsi.php',
+                    url : '../../assets/modul2.php',
                     method : 'POST',
                     data : formData,
                     success : function(res){
@@ -393,7 +393,7 @@ $viewVendor = getViewVendor($konek);
                 console.log("data dikirim: ",formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -426,6 +426,20 @@ $viewVendor = getViewVendor($konek);
                                 location.reload(); // Refresh halaman
                             }
                         });
+                        } else if (response.status === "nochange") {
+                            Swal.fire({
+                            icon: 'info',
+                            title: 'Tidak Ada Perubahan',
+                            text: 'Tidak Ada Perubahan Pada Data.',
+                            showConfirmButton: true,
+                            confirmButtonText: 'Oke',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
                         }else {
                             Swal.fire({
                             icon: 'error',

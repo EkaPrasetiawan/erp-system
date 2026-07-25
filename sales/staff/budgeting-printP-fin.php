@@ -481,15 +481,15 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                     total += subtotal;
                     currentGroupSubtotal += subtotal;
 
-                    // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
-                    if (index === data.length - 1) {
-                        htmlContent += `
-                            <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
-                                <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
-                                <div class="col-2 text-end">=</div>
-                                <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
-                            </div>`;
-                    }
+                }
+                // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
+                if (index === data.length - 1) {
+                    htmlContent += `
+                        <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
+                            <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
+                            <div class="col-2 text-end">=</div>
+                            <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
+                        </div>`;
                 }
             });
     

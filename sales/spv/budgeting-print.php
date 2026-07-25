@@ -53,12 +53,24 @@ $viewPay = viewPayment ($konek, $rombongan_id);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Print Group Package Confirmation</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
-
         /* =========================
         PRINT — A4 FIX
         ========================= */
+        /* Styling khusus agar header info rombongan lebih rapat */
+        .header-info .row {
+            margin-bottom: 2px !important; /* Mengurangi jarak antar baris */
+        }
+
+        .header-info .col-form-label,
+        .header-info .info-value {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.2 !important; /* Membuat tinggi baris teks lebih rapat */
+            font-size: 8.5pt !important;  /* Menyesuaikan ukuran teks cetak */
+        }
         @media print {
 
             @page {
@@ -93,6 +105,21 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             .no-print {
                 display: none !important;
             }
+            .header-info {
+                margin-bottom: 10px !important; /* Jarak bawah total ke section berikutnya */
+            }
+            .header-info .cost-box p {
+                margin-bottom: 2px !important;
+                font-size: 8.5pt !important;
+                line-height: 1.1 !important;
+            }
+
+            .header-info .cost-box .info-item {
+                margin-bottom: 1px !important;
+                padding: 0 !important;
+                line-height: 1.2 !important;
+                font-size: 8pt !important;
+            }
         }
 
 
@@ -124,13 +151,12 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             }
 
         }
-
     </style>
   </head>
   <body>
     <div class="container text-center">
       <h3>GROUP PACKAGE CONFIRMATION FORM</h3>
-        <div class="row text-start">
+        <div class="row text-start header-info mb-2">
             <div class="col-5">
               <div class="row">
                   <label for="" class="col-sm col-form-label">Date Of Visit/Day</label>
@@ -171,7 +197,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                   </div>
               </div>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-2 text-end cost-box">
                 <p class="fw-bold">Estimated Cost</p>
                 <div class="small">
                     <span id="idCl" class="fw-bold"></span>
@@ -223,9 +249,14 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                         <div class="row">
                             <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
                         </div>
-                        <div class="row">
-                            <!-- <div class="col text-start"><strong id="vendor_nameHead"></div> -->
-                            <p id="vendor_nameHead"></p>
+                        <div class="row px-2">
+                            <!-- <p id="vendor_nameHead"></p> -->
+                             <!-- Vendor Acara -->
+                            <div id="vendor_nameHead" class="mb-2"></div>
+                            
+                            <hr class="my-1 border-secondary">
+                            <!-- Rincian Kalkulasi Remark Tambahan -->
+                            <div id="remark_summary" class="small text-start lh-sm" style="font-size: 7.5pt;"></div>
                         </div>
                     </div>
                 </div>
@@ -273,7 +304,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         </div>
         <div class="row">
             <div class="col-12">
-                <div class="row" style="height:160px">
+                <div class="row" style="height:140px">
                     <div class="col-2 border border-dark"></div>
                     <div class="col-2 border border-dark"></div>
                     <div class="col-2 border border-dark"></div>
@@ -286,7 +317,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         <div class="row">
             <div class="col-12">
                 <div class="row">
-                    <div class="col-2 border border-dark">Dedi</div>
+                    <div class="col-2 border border-dark"><span id="sales2"></span></div>
                     <div class="col-2 border border-dark">Septian Adi</div>
                     <div class="col-2 border border-dark">Rahman J Subita</div>
                     <div class="col-2 border border-dark">Nanda</div>
@@ -330,7 +361,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             let total = 0;
             
             // Tentukan urutan kelompok fasilitas yang diinginkan
-            const groupOrder = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
+            const groupOrder = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'Cabana and Cabin'];
 
             // Fungsi untuk mendapatkan indeks urutan. Jika grup tidak ada di list, taruh di akhir (99).
             const getGroupIndex = (groupName) => {
@@ -394,6 +425,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             };
         };
 
+        //bagian biaya
         const displayBudgetingDetailsVend = (data, priceColumn) => {
             let htmlContent = '';
             let currentGroup = null;
@@ -401,12 +433,12 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             let currentGroupSubtotal = 0; 
             
             // Tentukan urutan kelompok fasilitas yang diinginkan
-            const groupOrder = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'cabana and cabin'];
+            const groupOrder2 = ['Tiket Masuk','Operasional', 'Event', 'Vendor', 'Food and Beverages', 'Cabana and Cabin'];
 
             // Fungsi untuk mendapatkan indeks urutan.
             const getGroupIndex = (groupName) => {
                 const name = groupName ? groupName.toLowerCase() : 'lainnya'; 
-                const index = groupOrder.findIndex(g => g.toLowerCase() === name);
+                const index = groupOrder2.findIndex(g => g.toLowerCase() === name);
                 return index !== -1 ? index : 99;
             };
 
@@ -447,7 +479,6 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 if (price > 0 && qty > 0) {
                     
                     const subtotal = qty * price;
-
                     // 1. Cek pergantian grup
                     if (groupNameText !== currentGroup && currentGroup !== null) {
                         // Tampilkan subtotal grup sebelumnya
@@ -459,7 +490,6 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                             </div>`;
                         currentGroupSubtotal = 0; // Reset subtotal
                     }
-                    
                     // 2. Tampilkan header grup baru
                     if (groupNameText !== currentGroup) {
                         htmlContent += `
@@ -468,7 +498,6 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                             </div>`;
                         currentGroup = groupNameText;
                     }
-                    
                     // 3. Tambahkan baris detail fasilitas
                     htmlContent += `
                         <div class="row ps-4 align-items-center" style="line-height: 1.2;">
@@ -484,15 +513,15 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                     total += subtotal;
                     currentGroupSubtotal += subtotal;
 
-                    // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
-                    if (index === data.length - 1) {
-                        htmlContent += `
-                            <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
-                                <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
-                                <div class="col-2 text-end">=</div>
-                                <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
-                            </div>`;
-                    }
+                }
+                // 5. Cek jika ini adalah item terakhir, tampilkan subtotal grup terakhir
+                if (index === data.length - 1) {
+                    htmlContent += `
+                        <div class="row ps-4 pt-1 pb-1 bg-light fw-bold border-bottom border-secondary pb-1">
+                            <div class="col-8 text-end">SUBTOTAL ${currentGroup}</div>
+                            <div class="col-2 text-end">=</div>
+                            <div class="col-2 text-end">${formatRupiah(currentGroupSubtotal)}</div>
+                        </div>`;
                 }
             });
     
@@ -555,6 +584,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 $('#pic').text(': ' + (dataRombongan.client_pic || '-'));
                 $('#tlp').text(': ' + (dataRombongan.phone || '-'));
                 $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
+                $('#sales2').text(dataRombongan.marketing || '-');
 
                 $('#idCl').text(dataRombongan.category || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
@@ -686,19 +716,83 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                     <div class="col-6 text-end">${formatRupiah(sisaBayar)}</div>
                 </div>`;
             $('#bayarLog').html(bayarHtml);
+
+            // --- 5. PERHITUNGAN REMARK KHUSUS ---
+            // A. Ambil Subtotal Biaya Khusus (Tiket Masuk & Operasional dari bagian Biaya)
+            let biayaTiket = 0;
+            let biayaOperasional = 0;
+    
+            if (Array.isArray(viewBudgeting)) {
+                viewBudgeting.forEach(item => {
+                    const group = item.group_fasilitas ? item.group_fasilitas.toLowerCase() : '';
+                    const price = parseFloat(item.price || 0);
+                    const qty   = parseInt(item.qty || 0);
+                    
+                    if (price > 0 && qty > 0) {
+                        if (group === 'tiket masuk') {
+                            biayaTiket += (price * qty);
+                        } else if (group === 'operasional') {
+                            biayaOperasional += (price * qty);
+                        }
+                    }
+                });
+            }
+    
+            // B. Kalkulasi Poin 1 - 5
+            // 1. Laba (Selisih Pendapatan - Biaya)
+            const labaNominal = totalPendapatan - totalPengeluaran;
+            // 2. Tiket + Operasional
+            const totalTiketOperasional = biayaTiket + biayaOperasional;
+            // 3. Laba + Tiket
+            const labaPlusTiketNominal = labaNominal + biayaTiket;
+            // 4. Laba + Tiket (%) -> terhadap Total Pendapatan
+            const labaPlusTiketPersen = totalPendapatan > 0 
+                ? ((labaPlusTiketNominal / totalPendapatan) * 100).toFixed(1) 
+                : 0;
+            // 5. Laba (%) -> terhadap Total Pendapatan
+            const labaPersen = totalPendapatan > 0 
+                ? ((labaNominal / totalPendapatan) * 100).toFixed(1) 
+                : 0;
+            // C. Render Tampilan ke HTML
+            const remarkHtml = `
+                <div class="mt-1 text-end">
+                    <div class="mb-1">
+                        <strong>Laba:
+                        <span>${formatRupiah(labaNominal)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Tiket + Operasional:
+                        <span>${formatRupiah(totalTiketOperasional)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba + Tiket:
+                        <span>${formatRupiah(labaPlusTiketNominal)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba + Tiket (%):
+                        <span>${labaPlusTiketPersen}%</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba (%):
+                        <span>${labaPersen}%</span></strong>
+                    </div>
+                </div>
+            `;
+    
+            $('#remark_summary').html(remarkHtml);
         });
 
     </script>
     <div id="loading">Menyiapkan dokumen print...</div>
 
-    <!-- <script>
-    window.onload = function(){
-        setTimeout(function(){
-            document.getElementById('loading').style.display = 'none';
-            window.print();
-        }, 1500);
-    }
-    </script> -->
+    <script>
+        // window.onload = function(){
+        //     setTimeout(function(){
+        //         document.getElementById('loading').style.display = 'none';
+        //         window.print();
+        //     }, 1500);
+        // }
+    </script>
 
   </body>
 </html>

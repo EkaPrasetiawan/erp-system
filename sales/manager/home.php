@@ -49,7 +49,8 @@ $allRom = viewRombongan($konek) ?? [];
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>"
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -108,6 +109,7 @@ $allRom = viewRombongan($konek) ?? [];
                                             <th>Tnggal Kunjungan</th>
                                             <th>Type</th>
                                             <th>Satatus</th>
+                                            <th>Validasi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dtRombonganAll">
@@ -132,21 +134,54 @@ $allRom = viewRombongan($konek) ?? [];
         <script src="../../js/datatables-simple-demo.js"></script>
         <script>
             const viewBudget = <?= json_encode($allRom); ?>;
+                        function escapeHtml(text) {
+                if (!text) return '';
+                return String(text)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Mapping angka database ke Teks Label
+            const statusLabels = {
+                0: 'Open',
+                1: 'On Process',
+                2: 'Done',
+                3: 'Batal'
+            };
+
+            const statusBadges = {
+                0: 'bg-success',          // Hijau
+                1: 'bg-warning text-dark', // Kuning
+                2: 'bg-secondary',        // Abu-abu
+                3: 'bg-danger'            // Merah
+            };
+
             const tbody = document.getElementById('dtRombonganAll');
 
             viewBudget.forEach((item, index) => {
                 const row = document.createElement('tr');
                 const tanggalDb = new Date(item.date_plan);
                 const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
-                const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
+                const plan = !isNaN(tanggalDb.getTime()) 
+                            ? tanggalDb.toLocaleDateString('id-ID', opsi) 
+                            : '-';
+
+                // Konversi status angka DB ke Teks & Warna
+                const stAngka    = parseInt(item.status);
+                const labelTeks  = statusLabels[stAngka] || 'Open';
+                const badgeClass = statusBadges[stAngka] || 'bg-secondary';
                 
                 row.innerHTML =`
                 <td>${index + 1 }</td>
-                <td>${item.client_name}</td>
-                <td>${item.marketing}</td>
+                <td>${escapeHtml(item.client_name)}</td>
+                <td>${escapeHtml(item.marketing || '-')}</td>
                 <td>${plan}</td>
-                <td>${item.judul}</td>
-                <td>${item.oleh}</td>
+                <td>${escapeHtml(item.judul || '-')}</td>
+                <td><span class="badge ${badgeClass}">${labelTeks}</span></td>
+                <td>${escapeHtml(item.oleh || '-')}</td>
                 `;
                 tbody.appendChild(row);
             });

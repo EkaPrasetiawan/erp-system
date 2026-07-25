@@ -31,7 +31,7 @@ if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['gr
     exit;
 }
 
-require '../../assets/fungsi.php';
+require '../../assets/modul2.php';
 
 $rombongan_id = '';
 $client_name = '';
@@ -721,8 +721,8 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     inputSatuan.value = '';
                 }
             });
-        </script>
-        <script>
+
+
             $('#qty, #hargaWk').on('input', function () {
                 setFormattedInput(this);
             });
@@ -742,7 +742,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#qty').val(qtyDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -776,14 +776,13 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     }
                 });
             });
-        </script>
-        <script>
+
             $(document).ready(function(){
                 const fasilitasId = '<?= $rombongan_id ?>';
 
                 if(fasilitasId){
                     $.ajax({
-                        url: '../../assets/fungsi.php',
+                        url: '../../assets/modul2.php',
                         method: 'POST',
                         dataType: 'json',
                         data:{
@@ -927,8 +926,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     });
                 }
             });
-        </script>
-        <script>
+
             const upKategori = document.getElementById("up_kategori");
             const upFasilitas = document.getElementById("up_fsl");
             const inputUpSatuan = document.getElementById("up_satuan");
@@ -1005,8 +1003,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
 
                 setSatuan(selectedFs, selectedHead);
             })
-        </script>
-        <script>
+
             $('#up_qty, #up_hargaWk').on('input', function () {
                 setFormattedInput(this);
             });
@@ -1027,7 +1024,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaWk').val(hargaDisplay);
                 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1065,8 +1062,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     }
                 });
             });
-        </script>
-        <script>
+
             //view dropdown vendor fasilitas
             const viewFsvend = <?= json_encode($vendorFs); ?>;
             //filter hanya kategori Perlengkapan
@@ -1115,8 +1111,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     inputSatuanV.value = '';
                 }
             });
-        </script>
-        <script>
+
             $('#qty, #harga, #hargaVend').on('input', function () {
                 setFormattedInput(this);
             });
@@ -1139,7 +1134,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1268,7 +1263,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaVend').val(hargaVendDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1306,8 +1301,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     }
                 });
             });
-        </script>
-        <script>
+
             const viewFSvendor = <?= json_encode($vendorFs); ?>;
             //filter hanya kategori Food and Beverages
             const fnBOnly = viewFSvendor.filter(
@@ -1376,7 +1370,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#hargaFnB').val(hargafnbDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1500,7 +1494,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaFnB').val(hargaFnBDisplay);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success: function(res){
@@ -1559,7 +1553,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 console.log("data kirim: ", formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1621,7 +1615,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 console.log("data dikirim: ",formData);
 
                 $.ajax({
-                    url: '../../assets/fungsi.php',
+                    url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
@@ -1669,7 +1663,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php',
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1710,7 +1704,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php',
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1751,7 +1745,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
+                            url: '../../assets/modul2.php',
                             method: 'POST',
                             data: {
                                 aksi: 'hapus_data_generik',
@@ -1792,8 +1786,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../../assets/fungsi.php', // Arahkan ke file fungsi
-                            method: 'POST',
+                            url: '../../assets/modul2.php',
                             data: {
                                 aksi: 'hapus_data_generik',
                                 id: idFsWk,

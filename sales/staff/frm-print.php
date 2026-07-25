@@ -108,6 +108,9 @@ $allRom = viewRombongan($konek) ?? [];
                 const tanggalDb = new Date(item.date_plan);
                 const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
                 const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
+
+                const isDisabled = item.oleh === "UnApproved" ? 'disabled' : '';
+                const btnClass = item.oleh === "unApproved" ? 'btn-secondary' : 'btn-success';
                 
                 row.innerHTML =`
                 <td>${index + 1 }</td>
@@ -123,7 +126,7 @@ $allRom = viewRombongan($konek) ?? [];
                         data-client-date="${item.date_plan}">
                         <i class="fa-solid fa-newspaper"></i> FK Awal</a>
 
-                        <a class="btn btn-success btnDetail2"
+                        <a class="btn ${btnClass} btnDetail2 ${isDisabled}"
                         data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
