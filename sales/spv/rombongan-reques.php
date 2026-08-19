@@ -201,7 +201,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                 </button>
                                 <div class="table-responsive">
                                     <table class="table">
-                                        <thead class="text-center">
+                                        <thead>
                                             <tr>
                                                 <th>No</th>
                                                 <th>Nama Pengguna</th>
@@ -210,6 +210,31 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                             </tr>
                                         </thead>
                                         <tbody id="cabanaAndcanbin">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                Catatan
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#catatan">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Facility</th>
+                                                <th>Jumlah</th>
+                                                <th>Keterangan</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="catatanFree">
                                         </tbody>
                                     </table>
                                 </div>
@@ -669,6 +694,119 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             </div>
         </div>
         <!-- akhir modal Update cabin and cabana -->
+        <!-- modal catatn -->
+        <div class="modal fade" id="catatan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Catatan Free Fasilitas</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="CatatanAdd" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="<?= $rombongan_id ?>" id="ketId" name="ketId">
+                                <input type="hidden" class="form-control" value="<?= $client_name ?>" id="ketName" name="ketName">
+                                <div class="mb-3 row">
+                                    <label for="headKet" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="headKet" name="headKet">
+                                            <option value="">---pilih Kategori---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="ketFas" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="ketFas" name="ketFas">
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                        <input type="hidden" class ="form-control mt-2" id="satuan2" name="satuan2">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="qtyKet" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="qtyKet" name="qtyKet"
+                                        inputmode="numeric" maxlength="3" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="nPeng" class="col-sm-4 col-form-label">Keterangan</label>
+                                    <div class="col-sm-8 form-floating">
+                                        <textarea class="form-control" placeholder="Leave a comment here" id="ketFree" name="ketFree" require></textarea>
+                                        <label for="floatingTextarea">Keterangan......</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <!-- akhir modal catatan -->
+        <!-- modal upate catatn -->
+        <div class="modal fade" id="upCatatan" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Catatan Free Fasilitas</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="CatatanUpdate" method="POST" autocomplete="off">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" class="form-control" value="" id="idCat" name="idCat">
+                                <div class="mb-3 row">
+                                    <label for="up_headKet" class="col-sm-4 col-form-label">Kategori</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_headKet" name="up_headKet">
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="ketFas" class="col-sm-4 col-form-label">Fasilitas</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="up_ketFas" name="up_ketFas">
+                                            <option value="">---pilih fasilitas---</option>
+                                        </select>
+                                        <input type="hidden" class ="form-control mt-2" id="up_satuan2" name="up_satuan2">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_qtyKet" class="col-sm-4 col-form-label">Jumlah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="up_qtyKet" name="up_qtyKet"
+                                        inputmode="numeric" maxlength="3" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="up_ketFree" class="col-sm-4 col-form-label">Keterangan</label>
+                                    <div class="col-sm-8 form-floating">
+                                        <textarea class="form-control" placeholder="Leave a comment here" id="up_ketFree" name="up_ketFree" require></textarea>
+                                        <label for="floatingTextarea">Keterangan......</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <!-- akhir modal catatan -->
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -802,12 +940,14 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                             $('#fasilitas-vendor').empty();
                             $('#fasilitas-fnb').empty();
                             $('#cabanaAndcanbin').empty();
+                            $('#catatanFree').empty();
 
                             //pisah data
                             let noWk = 1;
                             let noVend = 1;
                             let noFnB = 1;
                             let noCnC = 1;
+                            let noCat = 1;
 
                             if (Array.isArray(res)) {
                                 res.forEach(item => {
@@ -893,7 +1033,12 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                 </td>
                                             </tr>
                                         `);
-                                    } else {
+                                    } else if(
+                                                item.group_fasilitas && 
+                                                (item.group_fasilitas.toLowerCase() === 'tiket masuk' ||
+                                                item.group_fasilitas.toLowerCase() === 'operasional') && 
+                                                Number(item.price || 0) !== 0
+                                            ) {
                                         $('#fasilitas-wk').append(`
                                             <tr>
                                                 <td>${noWk++}</td>
@@ -913,6 +1058,33 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                                             <i class="fa-solid fa-file-pen"></i> edit
                                                         </button>
                                                         <button class="btn btn-danger btn-sm btnHapusFsWk"
+                                                            data-idfWk="${item.data_id}"
+                                                            data-namefWk="${item.fasilitas_name}">
+                                                        <i class="fa-regular fa-trash-can"></i> Hapus</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `);
+                                    } else if (item.group_fasilitas && item.group_fasilitas.toLowerCase() === 'operasional' && Number(item.price || 0) === 0){
+                                        $('#catatanFree').append(`
+                                            <tr>
+                                                <td>${noCat++}</td>
+                                                <td>${item.fasilitas_name}</td>
+                                                <td>${item.qty.toLocaleString('id-ID')}</td>
+                                                <td>${item.catatan}</td>
+                                                <td>
+                                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center">
+                                                        <button class="btn btn-warning btnUpdateCatatan" data-bs-toggle="modal" data-bs-target="#upCatatan"
+                                                            data-idKet="${item.data_id}"
+                                                            data-hdKet="${item.group_fasilitas}"
+                                                            data-fslKet="${item.fasilitas_name}"
+                                                            data-qtyKet="${item.qty}"
+                                                            data-unitKet="${item.unit}"
+                                                            data-cat="${item.catatan}"
+                                                            >
+                                                            <i class="fa-solid fa-file-pen"></i> edit
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm btnHapusCatatan"
                                                             data-idfWk="${item.data_id}"
                                                             data-namefWk="${item.fasilitas_name}">
                                                         <i class="fa-regular fa-trash-can"></i> Hapus</button>
@@ -1226,7 +1398,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     const qty = button.getAttribute('data-qty');
                     const harga = button.getAttribute('data-price');
                     const hargaJual = button.getAttribute('data-priceVend');
-                    console.log("data idFV: ", idFv);
 
                     document.getElementById('idFv').value = idFv;
                     document.getElementById('up_qtyV').value = formatNumber(qty);
@@ -1288,7 +1459,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         try{
                             response = JSON.parse(res);
                         } catch (e) {
-                            console.log("Respon Error: ", res);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'format respon salah'
@@ -1511,7 +1681,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 $('#up_hargaFnB').val(hargaFnBDisplay.replace(/\./g, ''));
 
                 const formData = $(this).serialize()+'&aksi=updateFnB';
-                console.log(formData);
 
                 // restore tampilan format
                 $('#up_jumlah').val(jumlahDisplay);
@@ -1522,7 +1691,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     method: 'POST',
                     data: formData,
                     success: function(res){
-                        console.log("server res: ", res);
                         let response = [];
                         try{
                             response = JSON.parse(res);
@@ -1575,7 +1743,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             $('#cncAdd').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=tambah_cabanaAndcabin';
-                // console.log("data kirim: ", formData);
 
                 $.ajax({
                     url: '../../assets/modul2.php',
@@ -1602,7 +1769,6 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         }
                     },
                     error: function(xhr, status, error){
-                        console.log("ajax error: ", error);
                         Swal.fire({
                             icon: 'error',
                             title: 'error jaringan'
@@ -1637,14 +1803,12 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             $('#cncUpdate').on('submit', function(e){
                 e.preventDefault();
                 const formData = $(this).serialize()+'&aksi=update_cabanaAndcabin';
-                console.log("data dikirim: ",formData);
 
                 $.ajax({
                     url: '../../assets/modul2.php',
                     method: 'POST',
                     data: formData,
                     success : function(res){
-                        console.log("server: ", res);
                         let response = {};
                         try{
                             response = JSON.parse(res);
@@ -1661,10 +1825,222 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                         }
                     },
                     error: function(xhr, status, error){
-                        console.log("ajak error :", error);
                         Swal.fire({
                             icon: 'error',
                             title: 'error jaringan'
+                        });
+                    }
+                });
+            });
+
+            //tambah catatatn
+            const modelKet = document.getElementById('catatan');
+            const selecHeadFas = document.getElementById("headKet");
+            const selecFasKet = document.getElementById("ketFas");
+
+            modelKet.addEventListener('show.bs.modal', function(){
+                selecHeadFas.innerHTML = '<option value="">---pilih Kategori---</option>';
+                selecFasKet.innerHTML = '<option value="">---pilih fasilitas---</option>';
+
+                headFs.forEach ((item =>{
+                    const option = document.createElement("option");
+                    option.value = item;
+                    option.textContent = item;
+                    selecHeadFas.appendChild(option);
+                }));
+            });
+
+            selecHeadFas.addEventListener('change', function(){
+                const selecHeadFas = this.value;
+                selecFasKet.innerHTML = '<option value="">---pilih fasilitas---</option>';
+
+                if(selecHeadFas){
+                    const filterFasKet = viewFs.filter(item => item.group_head === selecHeadFas);
+                    filterFasKet.forEach((item) =>{
+                        const option = document.createElement("option");
+                        option.value = item.group_detail;
+                        option.textContent = item.group_detail;
+                        selecFasKet.appendChild(option);
+                    });
+                }
+            });
+
+            const unitKet = document.getElementById("satuan2");
+            selecFasKet.addEventListener('change', function(){
+                const selectedFasKet = this.value;
+
+                if(selectedFasKet){
+                    // cari data sesuai fasilitas yang dipilih
+                    const data = viewFs.find(item => item.group_detail === selectedFasKet);
+
+                    if(data){
+                        unitKet.value = data.unit; // sesuaikan dengan nama field di DB
+                    }
+                } else {
+                    unitKet.value = '';
+                }
+            });
+
+            $('#qtyKet').on('input', function(){
+                setFormattedInput(this);
+            });
+            $('#CatatanAdd').on('submit', function (e){
+                e.preventDefault();
+
+                let qtyKetDisplay = $('#qtyKet').val();
+
+                $('#qtyKet').val(qtyKetDisplay.replace(/\./g, ''));
+                const formData = $(this).serialize()+'&aksi=tambah_catatan';
+
+                $('#qtyKet').val(qtyKetDisplay);
+
+                $.ajax({
+                    url: '../../assets/modul2.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e){
+                            console.error("Error bukan JSON: ",res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Forma Respon Salah',
+                                text: 'terjai kesalahan'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning'); // Tampilkan pesan bahwa data sudah ada
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Jaringan',
+                            text: 'Terjadi kesalahan saat berkomunikasi dengan server.'
+                        });
+                    }
+                });
+            });
+
+            const upHeadFas = document.getElementById("up_headKet");
+            const upFasKet = document.getElementById("up_ketFas");
+            const upSatuanFas = document.getElementById("up_satuan2");
+
+            function upCatatan(headFs, selecFasKet = null){
+                upFasKet.innerHTML = '<option value="">---pilih fasilitas---</option>';
+                if(headFs){
+                    const ketFilter = viewFs.filter(item => item.group_head === headFs);
+                    ketFilter.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item.group_detail;
+                        option.textContent = item.group_detail;
+                        upFasKet.appendChild(option);
+                    });
+                    if(selecFasKet) {
+                        upFasKet.value = selecFasKet
+                    }
+                }
+            }
+
+            function setSatuan2(selectedFasKet, selecHeadFas) {
+                const data = viewFs.find(item =>
+                    item.group_detail === selectedFasKet &&
+                    item.group_head === selecHeadFas
+                );
+                if(data){
+                    upSatuanFas.value = data.unit;
+                } else {
+                    upSatuanFas.value = '';
+                }
+            }
+            document.addEventListener('click', function(e){
+                if(e.target.classList.contains('btnUpdateCatatan') || e.target.closest('.btnUpdateCatatan')){
+                    const button = e.target.closest('.btnUpdateCatatan');
+                    const idCat = button.getAttribute('data-idKet');
+                    const ketHeadFas = button.getAttribute('data-hdKet');
+                    const ketFas = button.getAttribute('data-fslKet');
+                    const qtyFas = button.getAttribute('data-qtyKet');
+                    const ketUnit = button.getAttribute('data-unitKet');
+                    const keterangan = button.getAttribute('data-cat');
+
+                    document.getElementById('idCat').value = idCat;
+                    document.getElementById('up_qtyKet').value = qtyFas;
+                    document.getElementById('up_ketFree').value = keterangan;
+
+                    upHeadFas.innerHTML = '<option value="">---pilih Kategori---</option>';
+                    headFs.forEach((item) => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        option.textContent = item;
+                        upHeadFas.appendChild(option);
+                    });
+                    upHeadFas.value = ketHeadFas;
+                    upCatatan(ketHeadFas, ketFas);
+                    setSatuan2(ketFas, ketHeadFas);
+                }
+            });
+
+            upHeadFas.addEventListener('change', function() {
+                upCatatan(this.value);
+                setSatuan2.value = '';
+            });
+
+            upFasKet.addEventListener('change', function() {
+                const selectedFasKet = this.value;
+                const selecHeadFas = upHeadFas.value;
+
+                setSatuan2(selectedFasKet, selecHeadFas);
+            });
+
+            $('up_qtyKet').on('input', function() {
+                setFormattedInput(this);
+            });
+            $('#CatatanUpdate').on('submit', function(e) {
+                e.preventDefault(this);
+
+                let qtyKetDisplay = $('#up_qtyKet').val();
+
+                $('up_qtyKet').val(qtyKetDisplay.replace(/\./g, ''));
+                const formData = $(this).serialize()+'&aksi=update_catatan';
+                $('#up_qtyKet').val(qtyKetDisplay);
+
+                $.ajax({
+                    url: '../../assets/modul2.php',
+                    method: 'POST',
+                    data: formData,
+                    success : function(res){
+                        let response = {};
+                        try{
+                            response = JSON.parse(res);
+                        } catch(e){
+                            console.error("Error bukan JSON: ",res);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Forma Respon Salah',
+                                text: 'terjai kesalahan'
+                            });
+                            return;
+                        }
+                        if(response.status === "success"){
+                            location.reload();
+                        }else if (response.status === 'exists') {
+                            Swal.fire('Opps!', response.message, 'warning'); // Tampilkan pesan bahwa data sudah ada
+                        } else {
+                            Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Jaringan',
+                            text: 'Terjadi kesalahan saat berkomunikasi dengan server.'
                         });
                     }
                 });
@@ -1852,14 +2228,14 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
             }
 
             // tambah
-            ['#qty', '#hargaWk', '#harga', '#hargaVend', '#jumlah', '#hargaFnB'].forEach(id => {
+            ['#qty', '#hargaWk', '#harga', '#hargaVend', '#jumlah', '#hargaFnB', '#qtyKet'].forEach(id => {
                 $(document).on('input', id, function() {
                     setFormattedInput(this);
                 });
             });
 
             // update
-            ['#up_qty', '#up_hargaWk', '#up_harga', '#up_qtyV', '#up_hargaVend', '#up_jumlah', '#up_hargaFnB'].forEach(id => {
+            ['#up_qty', '#up_hargaWk', '#up_harga', '#up_qtyV', '#up_hargaVend', '#up_jumlah', '#up_hargaFnB', '#up_qtyKet'].forEach(id => {
                 $(document).on('input', id, function() {
                     setFormattedInput(this);
                 });

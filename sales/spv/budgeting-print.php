@@ -245,17 +245,17 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                             <div class="col-2"><strong id="gross_profit"></strong></div>
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-2 d-flex flex-column">
                         <div class="row">
                             <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
                         </div>
-                        <div class="row px-2">
-                            <!-- <p id="vendor_nameHead"></p> -->
-                             <!-- Vendor Acara -->
-                            <div id="vendor_nameHead" class="mb-2"></div>
-                            
-                            <hr class="my-1 border-secondary">
-                            <!-- Rincian Kalkulasi Remark Tambahan -->
+                        <div class="row"></div>
+                        <div class="row px-2 d-flex flex-column justify-content-between flex-grow-1 pb-2">
+                            <div>
+                                <div id="vendor_nameHead" class="mb-2"></div>
+                                <hr class="my-1 border-secondary">
+                                <div id="catatan" class="mb-2"></div>
+                            </div>
                             <div id="remark_summary" class="small text-start lh-sm" style="font-size: 7.5pt;"></div>
                         </div>
                     </div>
@@ -650,6 +650,43 @@ $viewPay = viewPayment ($konek, $rombongan_id);
 
             $('#vendor_nameHead').html(vendorHtml);
 
+            //tampil fasilitas free
+            let freeList = [];
+
+            if (Array.isArray(viewBudgeting)) {
+                viewBudgeting.forEach(item => {
+                    const price = parseFloat(item.price || 0);
+                    const qty   = parseInt(item.qty || 0);
+
+                    // Filter: Hanya ambil item yang harganya 0 dan qty > 0
+                    if (price === 0 && qty > 0) {
+                        freeList.push({
+                            nama: item.fasilitas_name || '-',
+                            qty: qty,
+                            catatan: item.catatan || '-'
+                        });
+                    }
+                });
+            }
+
+            let freeHtml = '';
+            if (freeList.length > 0) {
+                freeHtml += `<div class="fw-bold mb-1 style="font-size: 8pt;">Fasilitas Free:</div>`;
+                freeList.forEach(free => {
+                    freeHtml += `
+                        <div class="mb-1 lh-xs" style="font-size: 7.5pt;">
+                            • <strong>${free.nama}</strong> (${free.qty})<br>
+                            <span class="text-muted ps-2"><em>Ket: ${free.catatan}</em></span>
+                        </div>
+                    `;
+                });
+            } else {
+                freeHtml = ''; // Kosongkan jika tidak ada fasilitas free
+            }
+
+            // Render ke ID #catatan
+            $('#catatan').html(freeHtml);
+
             // C. TOTAL TAMPIL
             $('#total_pendapatan').text(formatRupiah(totalPendapatan));
             $('#total_pendapatan1').text(formatRupiah(totalPendapatan));
@@ -755,7 +792,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 : 0;
             // C. Render Tampilan ke HTML
             const remarkHtml = `
-                <div class="mt-1 text-end">
+                <div class="pt-2 text-end">
                     <div class="mb-1">
                         <strong>Laba:
                         <span>${formatRupiah(labaNominal)}</span></strong>

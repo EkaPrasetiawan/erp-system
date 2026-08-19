@@ -304,6 +304,72 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             return subTotal;
         }
 
+        // render tabel tambahan dalam satu tabel, diurutkan berdasarkan group_fasilitas
+        function renderSortedTable(data, targetId, grandTotalAll) {
+            // urutan group_fasilitas yang diinginkan
+            const groupOrder = ['operasional', 'vendor', 'food and beverages'];
+            const getOrder = (group) => {
+                const g = (group || '').toString().toLowerCase().trim();
+                const idx = groupOrder.indexOf(g);
+                return idx === -1 ? groupOrder.length : idx; // group lain di akhir
+            };
+
+            // salin & urutkan: group dulu, lalu fasilitas_name
+            const sorted = [...data].sort((a, b) => {
+                const oa = getOrder(a.group_fasilitas);
+                const ob = getOrder(b.group_fasilitas);
+                if (oa !== ob) return oa - ob;
+                return (a.fasilitas_name || '').toString().localeCompare(
+                    (b.fasilitas_name || '').toString(), 'id-ID'
+                );
+            });
+
+            let html = `
+                <table class="table table-bordered border-dark table-sm">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th>No</th>
+                            <th>Item</th>
+                            <th>Unit</th>
+                            <th>Jumlah</th>
+                            <th>Harga</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let grandTotal = 0;
+            sorted.forEach((item, index) => {
+                const total = item.qty * item.price;
+                grandTotal += total;
+                html += `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${item.fasilitas_name}</td>
+                        <td class="text-center">${item.unit}</td>
+                        <td class="text-center">${item.qty}</td>
+                        <td class="text-end">Rp ${item.price.toLocaleString('id-ID')}</td>
+                        <td class="text-end">Rp ${total.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" class="text-center fw-bold">TOTAL</th>
+                            <th class="text-end fw-bold">Rp ${grandTotalAll.toLocaleString('id-ID')}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            document.getElementById(targetId).innerHTML = html;
+            return grandTotal;
+        }
+
         const tiket = viewBudgeting.filter(item => 
             item.group_fasilitas.toLowerCase() === 'tiket masuk'
         );
@@ -312,10 +378,10 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             item.group_fasilitas.toLowerCase() !== 'tiket masuk'
         );
         const totalTiket = renderTable(tiket, 'tampil_tiket');
-        const totalTambahan = renderTable(tambahan, 'tampilTambahan');
+        const totalTambahan = tambahan.reduce((sum, item) => sum + (item.qty * item.price), 0);
         const grandTotalAll = totalTiket + totalTambahan;
 
-        renderTable(tambahan, 'tampilTambahan', true, grandTotalAll);
+        renderSortedTable(tambahan, 'tampilTambahan', grandTotalAll);
 
         const totalPembyaran = grandTotalAll;
 
