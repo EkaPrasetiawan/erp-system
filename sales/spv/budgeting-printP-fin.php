@@ -56,6 +56,18 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         /* =========================
         PRINT — A4 FIX
         ========================= */
+        /* Styling khusus agar header info rombongan lebih rapat */
+        .header-info .row {
+            margin-bottom: 2px !important; /* Mengurangi jarak antar baris */
+        }
+
+        .header-info .col-form-label,
+        .header-info .info-value {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.2 !important;  /* Membuat tinggi baris teks lebih rapat */
+            font-size: 8.5pt !important;  /* Menyesuaikan ukuran teks cetak */
+        }
         @media print {
 
             @page {
@@ -89,6 +101,21 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             /* sembunyikan tombol dll */
             .no-print {
                 display: none !important;
+            }
+            .header-info {
+                margin-bottom: 10px !important; /* Jarak bawah total ke section berikutnya */
+            }
+            .header-info .cost-box p {
+                margin-bottom: 2px !important;
+                font-size: 8.5pt !important;
+                line-height: 1.1 !important;
+            }
+
+            .header-info .cost-box .info-item {
+                margin-bottom: 1px !important;
+                padding: 0 !important;
+                line-height: 1.2 !important;
+                font-size: 8pt !important;
             }
         }
 
@@ -127,7 +154,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
   <body>
     <div class="container text-center">
       <h3>GROUP PACKAGE CONFIRMATION FORM</h3>
-        <div class="row text-start">
+        <div class="row text-start header-info mb-2">
             <div class="col-5">
               <div class="row">
                   <label for="" class="col-sm col-form-label">Date Of Visit/Day</label>
@@ -168,10 +195,10 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                   </div>
               </div>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-2 text-end cost-box">
                 <p class="fw-bold">Estimated Cost</p>
                 <div class="small">
-                    ID Client: <span id="idCl" class="fw-bold"></span>
+                    <span id="idCl" class="fw-bold"></span>
                 </div>
                 <div class="small">
                     Tgl Input: <span id="tgl_in" class="fw-bold"></span>
@@ -216,13 +243,18 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                             <div class="col-2"><strong id="gross_profit"></strong></div>
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-2 d-flex flex-column">
                         <div class="row">
                             <p class="fw-bold mt-2 mb-1 text-center">REMARK</p>
                         </div>
-                        <div class="row">
-                            <!-- <div class="col text-start"><strong id="vendor_nameHead"></div> -->
-                            <p id="vendor_nameHead"></p>
+                        <div class="row"></div>
+                        <div class="row px-2 d-flex flex-column justify-content-between flex-grow-1 pb-2">
+                            <div>
+                                <div id="vendor_nameHead" class="mb-2"></div>
+                                <hr class="my-1 border-secondary">
+                                <div id="catatan" class="mb-2"></div>
+                            </div>
+                            <div id="remark_summary" class="small text-start lh-sm" style="font-size: 7.5pt;"></div>
                         </div>
                     </div>
                 </div>
@@ -554,7 +586,7 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                 $('#sales').text(': ' + (dataRombongan.marketing || '-')); 
                 $('#sales2').text((dataRombongan.marketing || '-')); 
 
-                $('#idCl').text(dataRombongan.client_id || '-'); 
+                $('#idCl').text(dataRombongan.category || '-'); 
                 $('#tgl_in').text(formatTanggal(dataRombongan.date_input)); 
                 $('#tema').text(dataRombongan.judul || '-'); 
                 $('#jumlah').text(jumlahTiketMasuk > 0 ? jumlahTiketMasuk + ' pax' : '-'); 
@@ -684,6 +716,107 @@ $viewPay = viewPayment ($konek, $rombongan_id);
                     <div class="col-6 text-end">${formatRupiah(sisaBayar)}</div>
                 </div>`;
             $('#bayarLog').html(bayarHtml);
+
+            //tampil fasilitas free
+            let freeList = [];
+
+            if (Array.isArray(viewBudgeting)) {
+                viewBudgeting.forEach(item => {
+                    const price = parseFloat(item.price || 0);
+                    const qty   = parseInt(item.qty || 0);
+
+                    // Filter: Hanya ambil item yang harganya 0 dan qty > 0
+                    if (price === 0 && qty > 0) {
+                        freeList.push({
+                            nama: item.fasilitas_name || '-',
+                            qty: qty,
+                            catatan: item.catatan || '-'
+                        });
+                    }
+                });
+            }
+
+            let freeHtml = '';
+            if (freeList.length > 0) {
+                freeHtml += `<div class="fw-bold mb-1 style="font-size: 8pt;">Fasilitas Free:</div>`;
+                freeList.forEach(free => {
+                    freeHtml += `
+                        <div class="mb-1 lh-xs" style="font-size: 7.5pt;">
+                            • <strong>${free.nama}</strong> (${free.qty})<br>
+                            <span class="text-muted ps-2"><em>Ket: ${free.catatan}</em></span>
+                        </div>
+                    `;
+                });
+            } else {
+                freeHtml = ''; // Kosongkan jika tidak ada fasilitas free
+            }
+
+            // Render ke ID #catatan
+            $('#catatan').html(freeHtml);
+
+            // --- 5. PERHITUNGAN REMARK KHUSUS ---
+            // A. Ambil Subtotal Biaya Khusus (Tiket Masuk & Operasional dari bagian Biaya)
+            let biayaTiket = 0;
+            let biayaOperasional = 0;
+
+            if (Array.isArray(viewBudgeting)) {
+                viewBudgeting.forEach(item => {
+                    const group = item.group_fasilitas ? item.group_fasilitas.toLowerCase() : '';
+                    const price = parseFloat(item.price || 0);
+                    const qty   = parseInt(item.qty || 0);
+
+                    if (price > 0 && qty > 0) {
+                        if (group === 'tiket masuk') {
+                            biayaTiket += (price * qty);
+                        } else if (group === 'operasional') {
+                            biayaOperasional += (price * qty);
+                        }
+                    }
+                });
+            }
+
+            // B. Kalkulasi Poin 1 - 5
+            // 1. Laba (Selisih Pendapatan - Biaya)
+            const labaNominal = totalPendapatan - totalPengeluaran;
+            // 2. Tiket + Operasional
+            const totalTiketOperasional = biayaTiket + biayaOperasional;
+            // 3. Laba + Tiket
+            const labaPlusTiketNominal = labaNominal + biayaTiket;
+            // 4. Laba + Tiket (%) -> terhadap Total Pendapatan
+            const labaPlusTiketPersen = totalPendapatan > 0
+                ? ((labaPlusTiketNominal / totalPendapatan) * 100).toFixed(1)
+                : 0;
+            // 5. Laba (%) -> terhadap Total Pendapatan
+            const labaPersen = totalPendapatan > 0
+                ? ((labaNominal / totalPendapatan) * 100).toFixed(1)
+                : 0;
+            // C. Render Tampilan ke HTML
+            const remarkHtml = `
+                <div class="pt-2 text-end">
+                    <div class="mb-1">
+                        <strong>Laba:
+                        <span>${formatRupiah(labaNominal)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Tiket + Operasional:
+                        <span>${formatRupiah(totalTiketOperasional)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba + Tiket:
+                        <span>${formatRupiah(labaPlusTiketNominal)}</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba + Tiket (%):
+                        <span>${labaPlusTiketPersen}%</span></strong>
+                    </div>
+                    <div class="mb-1">
+                        <strong>Laba (%):
+                        <span>${labaPersen}%</span></strong>
+                    </div>
+                </div>
+            `;
+
+            $('#remark_summary').html(remarkHtml);
         });
 
     </script>

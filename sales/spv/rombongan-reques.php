@@ -102,16 +102,14 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                     <input type="text" class="form-control" value="<?= $client_name ?>" id="" name="" readonly>
                                     </div>
                                 </div>
-                                <form action="budgeting-print.php" method="POST" target="_blank">
-                                    <input type="hidden" name="rombongan_id" value="<?= $rombongan_id ?>">
-                                    <input type="hidden" name="client_name" value="<?= $client_name ?>">
-                                    <input type="hidden" name="date_plan" value="<?= $date_plan ?? '' ?>">
-                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fa-solid fa-print"></i> Print Budget
-                                        </button>
-                                    </div>
-                                </form>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn btn-primary" id="btnPrintBudget"
+                                        data-rombongan-id="<?= $rombongan_id ?>"
+                                        data-client-name="<?= $client_name ?>"
+                                        data-client-date="<?= $date_plan ?? '' ?>">
+                                        <i class="fa-solid fa-print"></i> Print Budget
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="card mb-4">
@@ -2240,6 +2238,69 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                     setFormattedInput(this);
                 });
             });
+
+            // Print Budget langsung via iframe (tetap di halaman ini)
+            document.getElementById('btnPrintBudget').addEventListener('click', function() {
+                const data = {
+                    rombongan_id: this.dataset.rombonganId,
+                    client_name: this.dataset.clientName,
+                    date_plan: this.dataset.clientDate
+                };
+
+                if (!data.rombongan_id) {
+                    console.error('Data Kosong');
+                    return;
+                }
+
+                printViaIframe('budgeting-print.php', data);
+            });
+
+            function printViaIframe(action, data) {
+                // Buat iframe tersembunyi sebagai target submit (navigasi nyata)
+                const iframe = document.createElement('iframe');
+                iframe.name = 'printIframe_' + Date.now();
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                document.body.appendChild(iframe);
+
+                // Form POST yang disubmit ke dalam iframe
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = action;
+                form.target = iframe.name;
+                form.style.display = 'none';
+
+                Object.entries(data).forEach(([name, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+
+                // onload baru terpicu setelah seluruh halaman & script selesai load,
+                // sehingga data sudah terisi sebelum print dipanggil.
+                iframe.onload = function() {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                    } catch (e) {
+                        console.error('Gagal mencetak:', e);
+                    }
+                    setTimeout(() => {
+                        iframe.remove();
+                        form.remove();
+                    }, 1000);
+                };
+
+                form.submit();
+            }
         </script>
     </body>
 </html>

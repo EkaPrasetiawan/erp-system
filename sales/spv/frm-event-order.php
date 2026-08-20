@@ -67,7 +67,7 @@ $allRom = viewRombongan($konek) ?? [];
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Print Form</h1>
+                        <h1 class="mt-4">Print Form Event Order</h1>
                         <div class="card mb-4 mt-4">
                             <div class="card-body">
                                 <table id="datatablesSimple">
@@ -120,17 +120,11 @@ $allRom = viewRombongan($konek) ?? [];
                 <td>${plan}</td>
                 <td>
                     <div class="d-grid gap-1">
-                        <a class="btn btn-primary btnDetail"
+                        <a class="btn btn-primary btnEo"
                         data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> FK Awal</a>
-
-                        <a class="btn ${btnClass} btnDetail2 ${isDisabled}"
-                        data-rombongan-id="${item.rombongan_id}"
-                        data-client-name="${item.client_name}"
-                        data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> FK Final</a>
+                        <i class="fa-solid fa-newspaper"></i> Form EO</a>
                     </div>
                 </td>
                 `;

@@ -2192,9 +2192,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
                 'status' => 'error',
                 'message' =>$e->getMessage()
             ]);
-        }
-        if(isset($stmt_update)){
-            $stmt_update->close();
             exit;
         }
     }
