@@ -509,7 +509,6 @@ function generateKodeRombongan($konek) {
 
     return $prefix . $bulan . $tahun . $nextId;
 }
-
 $cdr = generateKodeRombongan($konek);
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){

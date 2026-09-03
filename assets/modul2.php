@@ -453,6 +453,72 @@ function getKodeVen(mysqli $konek): string {
     return $prefix . $bulan . $nextId;
 }
 
+function getEoView ($konek, $rombongan_id){
+    $eoView = [];
+    $result = $konek->query("SELECT * FROM event_order WHERE rombongan_id = '$rombongan_id' AND del_status = 0");
+    if($result){
+        while ($row = $result->fetch_assoc()){
+            $eoView[] = $row;
+        }
+    } else {
+        error_log("error: " . $konek->error);
+    }
+    return $eoView;
+}
+
+function getRombonganDetail ($konek, $rombongan_id){
+    $stmt = $konek->prepare("SELECT * FROM rombongan_master WHERE rombongan_id = ? AND del_status = 0");
+    $stmt->bind_param("s", $rombongan_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row;
+}
+
+// Ambil data event_order via GET (dipakai AJAX frm_detail_eo.php)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aksi']) && $_GET['aksi'] === 'get_event_order') {
+    header('Content-Type: application/json');
+    $rombongan_id = $_GET['rombongan_id'] ?? '';
+    $stmt = $konek->prepare("SELECT * FROM event_order WHERE rombongan_id = ? AND del_status = 0 ORDER BY id_eo");
+    $stmt->bind_param("s", $rombongan_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = [];
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+    }
+    $stmt->close();
+    echo json_encode($rows);
+    exit;
+}
+
+// Ambil data rombongan_master lengkap via GET (dipakai AJAX print_eo.php)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aksi']) && $_GET['aksi'] === 'get_rombongan_detail') {
+    header('Content-Type: application/json');
+    $rombongan_id = $_GET['rombongan_id'] ?? '';
+    $stmt = $konek->prepare("SELECT * FROM rombongan_master WHERE rombongan_id = ? AND del_status = 0");
+    $stmt->bind_param("s", $rombongan_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    echo json_encode($row);
+    exit;
+}
+
+// Ambil data manager (grade=3, jabatan=Manager) via GET
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aksi']) && $_GET['aksi'] === 'get_manager') {
+    header('Content-Type: application/json');
+    $stmt = $konek->prepare("SELECT name FROM employee_card WHERE grade = '3' AND jabatan = 'Manager' AND inactive = 0 LIMIT 1");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    echo json_encode($row);
+    exit;
+}
+
 //bagian tambah Client
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 
@@ -1098,7 +1164,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
         $fasil = $_POST['fasilitas_id'] ??'';
 
         if(!empty($fasil)){
-            $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec, catatan
+            $stmt = $konek->prepare("SELECT data_id, client_id, group_fasilitas, fasilitas_id, fasilitas_name, qty, price, price_vend, spec, catatan, unit
             FROM rombongan_detail WHERE fasilitas_id = ? and del_status = 0 and point = 1");
 
             $stmt->bind_param("s", $fasil);
@@ -1119,6 +1185,282 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
     }
 
     //tambah data fsilitas ke rombongan
+    if($_POST['aksi'] === 'tambah_event_order'){
+        $rombongan_id = sanitize_text($_POST['rombongan_id']);
+        $client_name  = sanitize_text($_POST['client_name']);
+        $kebutuhan    = sanitize_text($_POST['kebutuhan']);
+        $jenis        = sanitize_text($_POST['jenis']);
+        $jumlah       = sanitize_text($_POST['jumlah']);
+        $satuan       = sanitize_text($_POST['satuan']);
+        $keterangan   = sanitize_text($_POST['keterangan']);
+        $arrival_time = sanitize_text($_POST['arrival_time']);
+        $employee_name = $_SESSION['name'];
+        $date_input    = date("Y-m-d H:i:s");
+
+        // Validasi normal untuk event order biasa
+        if ($rombongan_id === '' || $kebutuhan === '') {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap.']);
+            exit;
+        }
+
+        // KEAMANAN: Validasi nilai drop-down Jenis (Server-side Whitelist)
+        $allowed_jenis = ['tiket masuk', 'operasional', 'food and beverages', 'lainnya'];
+        if (!in_array(strtolower($jenis), $allowed_jenis)) {
+            echo json_encode(['status' => 'error', 'message' => 'Pilihan jenis tidak valid.']);
+            exit;
+        }
+
+        // Cegah duplikat kebutuhan pada rombongan yang sama
+        $checkStmt = $konek->prepare("SELECT id_eo FROM event_order WHERE rombongan_id = ? AND kebutuhan = ? AND del_status = 0");
+        $checkStmt->bind_param("ss", $rombongan_id, $kebutuhan);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+        if ($checkStmt->num_rows > 0) {
+            echo json_encode([
+                'status' => 'exists',
+                'message' => 'Kebutuhan "' . $kebutuhan . '" sudah ada di rombongan ini!'
+            ]);
+            $checkStmt->close();
+            exit;
+        }
+        $checkStmt->close();
+
+        try {
+            $stmt = $konek->prepare("INSERT INTO event_order(rombongan_id, kebutuhan, jenis, jumlah, satuan, keterangan, arrival_time, employee_name, date_input)
+                                    VALUES(?,?,?,?,?,?,?,?,?)");
+            $stmt->bind_param("sssisssss", $rombongan_id, $kebutuhan, $jenis, $jumlah, $satuan, $keterangan, $arrival_time, $employee_name, $date_input);
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+            $insertId = $stmt->insert_id;
+            $stmt->close();
+
+            logActivity(
+                $konek,
+                $_SESSION['Employee_ID'],
+                'add event_order',
+                'event_order',
+                $insertId,
+                '',
+                json_encode([
+                    'rombongan_id' => $rombongan_id,
+                    'kebutuhan'    => $kebutuhan,
+                    'jenis'        => $jenis,
+                    'jumlah'      => $jumlah,
+                    'satuan'      => $satuan,
+                    'keterangan'  => $keterangan,
+                    'arrival_time' => $arrival_time
+                ])
+            );
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            error_log("Tambah Event Order Error: " . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    //update data event_order
+    if($_POST['aksi'] === 'update_event_order'){
+        $id_eo       = sanitize_text($_POST['id_eo']);
+        $rombongan_id = sanitize_text($_POST['rombongan_id'] ?? '');
+        $kebutuhan   = sanitize_text($_POST['kebutuhan'] ?? '');
+        $jenis       = sanitize_text($_POST['jenis'] ?? '');
+        $jumlah      = sanitize_text($_POST['jumlah'] ?? '');
+        $satuan      = sanitize_text($_POST['satuan'] ?? '');
+        $keterangan  = sanitize_text($_POST['keterangan'] ?? '');
+        $arrival_time = sanitize_text($_POST['arrival_time'] ?? '');
+        $employee_name = $_SESSION['name'];
+        $date_input    = date("Y-m-d H:i:s");
+
+        if ($id_eo === '') {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap.']);
+            exit;
+        }
+
+        // Ambil data lama untuk log dan fallback
+        $stmt_cek = $konek->prepare("SELECT * FROM event_order WHERE id_eo = ? AND del_status = 0");
+        $stmt_cek->bind_param("i", $id_eo);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $oldData = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if (!$oldData) {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
+            exit;
+        }
+
+        // Jika field tidak dikirim (partial update), gunakan nilai lama
+        // $kebutuhan    = $kebutuhan    !== '' ? $kebutuhan    : $oldData['kebutuhan'];
+        // $jenis        = $jenis        !== '' ? $jenis        : $oldData['jenis'];
+        // $jumlah       = $jumlah       !== '' ? $jumlah       : $oldData['jumlah'];
+        // $satuan       = $satuan       !== '' ? $satuan       : $oldData['satuan'];
+        // $keterangan   = $keterangan   !== '' ? $keterangan   : $oldData['keterangan'];
+        // $arrival_time = $arrival_time !== '' ? $arrival_time : $oldData['arrival_time'];
+
+        // KEAMANAN: Validasi nilai drop-down Jenis (Server-side Whitelist)
+        $allowed_jenis = ['tiket masuk', 'operasional', 'food and beverages', 'lainnya'];
+        if (!in_array(strtolower($jenis), $allowed_jenis)) {
+            echo json_encode(['status' => 'error', 'message' => 'Pilihan jenis tidak valid.']);
+            exit;
+        }
+
+        // Cek apakah ada perubahan (sanitasi oldData agar konsisten dengan input yang sudah disanitasi)
+        if (
+            sanitize_text($oldData['kebutuhan']) === $kebutuhan &&
+            sanitize_text($oldData['jenis']) === $jenis &&
+            (float)$oldData['jumlah'] === (float)$jumlah &&
+            sanitize_text($oldData['satuan']) === $satuan &&
+            sanitize_text($oldData['keterangan']) === $keterangan &&
+            sanitize_text($oldData['arrival_time']) === $arrival_time
+        ) {
+            echo json_encode(['status' => 'nochange', 'message' => 'Tidak ada perubahan data.']);
+            exit;
+        }
+
+        try {
+            $stmt_update = $konek->prepare("UPDATE event_order SET kebutuhan = ?, jenis = ?, jumlah = ?, satuan = ?, keterangan = ?, arrival_time = ?, employee_name = ?, date_input = ? WHERE id_eo = ?");
+            $stmt_update->bind_param("ssisssssi", $kebutuhan, $jenis, $jumlah, $satuan, $keterangan, $arrival_time, $employee_name, $date_input, $id_eo);
+            if (!$stmt_update->execute()) {
+                throw new Exception($stmt_update->error);
+            }
+            $stmt_update->close();
+
+            logActivity(
+                $konek,
+                $_SESSION['Employee_ID'],
+                'update event_order',
+                'event_order',
+                $id_eo,
+                json_encode($oldData),
+                json_encode([
+                    'kebutuhan'   => $kebutuhan,
+                    'jenis'       => $jenis,
+                    'jumlah'      => $jumlah,
+                    'satuan'      => $satuan,
+                    'keterangan'  => $keterangan,
+                    'arrival_time' => $arrival_time,
+                    'employee_name' => $employee_name,
+                    'date_input'  => $date_input
+                ])
+            );
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            error_log("Update Event Order Error: " . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    //tambah data Note
+    if($_POST['aksi'] === 'tambah_notes'){
+        $rombongan_id = sanitize_text($_POST['rombongan_id']);
+        $client_name  = sanitize_text($_POST['client_name']);
+        $jenis        = "catatan";
+        $notes        = sanitize_text($_POST['notes']);
+        $employee_name = $_SESSION['name'];
+        $date_input    = date("Y-m-d H:i:s");
+
+        try {
+            $stmt = $konek->prepare("INSERT INTO event_order(rombongan_id, jenis, notes, employee_name, date_input)
+                                    VALUES(?,?,?,?,?)");
+            $stmt->bind_param("sssss", $rombongan_id, $jenis, $notes, $employee_name, $date_input);
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+            $insertId = $stmt->insert_id;
+            $stmt->close();
+
+            logActivity(
+                $konek,
+                $_SESSION['Employee_ID'],
+                'add notes',
+                'event_order',
+                $insertId,
+                '',
+                json_encode([
+                    'rombongan_id' => $rombongan_id,
+                    'jenis'        => $jenis,
+                    'notes'        => $notes,
+                    'employee_name' => $employee_name,
+                    'date_input'  => $date_input
+                ])
+            );
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            error_log("Tambah Event Order Error: " . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    //update data event_order notes
+    if($_POST['aksi'] === 'update_notes'){
+        $id_notes       = sanitize_text($_POST['id_notes']);
+        $rombongan_id   = sanitize_text($_POST['up_rombonganID'] ?? '');
+        $notes          = sanitize_text($_POST['up_notes'] ?? '');
+        $employee_name  = $_SESSION['name'];
+        $date_input     = date("Y-m-d H:i:s");
+
+        if ($id_notes === '') {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap.']);
+            exit;
+        }
+
+        // Ambil data lama untuk log dan fallback
+        $stmt_cek = $konek->prepare("SELECT * FROM event_order WHERE id_eo = ? AND del_status = 0");
+        $stmt_cek->bind_param("i", $id_notes);
+        $stmt_cek->execute();
+        $result_cek = $stmt_cek->get_result();
+        $oldData = $result_cek->fetch_assoc();
+        $stmt_cek->close();
+
+        if (!$oldData) {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
+            exit;
+        }
+
+        // Jika field tidak dikirim (partial update), gunakan nilai lama
+        $notes    = $notes    !== '' ? $notes    : $oldData['notes'];
+
+        // Cek apakah ada perubahan (sanitasi oldData agar konsisten dengan input yang sudah disanitasi)
+        if (
+            sanitize_text($oldData['notes']) === $notes
+        ) {
+            echo json_encode(['status' => 'nochange', 'message' => 'Tidak ada perubahan data.']);
+            exit;
+        }
+
+        try {
+            $stmt_update = $konek->prepare("UPDATE event_order SET notes = ?, employee_name = ?, date_input = ? WHERE id_eo = ?");
+            $stmt_update->bind_param("sssi", $notes, $employee_name, $date_input, $id_notes);
+            if (!$stmt_update->execute()) {
+                throw new Exception($stmt_update->error);
+            }
+            $stmt_update->close();
+
+            logActivity(
+                $konek,
+                $_SESSION['Employee_ID'],
+                'update event_order',
+                'event_order',
+                $id_notes,
+                json_encode($oldData),
+                json_encode([
+                    'notes' => $notes,
+                    'employee_name' => $employee_name,
+                    'date_input' => $date_input
+                ])
+            );
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            error_log("Update Event Order Error: " . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
     if($_POST['aksi'] === 'tambah_fasilitasWK'){
         $idClient = sanitize_text($_POST['cId']);
         $nameClient = sanitize_text($_POST['cName']);
@@ -2977,8 +3319,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 // fungsi hapus
 function softDelete($konek, $tabel, $kolom_id, $id_value) {
     // 1. KEAMANAN KETAT: Whitelist tabel dan kolom yang diizinkan untuk mencegah SQL Injection pada nama identifier
-    $allowed_tables = ['rombongan_master', 'rombongan_detail'];
-    $allowed_columns = ['rombongan_id', 'data_id', 'fasilitas_id'];
+    $allowed_tables = ['rombongan_master', 'rombongan_detail', 'event_order'];
+    $allowed_columns = ['rombongan_id', 'data_id', 'fasilitas_id', 'id_eo'];
 
     if (!in_array($tabel, $allowed_tables) || !in_array($kolom_id, $allowed_columns)) {
         return "Akses tabel/kolom ilegal.";
