@@ -1,0 +1,307 @@
+<?php
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (
+    !isset($_SESSION['Employee_ID'], $_SESSION['level']) ||
+    !is_numeric($_SESSION['level'])
+) {
+    session_destroy();
+    header('Location: ../../index.php');
+    exit;
+}
+
+// Cek level sesuai folder
+$currentLevel = $_SESSION['level'];
+$currentJabatan = $_SESSION['jabatan'];
+$currentFolder = strtolower(basename(dirname(__FILE__))); // ambil nama folder saat ini
+
+$allowedAccess = [
+    'manager' => ['grade' => 3, 'jabatan' => 'Manager'],
+    'spv'     => ['grade' => 3, 'jabatan' => 'SPV'],
+    'staff'   => ['grade' => 3, 'jabatan' => 'Staff']
+];
+
+if (!isset($allowedAccess[$currentFolder]) || $allowedAccess[$currentFolder]['grade'] !== $currentLevel
+            || $allowedAccess[$currentFolder]['jabatan'] !== $currentJabatan) {
+    session_destroy();
+    header('Location: ../../index.php');
+    exit;
+}
+
+require '../../assets/modul2.php';
+$allRom = viewRombongan($konek) ?? [];
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Home</title>
+        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+        <link href="../../css/styles.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+        integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body class="sb-nav-fixed">
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <?php require '../../assets/head-nav.php'; ?>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <?php require 'nav.php'; ?>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">Home</h1>
+                        <!-- <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">Home</li>
+                        </ol> -->
+                        <div class="row">
+                            <div class="mb-3">
+                                <label for="yearSelect">Pilih Tahun:</label>
+                                <select id="yearSelect" class="form-select" style="width:auto; display:inline-block;"></select>
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-bar me-1"></i>
+                                        Data Rombongan Perbulan
+                                    </div>
+                                    <div class="card-body"><canvas id="mySalesMount" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-bar me-1"></i>
+                                        Data Rombongan Persales
+                                    </div>
+                                    <div class="card-body"><canvas id="mySalesName" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                DataTable Example
+                            </div>
+                            <div class="card-body">
+                                <table id="datatablesSimple">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Rombongan</th>
+                                            <th>Sales</th>
+                                            <th>Tanggal Kunjungan</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Validasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dtRombonganAll">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <footer class="py-4 bg-light mt-auto">
+                    <?php require '../../assets/footer.php' ?>
+                </footer>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="../../js/scripts.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+        <script src="../../js/datatables-simple-demo.js"></script>
+        <script>
+            const allRomData = <?= json_encode($allRom, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+            // Helper Sanitasi Teks (Pencegahan XSS)
+            function escapeHtml(text) {
+                if (!text) return '';
+                return String(text)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Mapping angka database ke Teks Label
+            const statusLabels = {
+                0: 'Open',
+                1: 'On Process',
+                2: 'Done',
+                3: 'Batal'
+            };
+
+            const statusBadges = {
+                0: 'bg-success',          // Hijau
+                1: 'bg-warning text-dark', // Kuning
+                2: 'bg-secondary',        // Abu-abu
+                3: 'bg-danger'            // Merah
+            };
+
+            const tbody = document.getElementById('dtRombonganAll');
+
+            if (tbody) {
+                allRomData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    const tanggalDb = new Date(item.date_plan);
+                    const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const plan = !isNaN(tanggalDb.getTime()) 
+                        ? tanggalDb.toLocaleDateString('id-ID', opsi) 
+                        : '-';
+
+                    // Konversi status angka DB ke Teks & Warna
+                    const stAngka    = parseInt(item.status);
+                    const labelTeks  = statusLabels[stAngka] || 'Open';
+                    const badgeClass = statusBadges[stAngka] || 'bg-secondary';
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(item.client_name)}</td>
+                        <td>${escapeHtml(item.marketing || '-')}</td>
+                        <td>${plan}</td>
+                        <td>${escapeHtml(item.judul || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${labelTeks}</span></td>
+                        <td>${escapeHtml(item.oleh || '-')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            const yearSelect = document.getElementById("yearSelect");
+            // Ambil semua tahun unik dari date_plan
+            const years = [
+            ...new Set(allRomData.map((item) => new Date(item.date_plan).getFullYear())),
+            ].sort();
+
+            // Isi dropdown tahun
+            years.forEach((year) => {
+            const opt = document.createElement("option");
+            opt.value = year;
+            opt.textContent = year;
+            yearSelect.appendChild(opt);
+            });
+
+            // Tentukan tahun default (tahun sekarang atau terakhir di data)
+            const currentYear = new Date().getFullYear();
+            yearSelect.value = years.includes(currentYear)
+            ? currentYear
+            : years[years.length - 1];
+
+            // Urutan nama bulan tetap
+            const monthOrder = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+            ];
+
+            // Variabel global untuk menyimpan chart agar bisa di-destroy nanti
+            let chartPerBulan = null;
+            let chartPerSales = null;
+
+            // Fungsi render semua grafik berdasarkan tahun
+            function renderCharts(year) {
+            const filtered = allRomData.filter(
+                (item) => new Date(item.date_plan).getFullYear() === parseInt(year)
+            );
+
+            // =============== Grafik 1: Rombongan Per Bulan ====================
+            const monthlyCount = {};
+            filtered.forEach((item) => {
+                const month = new Date(item.date_plan).toLocaleString("id-ID", {
+                month: "long",
+                });
+                monthlyCount[month] = (monthlyCount[month] || 0) + 1;
+            });
+
+            const labelsMonth = monthOrder.filter((m) =>
+                Object.keys(monthlyCount).includes(m)
+            );
+            const valuesMonth = labelsMonth.map((m) => monthlyCount[m] || 0);
+
+            if (chartPerBulan) chartPerBulan.destroy();
+            const ctxMonth = document.getElementById("mySalesMount").getContext("2d");
+            chartPerBulan = new Chart(ctxMonth, {
+                type: "bar",
+                data: {
+                labels: labelsMonth,
+                datasets: [
+                    {
+                    label: `Jumlah Rombongan per Bulan (${year})`,
+                    backgroundColor: "rgba(2,117,216,0.7)",
+                    borderColor: "rgba(2,117,216,1)",
+                    data: valuesMonth,
+                    },
+                ],
+                },
+                options: {
+                scales: {
+                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
+                },
+                plugins: { legend: { display: true } },
+                },
+            });
+
+            // =============== Grafik 2: Rombongan Per Sales ====================
+            const salesCount = {};
+            filtered.forEach((item) => {
+                const sales = item.marketing || "Tidak Ada Sales";
+                salesCount[sales] = (salesCount[sales] || 0) + 1;
+            });
+
+            const labelsSales = Object.keys(salesCount);
+            const valuesSales = Object.values(salesCount);
+            const colors = labelsSales.map((_, i) => `hsl(${(i * 60) % 360}, 70%, 50%)`);
+
+            if (chartPerSales) chartPerSales.destroy();
+            const ctxSales = document.getElementById("mySalesName").getContext("2d");
+            chartPerSales = new Chart(ctxSales, {
+                type: "bar",
+                data: {
+                labels: labelsSales,
+                datasets: [
+                    {
+                    label: `Jumlah Rombongan per Sales (${year})`,
+                    backgroundColor: colors,
+                    // borderColor: colors,
+                    data: valuesSales,
+                    },
+                ],
+                },
+                options: {
+                scales: {
+                    y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } },
+                },
+                plugins: { legend: { display: false } },
+                },
+            });
+            }
+
+            // Render pertama kali
+            renderCharts(yearSelect.value);
+
+            // Ubah grafik jika tahun diganti
+            yearSelect.addEventListener("change", (e) => renderCharts(e.target.value));
+        </script>
+    </body>
+</html>

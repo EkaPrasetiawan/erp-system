@@ -2306,16 +2306,20 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 // onload baru terpicu setelah seluruh halaman & script selesai load,
                 // sehingga data sudah terisi sebelum print dipanggil.
                 iframe.onload = function() {
-                    try {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                    } catch (e) {
-                        console.error('Gagal mencetak:', e);
-                    }
                     setTimeout(() => {
-                        iframe.remove();
-                        form.remove();
-                    }, 1000);
+                        try {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                        } catch (e) {
+                            console.error('Gagal mencetak:', e);
+                        } finally {
+                            // Hapus elemen setelah selesai diprint
+                            setTimeout(() => {
+                                iframe.remove();
+                                form.remove();
+                            }, 1000);
+                        }
+                    }, 600);
                 };
 
                 form.submit();

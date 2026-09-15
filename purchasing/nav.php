@@ -39,21 +39,21 @@
                     Form Event Order</a>
             </nav>
         </div>
-        <!-- <div class="sb-sidenav-menu-heading">Fasiliti</div>
+        <div class="sb-sidenav-menu-heading">Fasiliti</div>
         <a class="nav-link" href="fasilitas.php">
             <div class="sb-nav-link-icon"><i class="fas fa-city"></i></div>
             Fasilitas WK
-        </a> -->
+        </a>
         <!-- <a class="nav-link" href="f&b.php">
             <div class="sb-nav-link-icon"><i class="fa-solid fa-utensils"></i></div>
             F&B
         </a> -->
-        <!-- <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
             aria-expanded="false" aria-controls="collapseLayouts">
         <div class="sb-nav-link-icon"><i class="fa-solid fa-up-right-from-square"></i></div>
             Vendor
         <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-        </a> -->
+        </a>
         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
             <nav class="sb-sidenav-menu-nested nav">
                 <a class="nav-link" href="in_vendor.php">

@@ -519,6 +519,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aksi']) && $_GET['aksi'
     exit;
 }
 
+// Ambil data manager dan spv
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aksi']) && $_GET['aksi'] === 'get_employe') {
+    $stmt = $konek->prepare("SELECT name, departemen, grade, jabatan FROM employee_card WHERE grade IN (3, 5, 8) AND jabatan IN ('Manager', 'SPV') AND inactive = 0 ORDER BY departemen, jabatan");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $employes = [];
+    while ($row = $result->fetch_assoc()) {
+        $employes[] = $row;
+    }
+    $stmt->close();
+    echo json_encode($employes);
+    exit;
+}
+
 //bagian tambah Client
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['aksi'])){
 

@@ -315,11 +315,22 @@ $viewPay = viewPayment ($konek, $rombongan_id);
         <div class="row">
             <div class="col-12">
                 <div class="row">
-                    <div class="col-2 border border-dark"><span id="sales2"></span></div>
-                    <div class="col-2 border border-dark">Septian Adi</div>
-                    <div class="col-2 border border-dark">Rahman J Subita</div>
-                    <div class="col-2 border border-dark">Nanda</div>
-                    <div class="col-2 border border-dark">Nur Walidi</div>
+                    <div class="col-2 border border-dark"><span id="signature-created-by"></span></div>
+                    <div class="col-2 border border-dark">
+                        <span id="signature-sales-manager">-</span>
+                    </div>
+
+                    <div class="col-2 border border-dark">
+                        <span id="signature-hr-manager">-</span>
+                    </div>
+
+                    <div class="col-2 border border-dark">
+                        <span id="signature-spv-keuangan">-</span>
+                    </div>
+
+                    <div class="col-2 border border-dark">
+                        <span id="signature-manager-keuangan">-</span>
+                    </div>
                     <div class="col-2 border border-dark">S. Widi Karyaningsih</div>
                 </div>
             </div>
@@ -817,18 +828,84 @@ $viewPay = viewPayment ($konek, $rombongan_id);
             `;
 
             $('#remark_summary').html(remarkHtml);
+
+            document.getElementById('signature-created-by').textContent = '<?= isset($_SESSION['name']) ? $_SESSION['name'] : '-'; ?>';
+
+            $.ajax({
+                url: '/erp-system/assets/modul2.php',
+                method: 'GET',
+                data: { aksi: 'get_employe' },
+                dataType: 'json',
+                success: function (employes) {
+
+                    // Default semua kolom
+                    $('#signature-sales-manager').text('-');
+                    $('#signature-hr-manager').text('-');
+                    $('#signature-spv-keuangan').text('-');
+                    $('#signature-manager-keuangan').text('-');
+
+                    if (!Array.isArray(employes)) {
+                        return;
+                    }
+                    employes.forEach(function (employee) {
+
+                        const departemen = String(employee.departemen || '')
+                            .trim()
+                            .toLowerCase();
+
+                        const jabatan = String(employee.jabatan || '')
+                            .trim()
+                            .toLowerCase();
+
+                        // Sales Manager
+                        if (
+                            departemen === 'sales' &&
+                            jabatan === 'manager'
+                        ) {
+                            $('#signature-sales-manager').text(employee.name);
+                        }
+
+                        // HR Manager
+                        else if (
+                            departemen === 'hr & ga' &&
+                            jabatan === 'manager'
+                        ) {
+                            $('#signature-hr-manager').text(employee.name);
+                        }
+
+                        // SPV Keuangan
+                        else if (
+                            departemen === 'finance' &&
+                            jabatan === 'spv'
+                        ) {
+                            $('#signature-spv-keuangan').text(employee.name);
+                        }
+
+                        // Manager Keuangan
+                        else if (
+                            departemen === 'finance' &&
+                            jabatan === 'manager'
+                        ) {
+                            $('#signature-manager-keuangan').text(employee.name);
+                        }
+
+                    });
+                },
+
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error');
+                    console.error('Status:', status);
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseText);
+
+                    $('#signature-sales-manager').text('-');
+                    $('#signature-hr-manager').text('-');
+                    $('#signature-spv-keuangan').text('-');
+                    $('#signature-manager-keuangan').text('-');
+                }
+            });
         });
 
-    </script>
-    <div id="loading">Menyiapkan dokumen print...</div>
-
-    <script>
-    window.onload = function(){
-        setTimeout(function(){
-            document.getElementById('loading').style.display = 'none';
-            window.print();
-        }, 1500);
-    }
     </script>
 
   </body>

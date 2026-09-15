@@ -46,7 +46,7 @@ $allRom = viewRombongan($konek) ?? [];
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>ERP_System</title>
+        <title>Erp System</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="../../css/styles.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
@@ -67,7 +67,7 @@ $allRom = viewRombongan($konek) ?? [];
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Print Form</h1>
+                        <h1 class="mt-4">Print Form Event Order</h1>
                         <div class="card mb-4 mt-4">
                             <div class="card-body">
                                 <table id="datatablesSimple">
@@ -109,9 +109,6 @@ $allRom = viewRombongan($konek) ?? [];
                 const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
                 const plan = tanggalDb.toLocaleDateString('id-ID', opsi);
 
-                const isDisabled = item.oleh === "UnApproved" ? 'disabled' : '';
-                const btnClass = item.oleh === "unApproved" ? 'btn-secondary' : 'btn-success';
-                
                 row.innerHTML =`
                 <td>${index + 1 }</td>
                 <td>${item.client_name}</td>
@@ -120,17 +117,11 @@ $allRom = viewRombongan($konek) ?? [];
                 <td>${plan}</td>
                 <td>
                     <div class="d-grid gap-1">
-                        <a class="btn btn-primary btnDetail"
+                        <a class="btn btn-primary btnEo"
                         data-rombongan-id="${item.rombongan_id}"
                         data-client-name="${item.client_name}"
                         data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> FK Awal</a>
-
-                        <a class="btn ${btnClass} btnDetail2 ${isDisabled}"
-                        data-rombongan-id="${item.rombongan_id}"
-                        data-client-name="${item.client_name}"
-                        data-client-date="${item.date_plan}">
-                        <i class="fa-solid fa-newspaper"></i> FK Final</a>
+                        <i class="fa-solid fa-newspaper"></i> Form EO</a>
                     </div>
                 </td>
                 `;
@@ -139,135 +130,45 @@ $allRom = viewRombongan($konek) ?? [];
 
         </script>
         <script>
-            //even delegation
-            document.body.addEventListener('click', function(e) {
-                // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
-                // const clickedElement = e.target.closest('.btnDetail');
-
-                const btn = e.target.closest('.btnDetail, .btnDetail2');
-                if(!btn) return;
+            // Kirim data via POST menggunakan form dinamis (pattern rombongan-detail)
+            document.body.addEventListener('click', function(e){
+                const btn = e.target.closest('.btnEo');
+                if (!btn) return;
                 e.preventDefault();
-
-                const actionMap = {
-                    btnDetail: 'frm-kesepakatan.php',
-                    btnDetail2: 'frm-kesepakatan-final.php'
-                };
-
-                const targetClass = btn.classList.contains('btnDetail') ? 'btnDetail' : 'btnDetail2';
-                const actionUrl = actionMap[targetClass];
 
                 const data = {
                     rombongan_id: btn.dataset.rombonganId,
                     client_name: btn.dataset.clientName,
-                    client_date: btn.dataset.clientDate
+                    date_plan:   btn.dataset.clientDate
                 };
 
-                if (!data.rombongan_id){
-                    console.error("Data Kosong");
+                if (!data.rombongan_id) {
+                    console.warn('rombongan_id kosong — submit dibatalkan');
                     return;
                 }
 
-                printViaIframe(actionUrl, data);
+                postRedirect('frm_detail_eo.php', data);
             });
 
-            function printViaIframe(action, data) {
-                // Buat iframe tersembunyi sebagai target submit (navigasi nyata)
-                const iframe = document.createElement('iframe');
-                iframe.name = 'printIframe_' + Date.now();
-                iframe.style.position = 'fixed';
-                iframe.style.right = '0';
-                iframe.style.bottom = '0';
-                iframe.style.width = '0';
-                iframe.style.height = '0';
-                iframe.style.border = '0';
-                document.body.appendChild(iframe);
-
-                // Form POST yang disubmit ke dalam iframe
+            /* =====================================================
+            HELPER: POST REDIRECT
+            ===================================================== */
+            function postRedirect(action, data){
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = action;
-                form.target = iframe.name;
-                form.style.display = 'none';
 
-                Object.entries(data).forEach(([name, value]) => {
+                Object.entries(data).forEach(([name,value]) => {
                     const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    input.value = value;
+                    input.type  = 'hidden';
+                    input.name  = name;
+                    input.value = value ?? '';
                     form.appendChild(input);
                 });
 
                 document.body.appendChild(form);
-
-                // onload baru terpicu setelah seluruh halaman & script selesai load,
-                // sehingga data sudah terisi sebelum print dipanggil.
-                iframe.onload = function() {
-                    try {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                    } catch (e) {
-                        console.error('Gagal mencetak:', e);
-                    }
-                    setTimeout(() => {
-                        iframe.remove();
-                        form.remove();
-                    }, 1000);
-                };
-
                 form.submit();
             }
-
-            // function postRedirect(action, data) {
-            //     const form = document.createElement('form');
-            //     form.method = 'POST';
-            //     form.action = action;
-            //     form.target = '_blank';
-
-            //     Object.entries(data).forEach(([name, value]) => {
-            //         const input = document.createElement('input');
-            //         input.type = 'hidden';
-            //         input.name = name;
-            //         input.value = value;
-            //         form.appendChild(input);
-            //     });
-
-            //     document.body.appendChild(form);
-            //     form.submit();
-            // }
-        </script>
-        <script>
-            //even delegation
-            document.body.addEventListener('click', function(e) {
-                // Periksa apakah elemen yang diklik atau elemen terdekatnya memiliki class 'btnDetail'
-                const clickedElement = e.target.closest('.btnPrint');
-
-                if (clickedElement) {
-                    e.preventDefault();
-
-                    const cliId = clickedElement.dataset.clientId;
-                    const cliName = clickedElement.dataset.clientName;
-
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = 'budgeting-print.php';
-
-                    const inputId = document.createElement('input');
-                    inputId.type = 'hidden';
-                    inputId.name = 'client_id';
-                    inputId.value = cliId;
-
-                    const inputName = document.createElement('input');
-                    inputName.type = 'hidden';
-                    inputName.name = 'client_name';
-                    inputName.value = cliName;
-
-                    form.appendChild(inputId);
-                    form.appendChild(inputName);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
         </script>
     </body>
 </html>

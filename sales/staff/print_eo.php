@@ -13,7 +13,7 @@ if (
     exit;
 }
 
-require '../../assets/modul2.php';
+require '../../assets/modul3.php';
 
 $rombongan_id = $_GET['rombongan_id'] ?? '';
 
@@ -286,13 +286,13 @@ if ($rombongan_id === '') {
         </div>
 
         <!-- Event Order: Food and Beverages -->
-        <div class="eo-section" id="section-fnb" style="display:none;">
+        <div class="eo-section">
             <h3>Food and Beverages</h3>
             <div id="eo-fnb"><div class="no-data">Memuat data...</div></div>
         </div>
 
         <!-- Event Order: Event (Operasional + Lainnya) -->
-        <div class="eo-section" id="section-event" style="display:none;">
+        <div class="eo-section">
             <h3>Event</h3>
             <div id="eo-event"><div class="no-data">Memuat data...</div></div>
         </div>
@@ -453,7 +453,7 @@ if ($rombongan_id === '') {
 
             // Ambil data event_order
             $.ajax({
-                url: '/erp-system/assets/modul3.php',
+                url: '/erp-system/assets/modul2.php',
                 method: 'GET',
                 data: { aksi: 'get_event_order', rombongan_id: rombonganId },
                 dataType: 'json',
@@ -473,55 +473,26 @@ if ($rombongan_id === '') {
                             grouped['lainnya'].push(item);
                         }
                     });
-                    // renderEoTable('eo-tiket-masuk', grouped['tiket masuk'], true, 'Kebutuhan Acara', false, false);
-                    // renderTiketMasuk(grouped['tiket masuk']);
-                    // renderEoTable('eo-fnb', grouped['food and beverages'], false, 'Menu');
-                    // renderEoTable('eo-event', grouped['operasional'].concat(grouped['lainnya']), false);
-                    
-                    // TIKET MASUK
-                    const tiketMasuk = grouped['tiket masuk'];
-                    toggleSection(
-                        'section-tiket-masuk',
-                        tiketMasuk.length > 0
-                    );
+                    renderEoTable('eo-tiket-masuk', grouped['tiket masuk'], true, 'Kebutuhan Acara', false, false);
+                    renderTiketMasuk(grouped['tiket masuk']);
+                    renderEoTable('eo-fnb', grouped['food and beverages'], false, 'Menu');
+                    renderEoTable('eo-event', grouped['operasional'].concat(grouped['lainnya']), false);
 
-                    if (tiketMasuk.length > 0) {
-                        renderTiketMasuk(tiketMasuk);
-                    }
-
-                    // FOOD AND BEVERAGES
-                    const fnb = grouped['food and beverages'];
-                    toggleSection(
-                        'section-fnb',
-                        fnb.length > 0
-                    );
-
-                    if (fnb.length > 0) {
-                        renderEoTable(
-                            'eo-fnb',
-                            fnb,
-                            false,
-                            'Menu'
-                        );
-                    }
-
-                    // EVENT
-                    const eventItems = [
-                        ...grouped['operasional'],
-                        ...grouped['lainnya']
-                    ];
-
-                    toggleSection(
-                        'section-event',
-                        eventItems.length > 0
-                    );
-
-                    if (eventItems.length > 0) {
-                        renderEoTable(
-                            'eo-event',
-                            eventItems,
-                            false
-                        );
+                    // Render notes below each table
+                    function renderNotes(containerId, contentId, items) {
+                        const notesContainer = document.getElementById(containerId);
+                        const notesContent = document.getElementById(contentId);
+                        const allNotes = items
+                            .filter(function(item) { return item.notes && item.notes.trim() !== ''; })
+                            .map(function(item) {
+                                return '<div style="margin-bottom:6px;">' + escapeHtml(item.notes) + '</div>';
+                            });
+                        if (allNotes.length > 0) {
+                            notesContent.innerHTML = allNotes.join('');
+                            notesContainer.style.display = 'block';
+                        } else {
+                            notesContainer.style.display = 'none';
+                        }
                     }
                     renderNotes('eo-event-notes', 'event-notes-content', grouped['catatan']);
 
@@ -548,7 +519,7 @@ if ($rombongan_id === '') {
 
             // Ambil data manager dari database
             $.ajax({
-                url: '/erp-system/assets/modul3.php',
+                url: '/erp-system/assets/modul2.php',
                 method: 'GET',
                 data: { aksi: 'get_manager' },
                 dataType: 'json',
@@ -563,33 +534,6 @@ if ($rombongan_id === '') {
                     document.getElementById('signature-approved-by').textContent = '-';
                 }
             });
-        }
-
-        // Render notes below each table
-        function renderNotes(containerId, contentId, items) {
-            const notesContainer = document.getElementById(containerId);
-            const notesContent = document.getElementById(contentId);
-            const allNotes = items
-                .filter(function(item) { return item.notes && item.notes.trim() !== ''; })
-                .map(function(item) {
-                    return '<div style="margin-bottom:6px;">' + escapeHtml(item.notes) + '</div>';
-                });
-            if (allNotes.length > 0) {
-                notesContent.innerHTML = allNotes.join('');
-                notesContainer.style.display = 'block';
-            } else {
-                notesContainer.style.display = 'none';
-            }
-        }
-
-        function toggleSection(sectionId, hasData) {
-            const section = document.getElementById(sectionId);
-            if (!section) return;
-            if (hasData) {
-                section.style.display = '';
-            } else {
-                section.style.display = 'none';
-            }
         }
 
         $(document).ready(function () {

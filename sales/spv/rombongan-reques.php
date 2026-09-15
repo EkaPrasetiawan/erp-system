@@ -42,7 +42,7 @@ $client_date = '';
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $rombongan_id = $_POST['rombongan_id'] ??'';
     $client_name = $_POST['client_name'] ??'';
-    $client_date = $_POST['date_plan'] ??'';
+    $client_date = $_POST['client_date'] ??'';
 }
 
 $dataFs = getFasilitasWK($konek, $client_date, $rombongan_id);
@@ -106,7 +106,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                                     <button type="button" class="btn btn-primary" id="btnPrintBudget"
                                         data-rombongan-id="<?= $rombongan_id ?>"
                                         data-client-name="<?= $client_name ?>"
-                                        data-client-date="<?= $date_plan ?? '' ?>">
+                                        data-client-date="<?= $client_date ?? '' ?>">
                                         <i class="fa-solid fa-print"></i> Print Budget
                                     </button>
                                 </div>
@@ -1997,7 +1997,7 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 setSatuan2(selectedFasKet, selecHeadFas);
             });
 
-            $('up_qtyKet').on('input', function() {
+            $('#up_qtyKet').on('input', function() {
                 setFormattedInput(this);
             });
             $('#CatatanUpdate').on('submit', function(e) {
@@ -2287,16 +2287,20 @@ $viewCnC = getCnc($konek, $client_date, $rombongan_id);
                 // onload baru terpicu setelah seluruh halaman & script selesai load,
                 // sehingga data sudah terisi sebelum print dipanggil.
                 iframe.onload = function() {
-                    try {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                    } catch (e) {
-                        console.error('Gagal mencetak:', e);
-                    }
                     setTimeout(() => {
-                        iframe.remove();
-                        form.remove();
-                    }, 1000);
+                        try {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                        } catch (e) {
+                            console.error('Gagal mencetak:', e);
+                        } finally {
+                            // Hapus elemen setelah selesai diprint
+                            setTimeout(() => {
+                                iframe.remove();
+                                form.remove();
+                            }, 1000);
+                        }
+                    }, 600);
                 };
 
                 form.submit();

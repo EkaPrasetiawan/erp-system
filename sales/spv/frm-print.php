@@ -168,41 +168,6 @@ $allRom = viewRombongan($konek) ?? [];
                 }
 
                 printViaIframe(actionUrl, data);
-
-                // if (clickedElement) {
-                //     e.preventDefault();
-
-                //     const rombonganId = clickedElement.dataset.rombonganId;
-                //     const clientName = clickedElement.dataset.clientName;
-                //     const clientDate = clickedElement.dataset.clientDate;
-
-                //     const form = document.createElement('form');
-                //     form.method = 'POST';
-                //     form.action = 'frm-kesepakatan.php';
-                //     form.target = '_blank';
-
-                //     const inputId = document.createElement('input');
-                //     inputId.type = 'hidden';
-                //     inputId.name = 'rombongan_id';
-                //     inputId.value = rombonganId;
-
-                //     const inputName = document.createElement('input');
-                //     inputName.type = 'hidden';
-                //     inputName.name = 'client_name';
-                //     inputName.value = clientName;
-
-                //     const inputDate = document.createElement('input');
-                //     inputDate.type = 'hidden';
-                //     inputDate.name = 'date_plan';
-                //     inputDate.value = clientDate;
-
-                //     form.appendChild(inputId);
-                //     form.appendChild(inputName);
-                //     form.appendChild(inputDate);
-
-                //     document.body.appendChild(form);
-                //     form.submit();
-                // }
             });
 
             function printViaIframe(action, data) {

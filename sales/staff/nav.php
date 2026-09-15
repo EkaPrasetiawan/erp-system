@@ -27,13 +27,50 @@ $currentPage = basename($_SERVER['SCRIPT_NAME']);
             <div class="sb-nav-link-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
             Rombongan Detail
         </a>
-        <a class="nav-link <?= ($currentPage === 'frm-print.php') ? 'active' : ''; ?>" href="frm-print.php">
-            <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#layoutPrintForm"
+            aria-expanded="false" aria-controls="layoutPrintForm">
+        <div class="sb-nav-link-icon"><i class="fa-solid fa-file-export"></i></div>
             Print Form
+        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
         </a>
+        <div class="collapse" id="layoutPrintForm" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+            <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="frm-print.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
+                    Form Kesepakatan
+                </a>
+                <a class="nav-link" href="frm-event-order.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    Form Event Order</a>
+            </nav>
+        </div>
     </div>
 </div>
 <div class="sb-sidenav-footer">
     <div class="small">Logged in as:</div>
     <?= htmlspecialchars($_SESSION['name'], ENT_QUOTES, 'UTF-8'); ?>
 </div>
+
+<script>
+    // Tandai menu yang sedang aktif berdasarkan halaman saat ini
+    (function() {
+        const current = location.pathname.split('/').pop();
+        document.querySelectorAll('.sb-sidenav-menu a.nav-link').forEach(function(link) {
+            const href = link.getAttribute('href') || '';
+            const file = href.split('/').pop();
+            if (file && file === current) {
+                link.classList.add('active');
+                // Buka dropdown induk jika menu berada di dalam collapse
+                const collapse = link.closest('.collapse');
+                if (collapse) {
+                    collapse.classList.add('show');
+                    const toggler = document.querySelector('[data-bs-target="#' + collapse.id + '"]');
+                    if (toggler) {
+                        toggler.classList.remove('collapsed');
+                        toggler.setAttribute('aria-expanded', 'true');
+                    }
+                }
+            }
+        });
+    })();
+</script>
